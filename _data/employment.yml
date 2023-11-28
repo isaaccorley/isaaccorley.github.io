@@ -1,0 +1,55 @@
+- company: Zeitview (formerly DroneBase)
+  description:  >-
+    Senior Machine Learning Engineer.
+    I develop and deploy computer vision and deep learning models for enhancing renewable energy inspections and analytics, including solar farms, wind turbines, and commercial and residential rooftops.
+  dates: "Nov 2021 - Current"
+  location: San Antonio, TX
+
+- company: SLB (formerly Schlumberger)
+  description: >-
+    Machine Learning Researcher on the <a href="https://www.slb.com/products-and-services/delivering-digital-at-scale/artificial-intelligence-solutions">Artificial Intelligence Hub</a> team.
+    I researched using deep learning to estimate Global XCO2 using in situ ODIAC Fossil fuel emissions and OCO-2 and GOSAT-2 datasets.
+  dates: "Oct 2022 - Oct 2023"
+  location: San Antonio, TX
+
+- company: Spruce
+  description: >-
+    Senior Machine Learning Engineer. I applied state-of-the-art Optical Character Recognition (OCR) and Text Summarization methods to parse real estate and financial documents.
+  dates: "Oct 2021 - June 2022"
+  location: San Antonio, TX
+
+- company: BlackSky
+  description: >-
+    Senior Computer Vision Engineer on the AI team. Developed and deployed models to drive the Spectra AI platform's satellite image analytics as well as
+    served as the PI and lead engineer on the <a href="https://www.iarpa.gov/research-programs/smart">IARPA SMART program</a> 
+  dates: "Jan 2021 - Mar 2022"
+  location: San Antonio, TX
+
+- company: HouseCanary
+  description: >-
+    Senior Data Scientist.
+    Developed and deployed computer vision models for extracting insights and features from real estate property images for improving Automated Valuation Models (AVMs).
+  dates: "Dec 2019 - Dec 2020"
+  location: San Antonio, TX
+
+- company: Booz Allen Hamilton
+  description: >-
+    Senior Data Scientist on the AI Cybersecurity team.
+    I researched and developed prototypes for deep learning based image steganography detection and removal as well as adversarial domain generation detection.
+  dates: "Aug 2018 - Nov 2019"
+  location: San Antonio, TX
+
+- company: Southwest Research Institute (SwRI)
+  description: >-
+    Research Engineer in the <a href="https://www.swri.org/technical-divisions/defense-intelligence-solutions">Defense & Intelligence Solutions Division</a>.
+    I developed and deployed software updates to the A-10 Warthog aircraft as well as researched machine learning methods for detecting engine stalls and exploiting the MIL-STD-1553 communications bus
+    while working under <a href="https://scholar.google.com/citations?user=JJeIC1QAAAAJ">Kenneth Holladay</a>.
+  dates: "Jul 2016 - Aug 2018"
+  location: San Antonio, TX
+
+- company: Oak Ridge National Laboratory (ORNL)
+  description: >-
+    Research Intern in the <a href="https://www.ornl.gov/group/isf">Intelligent Systems Group</a>.
+    I recorded and annotated a dataset of seismic signals of human and vehicle activity and trained machine learning methods to detect this activity.
+  dates: "Jun 2015 - Aug 2015"
+  location: Oak Ridge, TN

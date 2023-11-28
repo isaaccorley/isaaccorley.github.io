@@ -1,0 +1,39 @@
+- date: Oct 2023
+  description: >-
+    Our paper [_ZRG: A Dataset for Multimodal 3D Residential Rooftop Understanding_](https://arxiv.org/abs/2304.13219),
+    has been accepted to [WACV 2024](https://wacv2024.thecvf.com/).
+
+- date: Sep 2023
+  description: >-
+    Our paper [_SSL4EO-L: Datasets and Foundation Models for Landsat Imagery_](https://arxiv.org/abs/2306.09424),
+    has been accepted to [NeurIPS 2023](https://nips.cc/Conferences/2023/CallForDatasetsBenchmarks).
+
+- date: May 2023
+  description: >-
+    We present [_Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters_](https://arxiv.org/abs/2305.13456),
+    which evaluates the importance of preprocessing steps for fair comparisons of remote sensing foundation models. 
+
+- date: Apr 2023
+  description: >-
+    We present [_Single-View Height Estimation with Conditional Diffusion Probabilistic Models_](https://arxiv.org/abs/2304.13214), which uses
+    Denoising Diffusion Probabilistic Models (DDPM) conditioned on monocular aerial imagery to estimate pixelwise height.
+
+- date: Jan 2023
+  description: >-
+    Our paper [_Solar Panel Mapping via Oriented Object Detection_](https://www.climatechange.ai/papers/iclr2023/30),
+    has been accepted to the [ICLR 2023 Workshop: Tackling Climate Change with Machine Learning](https://www.climatechange.ai/events/iclr2023).
+
+- date: Sep 2022
+  description: >-
+    Our paper [_Torchgeo: deep learning with geospatial data_](https://dl.acm.org/doi/abs/10.1145/3557915.3560953), 
+    has been accepted to [ACM SIGSPATIAL 2022](https://sigspatial2022.sigspatial.org/).
+
+- date: Jun 2022
+  description: >-
+    Our paper [_Supervising remote sensing change detection models with 3D surface semantics_](https://arxiv.org/abs/2202.13251),
+    has been accepted to [ICIP 2022](https://2022.ieeeicip.org/).
+
+- date: Apr 2022
+  description: >-
+    Our paper [_Self-Supervised Representation Learning Enhances Broad Area Search in Multi-Temporal Satellite Imagery_](https://ieeexplore.ieee.org/abstract/document/9884559),
+    has been accepted to [IGARSS 2022](https://www.igarss2022.org/).

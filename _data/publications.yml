@@ -1,0 +1,129 @@
+- id: zrg
+  title: "ZRG: A Dataset for Multimodal 3D Residential Rooftop Understanding"
+  venue: WACV 2024
+  description: "A novel dataset for 3D understanding of residential roofs containing imagery, digital surface models, and 3D roof geometries captured from over 20k inspections."
+  github: isaaccorley/zrg-dataset
+  project_page: https://github.com/isaaccorley/zrg-dataset
+  arxiv: 2304.13219
+  image: zrg.jpg
+  authors:
+    - icorley
+    - jlwowski
+    - prad
+
+- id: revisiting
+  title: "Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters"
+  venue: ArXiv 2023
+  description: "We perform a large-scale fair evaluation of remote sensing foundation models and find chip/tile size and normalization preprocessing to be important for achieving peak performance for a pretrained remote sensing model."
+  github: isaaccorley/resize-is-all-you-need
+  project_page: https://github.com/isaaccorley/resize-is-all-you-need
+  arxiv: 2305.13456
+  image: resize-is-all-you-need.jpg
+  authors:
+    - icorley
+    - crob
+    - rdodhia
+    - jferres
+    - prad
+
+- id: ssl4eol
+  title: "SSL4EO-L: Datasets and Foundation Models for Landsat Imagery"
+  venue: NeurIPS 2023
+  description: "We introduce SSL4EO-L, the first ever dataset designed for Self-Supervised Learning for Earth Observation for the Landsat family of satellites."
+  arxiv: 2306.09424
+  project_page: https://torchgeo.readthedocs.io/en/stable/
+  github: microsoft/torchgeo
+  image: ssl4eol.jpg
+  authors:
+    - astewart
+    - nlehmann
+    - icorley
+    - ywang
+    - ychang
+    - nbraham
+    - ssehgal
+    - crob
+    - abanerjee
+
+- id: solarobjectdetection
+  title: "Solar Panel Mapping via Oriented Object Detection"
+  venue: ICLR 2023 Tackling Climate Change with Machine Learning Workshop
+  description: "We detail our deployed end-to-end deep learning framework for detecting individual solar panels using a rotated object detection architecture in large scale solar farms."
+  project_page: https://www.climatechange.ai/papers/iclr2023/30
+  image: solar-object-detection.jpg
+  authors:
+    - cwallace
+    - icorley
+    - jlwowski
+
+- id: torchgeo
+  title: "Torchgeo: Deep Learning with Geospatial Data"
+  venue: ACM SIGSPATIAL 2023
+  description: "We introduce TorchGeo, a Python library for integrating geospatial data into the PyTorch deep learning ecosystem."
+  arxiv: 2111.08872
+  project_page: https://torchgeo.readthedocs.io/en/stable/
+  github: microsoft/torchgeo
+  image: torchgeo.jpg
+  authors:
+    - astewart
+    - crob
+    - icorley
+    - aortiz
+    - jferres
+    - abanerjee
+
+- id: csip
+  title: "Supervising Remote Sensing Change Detection Models with 3D Surface Semantics"
+  venue: ICIP 2022
+  description: "We propose Contrastive Surface-Image Pretraining (CSIP) for joint learning using optical RGB and above ground level (AGL) map pairs which we show improves the performance of building segmentation and change detection."
+  project_page: https://github.com/isaaccorley/contrastive-surface-image-pretraining
+  github: isaaccorley/contrastive-surface-image-pretraining
+  arxiv: 2202.13251
+  image: csip.jpg
+  authors:
+    - icorley
+    - prad
+
+- id: bas
+  title: "Self-Supervised Representation Learning Enhances Broad Area Search in Multi-Temporal Satellite Imagery"
+  venue: IGARSS 2022
+  description: "We improve performance of Broad Area Search (BAS) in satellite image time-series by pretraining using the Contrastive Predictive Coding (CPC) self-supervised learning method."
+  project_page: https://ieeexplore.ieee.org/abstract/document/9884559
+  image: bas.jpg
+  authors:
+    - tstephens
+    - icorley
+    - agould
+    - apolakiewicz
+
+- id: ddsp
+  title: "Destruction of Image Steganography using Generative Adversarial Networks"
+  venue: ArXiv 2019
+  description: "We propose the Deep Digital Steganography Purifier (DDSP), a Generative Adversarial Network (GAN) which is optimized to destroy steganographic content without compromising the perceptual quality of the original image."
+  arxiv: 1912.10070
+  image: ddsp.jpg
+  authors:
+    - icorley
+    - jlwowski
+    - jhoffman
+
+- id: domaingan
+  title: "DomainGAN: Generating Adversarial Examples to Attack Domain Generation Algorithm Classifiers"
+  venue: ArXiv 2019
+  description: "We propose DomainGAN which generates adversarial domains with near identical characteristics to benign domains and which greatly evades SOTA DGA classifiers."
+  arxiv: 1911.06285
+  image: domaingan.jpg
+  authors:
+    - icorley
+    - jlwowski
+    - jhoffman
+
+- id: deepeegsr
+  title: "Deep EEG super-resolution: Upsampling EEG spatial resolution with Generative Adversarial Networks"
+  venue: IEEE Biomedical & Health Informatics (BHI) 2019
+  description: "We perform super-resolution in the signal domain to upsample numerous EEG signals using Generative Adversarial Networks (GAN)."
+  project_page: https://ieeexplore.ieee.org/abstract/document/8333379
+  image: deepeegsr.jpg
+  authors:
+    - icorley
+    - yhuang
