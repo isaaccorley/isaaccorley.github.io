@@ -11,7 +11,7 @@
 - date: May 2023
   description: >-
     We present [_Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters_](https://arxiv.org/abs/2305.13456),
-    which evaluates the importance of preprocessing steps for fair comparisons of remote sensing foundation models. 
+    which fairly evaluates and benchmarks remote sensing foundation models on a variety of datasets and discovers the importance of properly resizing and normalizing small satellite image patches for achieving peak performance.
 
 - date: Apr 2023
   description: >-
@@ -25,12 +25,12 @@
 
 - date: Sep 2022
   description: >-
-    Our paper [_Torchgeo: deep learning with geospatial data_](https://dl.acm.org/doi/abs/10.1145/3557915.3560953), 
+    Our paper [_Torchgeo: Deep Learning with Geospatial Data_](https://dl.acm.org/doi/abs/10.1145/3557915.3560953), 
     has been accepted to [ACM SIGSPATIAL 2022](https://sigspatial2022.sigspatial.org/).
 
 - date: Jun 2022
   description: >-
-    Our paper [_Supervising remote sensing change detection models with 3D surface semantics_](https://arxiv.org/abs/2202.13251),
+    Our paper [_Supervising Remote Sensing Change Detection Models with 3D Surface Semantics_](https://arxiv.org/abs/2202.13251),
     has been accepted to [ICIP 2022](https://2022.ieeeicip.org/).
 
 - date: Apr 2022

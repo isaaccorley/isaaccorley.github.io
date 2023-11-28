@@ -23,14 +23,14 @@ name: Isaac Corley
 position: Senior ML Engineer
 email: isaac.corley@utsa.edu
 description: >-
-  I am a Senior ML Engineer at [Zeitview](https://www.zeitview.com/), where I work on computer vision for enhancing renewable energy inspections and analytics, including solar farms, wind turbines, and commercial and residential rooftops.
+  I'm a Senior ML Engineer at [Zeitview](https://www.zeitview.com/), where I work on computer vision for enhancing renewable energy inspections and analytics, including solar farms, wind turbines, and commercial and residential rooftops.
 
 
-  I am currently a Ph. D candidate in the [SAIL](https://secureaiautonomylab.github.io/) lab at the [University of Texas at San Antonio (UTSA)](https://klesse.utsa.edu/electrical-computer/) advised by
+  I'm currently a PhD candidate in the [SAIL](https://secureaiautonomylab.github.io/) lab at the [University of Texas at San Antonio (UTSA)](https://klesse.utsa.edu/electrical-computer/) advised by
   [Paul Rad (Peyman Najafirad)](https://scholar.google.com/citations?user=uoCn8c8AAAAJ).
 
   
-  I'm contribute regularly to open-source projects and am a core contributer to [TorchGeo](https://github.com/microsoft/torchgeo).
+  I'm a core contributer to [TorchGeo](https://github.com/microsoft/torchgeo) and regularly contribute to various open-source projects.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://isaacc.dev" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: isaaccorley_

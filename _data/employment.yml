@@ -20,7 +20,7 @@
 
 - company: BlackSky
   description: >-
-    Senior Computer Vision Engineer on the AI team. Developed and deployed models to drive the Spectra AI platform's satellite image analytics as well as
+    Senior Computer Vision Engineer. Developed and deployed models to drive the <a href="https://www.blacksky.com/spectra-ai/">Spectra AI</a> platform's satellite image analytics as well as
     served as the PI and lead engineer on the <a href="https://www.iarpa.gov/research-programs/smart">IARPA SMART program</a> 
   dates: "Jan 2021 - Mar 2022"
   location: San Antonio, TX
@@ -28,7 +28,7 @@
 - company: HouseCanary
   description: >-
     Senior Data Scientist.
-    Developed and deployed computer vision models for extracting insights and features from real estate property images for improving Automated Valuation Models (AVMs).
+    Developed and deployed computer vision models for extracting insights and features from real estate property images for improving HouseCanary's <a href="https://www.housecanary.com/products/valuation-products/">Automated Valuation Model (AVM)</a>.
   dates: "Dec 2019 - Dec 2020"
   location: San Antonio, TX
 
@@ -42,7 +42,7 @@
 - company: Southwest Research Institute (SwRI)
   description: >-
     Research Engineer in the <a href="https://www.swri.org/technical-divisions/defense-intelligence-solutions">Defense & Intelligence Solutions Division</a>.
-    I developed and deployed software updates to the A-10 Warthog aircraft as well as researched machine learning methods for detecting engine stalls and exploiting the MIL-STD-1553 communications bus
+    I developed and deployed software updates to the <a href="https://www.af.mil/About-Us/Fact-Sheets/Display/Article/104490/a-10c-thunderbolt-ii/">A-10 Warthog</a> aircraft as well as researched machine learning methods for detecting engine stalls and exploiting the MIL-STD-1553 communications bus
     while working under <a href="https://scholar.google.com/citations?user=JJeIC1QAAAAJ">Kenneth Holladay</a>.
   dates: "Jul 2016 - Aug 2018"
   location: San Antonio, TX
