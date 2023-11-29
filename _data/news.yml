@@ -11,12 +11,12 @@
 - date: May 2023
   description: >-
     We present [_Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters_](https://arxiv.org/abs/2305.13456),
-    which fairly evaluates and benchmarks remote sensing foundation models on a variety of datasets and discovers the importance of properly resizing and normalizing small satellite image patches for achieving peak performance.
+    which performs a fair and large-scale evaluation of remote sensing foundation models and find chip/tile size and normalization preprocessing to be paramount for achieving peak performance for each individual pretrained model.
 
 - date: Apr 2023
   description: >-
-    We present [_Single-View Height Estimation with Conditional Diffusion Probabilistic Models_](https://arxiv.org/abs/2304.13214), which uses
-    Denoising Diffusion Probabilistic Models (DDPM) conditioned on monocular aerial imagery to estimate pixelwise height.
+    We present [_Single-View Height Estimation with Conditional Diffusion Probabilistic Models_](https://arxiv.org/abs/2304.13214), which trains a
+    Denoising Diffusion Probabilistic Model (DDPM) conditioned on aerial imagery to estimate pixelwise height from a monocular view.
 
 - date: Jan 2023
   description: >-
