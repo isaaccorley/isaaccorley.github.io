@@ -8,7 +8,7 @@
 - company: SLB (formerly Schlumberger)
   description: >-
     Machine Learning Researcher on the <a href="https://www.slb.com/products-and-services/delivering-digital-at-scale/artificial-intelligence-solutions">Artificial Intelligence Hub</a> team.
-    I researched using deep learning to estimate Global XCO2 using in situ ODIAC Fossil fuel emissions and OCO-2 and GOSAT-2 datasets.
+    I researched using deep learning to estimate global xCO2 using in situ ODIAC Fossil fuel emissions and OCO-2 and GOSAT-2 datasets.
   dates: "Oct 2022 - Oct 2023"
   location: San Antonio, TX
 
@@ -28,7 +28,7 @@
 - company: HouseCanary
   description: >-
     Senior Data Scientist.
-    Developed and deployed computer vision models for extracting insights and features from real estate property images for improving HouseCanary's <a href="https://www.housecanary.com/products/valuation-products/">Automated Valuation Model (AVM)</a>.
+    Developed and deployed computer vision models for extracting insights and features from real estate property images for improving HouseCanary's <a href="https://www.housecanary.com/products/valuation-products/">Automated Valuation Model (AVM)</a> and property recommender system utilized by real estate investors.
   dates: "Dec 2019 - Dec 2020"
   location: San Antonio, TX
 
