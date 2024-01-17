@@ -1,3 +1,19 @@
+- id: chesapeakersc
+  title: "Seeing the roads through the trees: A benchmark for modeling spatial dependencies with aerial imagery"
+  venue: ArXiv 2024
+  description: "We introduce a novel remote sensing dataset for evaluating a model's ability to learn long-range spatial dependencies in aerial imagery by performing road extraction while containing large gaps occluded by tree canopy."
+  github: isaaccorley/ChesapeakeRSC
+  project_page: https://github.com/isaaccorley/ChesapeakeRSC
+  arxiv: 2401.06762
+  image: chesapeake-rsc.jpg
+  authors:
+    - crob
+    - icorley
+    - aortiz
+    - rdodhia
+    - jferres
+    - prad
+
 - id: zrg
   title: "ZRG: A Dataset for Multimodal 3D Residential Rooftop Understanding"
   venue: WACV 2024

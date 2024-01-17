@@ -20,17 +20,18 @@
 
 title: Isaac Corley
 name: Isaac Corley
-position: Senior ML Engineer
+position: 
 email: isaac.corley@utsa.edu
 description: >-
   I'm currently a PhD candidate in the [SAIL](https://secureaiautonomylab.github.io/) lab at the [University of Texas at San Antonio (UTSA)](https://klesse.utsa.edu/electrical-computer/) advised by
   [Paul Rad (Peyman Najafirad)](https://scholar.google.com/citations?user=uoCn8c8AAAAJ). My research is focused on 3D and Multimodal Computer Vision in Remote Sensing (satellite and aerial imagery).
 
-  I'm also a Senior ML Engineer at [Zeitview](https://www.zeitview.com/), where I apply computer vision methods to drone and aerial imagery to enhance renewable energy inspections and analytics, including solar farms, wind turbines, and commercial and residential rooftops.
-  
-  I'm a core contributer to [TorchGeo](https://github.com/microsoft/torchgeo) and regularly contribute to various open-source projects.
 
-  I'm active in consulting and freelance contracting in the industry. If you're interested in working together, please send me an email.
+  I'm also core contributer to [TorchGeo](https://github.com/microsoft/torchgeo) and regularly contribute to various open-source projects.
+
+
+  I've worked as a ML Engineer for several years at various companies where I've mainly applied computer vision methods to drone, aerial imagery, and satellite imagery.
+
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://isaacc.dev" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: isaaccorley_

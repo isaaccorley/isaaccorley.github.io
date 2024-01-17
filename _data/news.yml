@@ -1,3 +1,8 @@
+- date: Jan 2024
+  description: >-
+    We present [_Seeing the roads through the trees: A benchmark for modeling spatial dependencies with aerial imagery_](https://arxiv.org/abs/2401.06762),
+    which introduces a novel remote sensing dataset and evaluates a model's ability to learn global and long-range spatial context by extracting roads in aerial imagery containing large gaps due to occlusion by tree canopy.
+
 - date: Oct 2023
   description: >-
     Our paper [_ZRG: A Dataset for Multimodal 3D Residential Rooftop Understanding_](https://arxiv.org/abs/2304.13219),
