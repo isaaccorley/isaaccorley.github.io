@@ -1,3 +1,9 @@
+- date: Feb 2024
+  description: >-
+    We present [_A Change Detection Reality Check_](https://arxiv.org/abs/2402.06994),
+    which provides an analysis of the current state-of-the-art in change detection literature. We find that a simple baseline of U-Net, an architecture from 2015,
+    is still a top performer on several benchmarks and consistently outperforms many recently proposed methods.
+
 - date: Jan 2024
   description: >-
     We present [_Seeing the roads through the trees: A benchmark for modeling spatial dependencies with aerial imagery_](https://arxiv.org/abs/2401.06762),
