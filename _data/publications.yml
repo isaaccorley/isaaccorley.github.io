@@ -1,6 +1,6 @@
 - id: cd-reality-check
   title: "A Change Detection Reality Check"
-  venue: ArXiv 2024
+  venue: ICLR 2024 Machine Learning for Remote Sensing (ML4RS) Workshop
   description: "We present an analysis of the current state-of-the-art in change detection literature. We find that a simple baseline of U-Net, an architecture from 2015, is still a top performer on several benchmarks and consistently outperforms many recently proposed methods."
   github: isaaccorley/a-change-detection-reality-check
   project_page: https://github.com/isaaccorley/a-change-detection-reality-check
