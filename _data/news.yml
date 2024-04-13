@@ -1,3 +1,13 @@
+- date: Apr 2024
+  description: >-
+    Our paper [_Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters_](https://arxiv.org/abs/2305.13456)
+    has been accepted to the [CVPR 2024 Perception Beyond the Visible Spectrum (PBVS) Workshop](https://pbvs-workshop.github.io/).
+
+- date: Mar 2024
+  description: >-
+    Our paper [_Seeing the roads through the trees: A benchmark for modeling spatial dependencies with aerial imagery_](https://arxiv.org/abs/2401.06762)
+    has been accepted to [IEEE IGARSS 2024](https://www.2024.ieeeigarss.org/).
+
 - date: Mar 2024
   description: >-
     Our paper [_A Change Detection Reality Check_](https://arxiv.org/abs/2402.06994)
