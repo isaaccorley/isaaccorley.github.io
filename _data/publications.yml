@@ -1,6 +1,6 @@
 - id: cd-reality-check
   title: "A Change Detection Reality Check"
-  venue: ICLR 2024 Machine Learning for Remote Sensing (ML4RS) Workshop
+  venue: ICLR 2024 ML4RS Workshop
   description: "We present an analysis of the current state-of-the-art in change detection literature. We find that a simple baseline of U-Net, an architecture from 2015, is still a top performer on several benchmarks and consistently outperforms many recently proposed methods."
   github: isaaccorley/a-change-detection-reality-check
   project_page: https://github.com/isaaccorley/a-change-detection-reality-check
@@ -13,7 +13,7 @@
 
 - id: chesapeakersc
   title: "Seeing the roads through the trees: A benchmark for modeling spatial dependencies with aerial imagery"
-  venue: ArXiv 2024
+  venue: IGARSS 2024
   description: "We introduce a novel remote sensing dataset for evaluating a model's ability to learn long-range spatial dependencies in aerial imagery by performing road extraction while containing large gaps occluded by tree canopy."
   github: isaaccorley/ChesapeakeRSC
   project_page: https://github.com/isaaccorley/ChesapeakeRSC
@@ -42,7 +42,7 @@
 
 - id: revisiting
   title: "Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters"
-  venue: ArXiv 2023
+  venue: CVPR 2024 PBVS Workshop
   description: "We perform a fair and large-scale evaluation of remote sensing foundation models and find chip/tile size and normalization preprocessing to be paramount for achieving peak performance for each individual pretrained model."
   github: isaaccorley/resize-is-all-you-need
   project_page: https://github.com/isaaccorley/resize-is-all-you-need
