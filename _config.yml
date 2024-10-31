@@ -23,8 +23,8 @@ name: Isaac Corley
 position: Machine Learning Research Scientist
 email: isaac.corley@utsa.edu
 description: >-
-  I'm a Machine Learning Research Scientist with a Ph.D. from [University of Texas at San Antonio (UTSA)](https://klesse.utsa.edu/electrical-computer/) advised by
-  [Paul Rad (Peyman Najafirad)](https://scholar.google.com/citations?user=uoCn8c8AAAAJ). I'm most passionate about Multimodal Machine Learning and 3D Computer Vision particularly applied to Geospatial and Remote Sensing problems.
+  I'm a Machine Learning Research Scientist with a Ph.D. in Electrical Engineering from [University of Texas at San Antonio (UTSA)](https://klesse.utsa.edu/electrical-computer/) advised by
+  [Paul Rad (Peyman Najafirad)](https://scholar.google.com/citations?user=uoCn8c8AAAAJ). I'm most passionate about Multimodal Learning and 3D Computer Vision particularly applied to Geospatial and Remote Sensing problems.
 
 
   I'm excited about open-source software and currently maintain the [TorchGeo](https://github.com/microsoft/torchgeo) and [TorchSeg](https://github.com/isaaccorley/torchseg) libraries.
