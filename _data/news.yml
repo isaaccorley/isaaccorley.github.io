@@ -1,3 +1,23 @@
+- date: Oct 2024
+  description: >-
+    Excited to announce I have successfully defended my Ph.D. Dissertation entitled _Multimodal Learning for Infrastructure Mapping in Remote Sensing_!
+
+- date: Oct 2024
+  description: >-
+    Our paper [_Barely-Visible Surface Crack Detection for Wind Turbine Sustainability_](https://arxiv.org/abs/2407.07186) has been accepted to [IROS 2024](https://iros2024-abudhabi.org/) and won Best Application Paper Runner-Up!
+
+- date: Sep 2024
+  description: >-
+    Our paper [_Depth Any Canopy: Leveraging Depth Foundation Models for Canopy Height Estimation_](https://arxiv.org/abs/2407.18128) has been accepted to the [ECCV 2024 Workshop on Computer Vision for Ecology (CV4E)](https://cv4e.netlify.app/).
+
+- date: Jul 2024
+  description: >-
+    Our paper [_Estimating Earthquake Magnitude in Sentinel-1 Imagery via Ranking_](https://arxiv.org/abs/2407.18128) has been accepted to the [ECML-PKDD 2024 Workshop on Machine Learning for Earth Observation (MACLEAN)](https://sites.google.com/view/maclean24/home).
+
+- date: May 2024
+  description: >-
+    Excited to announce I will be joining [Microsoft Research's AI For Good Lab](https://www.microsoft.com/en-us/research/group/ai-for-good-research-lab/) as a Ph.D. Research Intern for the summer! I will be researching Multimodal Pretraining methods for Large-Scale Geospatial Vision-Language Datasets.
+
 - date: Apr 2024
   description: >-
     Our paper [_Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters_](https://arxiv.org/abs/2305.13456)

@@ -1,8 +1,15 @@
 - company: Zeitview (formerly DroneBase)
   description:  >-
-    Senior Machine Learning Engineer.
-    I develop and deploy computer vision and deep learning models for enhancing renewable energy inspections and analytics, including solar farms, wind turbines, and commercial and residential rooftops.
+    Senior Machine Learning Scientist.
+    I research, develop, and deploy computer vision, vision-language models (VLM), and 3D Reconstruction methods for enhancing renewable energy inspections and analytics, including solar farms, wind turbines, commercial and residential rooftops, transmission and distribution stations, and telecom towers.
   dates: "2021 - 2024"
+  location: San Antonio, TX
+
+- company: Microsoft Research
+  description:  >-
+    Ph.D. Research Intern.
+    As an intern in the <a href="https://www.microsoft.com/en-us/research/group/ai-for-good-research-lab/">AI For Good Lab</a> I researched multimodal pretraining methods for large-scale geospatial vision-language datasets.
+  dates: "2024"
   location: San Antonio, TX
 
 - company: SLB (formerly Schlumberger)

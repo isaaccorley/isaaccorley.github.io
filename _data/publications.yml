@@ -1,3 +1,39 @@
+- id: canopy
+  title: "Depth Any Canopy: Leveraging Depth Foundation Models for Canopy Height Estimation"
+  venue: ECCV 2024 CV4E Workshop
+  description: "We present a method for efficiently adapting monocular depth estimation models for tree canopy height estimation, providing superior or comparable performance to state-of-the-art methods with significantly less training data."
+  arxiv: 2408.04523
+  image: depth-any-canopy.jpg
+  authors:
+    - dcambrin
+    - icorley
+    - pgarza
+
+- id: earthquakes
+  title: "Estimating Earthquake Magnitude in Sentinel-1 Imagery via Ranking"
+  venue: ECML-PKDD 2024 MACLEAN Workshop
+  description: "We present a novel approach for estimating earthquake magnitude from Sentinel-1 imagery using a combination approach of regression and ranking based on earthquake magnitudes, significantly outperforming traditional regression only based methods."
+  arxiv: 2407.18128
+  image: earthquakes.jpg
+  authors:
+    - dcambrin
+    - icorley
+    - pgarza
+    - prad
+
+- id: cracks
+  title: "Barely-Visible Surface Crack Detection for Wind Turbine Sustainability"
+  venue: IROS 2024
+  description: "We present a novel dataset for evaluating the performance of surface crack detection models on wind turbine blades under challenging conditions with barely-visible cracks."
+  arxiv: 2407.07186
+  image: turbine-cracks.jpg
+  authors:
+    - sagrawal
+    - icorley
+    - cwallace
+    - cvaughn
+    - jlwowski
+
 - id: cd-reality-check
   title: "A Change Detection Reality Check"
   venue: ICLR 2024 ML4RS Workshop
