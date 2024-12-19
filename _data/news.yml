@@ -32,54 +32,38 @@
   description: >-
     Our paper [_A Change Detection Reality Check_](https://arxiv.org/abs/2402.06994)
     has been accepted to the [ICLR 2024 Machine Learning for Remote Sensing (ML4RS) Workshop](https://ml-for-rs.github.io/iclr2024/).
-
-- date: Feb 2024
-  description: >-
-    We present [_A Change Detection Reality Check_](https://arxiv.org/abs/2402.06994),
-    which provides an analysis of the current state-of-the-art in change detection literature. We find that a simple baseline of U-Net, an architecture from 2015,
-    is still a top performer on several benchmarks and consistently outperforms many recently proposed methods.
-
-- date: Jan 2024
-  description: >-
-    We present [_Seeing the roads through the trees: A benchmark for modeling spatial dependencies with aerial imagery_](https://arxiv.org/abs/2401.06762),
-    which introduces a novel remote sensing dataset and evaluates a model's ability to learn global and long-range spatial context by extracting roads in aerial imagery containing large gaps due to occlusion by tree canopy.
-
-- date: Oct 2023
-  description: >-
-    Our paper [_ZRG: A Dataset for Multimodal 3D Residential Rooftop Understanding_](https://arxiv.org/abs/2304.13219)
-    has been accepted to [WACV 2024](https://wacv2024.thecvf.com/).
-
-- date: Sep 2023
-  description: >-
-    Our paper [_SSL4EO-L: Datasets and Foundation Models for Landsat Imagery_](https://arxiv.org/abs/2306.09424)
-    has been accepted to [NeurIPS 2023](https://nips.cc/Conferences/2023/CallForDatasetsBenchmarks).
-
-- date: May 2023
-  description: >-
-    We present [_Revisiting pre-trained remote sensing model benchmarks: resizing and normalization matters_](https://arxiv.org/abs/2305.13456),
-    which performs a fair and large-scale evaluation of remote sensing foundation models and find chip/tile size and normalization preprocessing to be paramount for achieving peak performance for each individual pretrained model.
-
-- date: Apr 2023
-  description: >-
-    We present [_Single-View Height Estimation with Conditional Diffusion Probabilistic Models_](https://arxiv.org/abs/2304.13214), which trains a
-    Denoising Diffusion Probabilistic Model (DDPM) conditioned on aerial imagery to estimate pixelwise height from a monocular view.
-
-- date: Jan 2023
-  description: >-
-    Our paper [_Solar Panel Mapping via Oriented Object Detection_](https://www.climatechange.ai/papers/iclr2023/30)
-    has been accepted to the [ICLR 2023 Workshop: Tackling Climate Change with Machine Learning](https://www.climatechange.ai/events/iclr2023).
-
-- date: Sep 2022
-  description: >-
-    Our paper [_Torchgeo: Deep Learning with Geospatial Data_](https://dl.acm.org/doi/abs/10.1145/3557915.3560953)
-    has been accepted to [ACM SIGSPATIAL 2022](https://sigspatial2022.sigspatial.org/).
-
-- date: Jun 2022
-  description: >-
-    Our paper [_Supervising Remote Sensing Change Detection Models with 3D Surface Semantics_](https://arxiv.org/abs/2202.13251)
-    has been accepted to [ICIP 2022](https://2022.ieeeicip.org/).
-
-- date: Apr 2022
-  description: >-
-    Our paper [_Self-Supervised Representation Learning Enhances Broad Area Search in Multi-Temporal Satellite Imagery_](https://ieeexplore.ieee.org/abstract/document/9884559)
-    has been accepted to [IGARSS 2022](https://www.igarss2022.org/).
+#
+#- date: Oct 2023
+#  description: >-
+#    Our paper [_ZRG: A Dataset for Multimodal 3D Residential Rooftop Understanding_](https://arxiv.org/abs/2304.13219)
+#    has been accepted to [WACV 2024](https://wacv2024.thecvf.com/).
+#
+#- date: Sep 2023
+#  description: >-
+#    Our paper [_SSL4EO-L: Datasets and Foundation Models for Landsat Imagery_](https://arxiv.org/abs/2306.09424)
+#    has been accepted to [NeurIPS 2023](https://nips.cc/Conferences/2023/CallForDatasetsBenchmarks).
+#
+#- date: Apr 2023
+#  description: >-
+#    We present [_Single-View Height Estimation with Conditional Diffusion Probabilistic Models_](https://arxiv.org/abs/2304.13214), which trains a
+#    Denoising Diffusion Probabilistic Model (DDPM) conditioned on aerial imagery to estimate pixelwise height from a monocular view.
+#
+#- date: Jan 2023
+#  description: >-
+#    Our paper [_Solar Panel Mapping via Oriented Object Detection_](https://www.climatechange.ai/papers/iclr2023/30)
+#    has been accepted to the [ICLR 2023 Workshop: Tackling Climate Change with Machine Learning](https://www.climatechange.ai/events/iclr2023).
+#
+#- date: Sep 2022
+#  description: >-
+#    Our paper [_Torchgeo: Deep Learning with Geospatial Data_](https://dl.acm.org/doi/abs/10.1145/3557915.3560953)
+#    has been accepted to [ACM SIGSPATIAL 2022](https://sigspatial2022.sigspatial.org/).
+#
+#- date: Jun 2022
+#  description: >-
+#    Our paper [_Supervising Remote Sensing Change Detection Models with 3D Surface Semantics_](https://arxiv.org/abs/2202.13251)
+#    has been accepted to [ICIP 2022](https://2022.ieeeicip.org/).
+#
+#- date: Apr 2022
+#  description: >-
+#    Our paper [_Self-Supervised Representation Learning Enhances Broad Area Search in Multi-Temporal Satellite Imagery_](https://ieeexplore.ieee.org/abstract/document/9884559)
+#    has been accepted to [IGARSS 2022](https://www.igarss2022.org/).

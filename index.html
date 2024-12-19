@@ -48,7 +48,7 @@ layout: null
 
         <div class="column">
           <h1 class="title">
-            <b>Hello! I'm {{ site.name }}</b>
+            <b>{{ site.name }}</b>
           </h1>
           <div class="content has-text-justified">
             {{ site.description | markdownify }}
@@ -102,7 +102,7 @@ layout: null
         </ul>
       </div>
 
-      <h2 class="title is-3">Publications</h2>
+      <h2 class="title is-3">Selected Publications</h2>
 
       {% for publication in site.data.publications %}
       <div class="publication-block columns">
