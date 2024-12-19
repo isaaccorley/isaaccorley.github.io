@@ -48,11 +48,11 @@
     We present [_Single-View Height Estimation with Conditional Diffusion Probabilistic Models_](https://arxiv.org/abs/2304.13214), which trains a
     Denoising Diffusion Probabilistic Model (DDPM) conditioned on aerial imagery to estimate pixelwise height from a monocular view.
 
-#- date: Jan 2023
-#  description: >-
-#    Our paper [_Solar Panel Mapping via Oriented Object Detection_](https://www.climatechange.ai/papers/iclr2023/30)
-#    has been accepted to the [ICLR 2023 Workshop: Tackling Climate Change with Machine Learning](https://www.climatechange.ai/events/iclr2023).
-#
+- date: Jan 2023
+  description: >-
+    Our paper [_Solar Panel Mapping via Oriented Object Detection_](https://www.climatechange.ai/papers/iclr2023/30)
+    has been accepted to the [ICLR 2023 Workshop: Tackling Climate Change with Machine Learning](https://www.climatechange.ai/events/iclr2023).
+
 #- date: Sep 2022
 #  description: >-
 #    Our paper [_Torchgeo: Deep Learning with Geospatial Data_](https://dl.acm.org/doi/abs/10.1145/3557915.3560953)
