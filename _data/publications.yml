@@ -55,6 +55,26 @@
     - jferres
     - prad
 
+
+- id: ssl4eol
+  title: "SSL4EO-L: Datasets and Foundation Models for Landsat Imagery"
+  venue: NeurIPS 2023
+  description: "We introduce SSL4EO-L, the first ever dataset designed for self-supervised learning for Earth Observation for the Landsat family of satellites."
+  arxiv: 2306.09424
+  project_page: https://torchgeo.readthedocs.io/en/stable/
+  github: microsoft/torchgeo
+  image: ssl4eol.jpg
+  authors:
+    - astewart
+    - nlehmann
+    - icorley
+    - ywang
+    - ychang
+    - nbraham
+    - ssehgal
+    - crob
+    - abanerjee
+
 - id: torchgeo
   title: "TorchGeo: Deep Learning with Geospatial Data"
   venue: ACM SIGSPATIAL 2023
@@ -126,24 +146,6 @@
 
 
 
-#- id: ssl4eol
-#  title: "SSL4EO-L: Datasets and Foundation Models for Landsat Imagery"
-#  venue: NeurIPS 2023
-#  description: "We introduce SSL4EO-L, the first ever dataset designed for self-supervised learning for Earth Observation for the Landsat family of satellites."
-#  arxiv: 2306.09424
-#  project_page: https://torchgeo.readthedocs.io/en/stable/
-#  github: microsoft/torchgeo
-#  image: ssl4eol.jpg
-#  authors:
-#    - astewart
-#    - nlehmann
-#    - icorley
-#    - ywang
-#    - ychang
-#    - nbraham
-#    - ssehgal
-#    - crob
-#    - abanerjee
 
 #- id: solarobjectdetection
 #  title: "Solar Panel Mapping via Oriented Object Detection"
