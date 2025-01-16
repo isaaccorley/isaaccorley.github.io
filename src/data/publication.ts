@@ -14,6 +14,16 @@ export interface Publication {
 export const publicationData: Publication[] = [
   {
     year: "2024",
+    conference: "WACV CV4EO",
+    title: "FLAVARS: A Multimodal Foundational Language and Vision Alignment Model for Remote Sensing",
+    authors: "Isaac Corley, Simone Fobi Nsutezo, Anthony Ortiz, Caleb Robinson, Rahul Dodhia, Juan M. Lavista Ferres, Peyman Najafirad",
+    paperUrl: "https://arxiv.org/abs/2501.08490",
+    codeUrl: "https://huggingface.co/datasets/isaaccorley/FLAVARS",
+    tldr: "We find that pretraining using CLIP+MAE+MLM+SatCLIP objectivers provides better balance for dense vision tasks over pure CLIP and FLAVA pretraining.",
+    imageUrl: "/images/flavars.jpg",
+  },
+  {
+    year: "2024",
     conference: "ICLR ML4RS",
     title: "A Change Detection Reality Check",
     authors: "Isaac Corley, Caleb Robinson, Anthony Ortiz",
