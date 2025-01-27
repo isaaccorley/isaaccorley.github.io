@@ -25,14 +25,6 @@ export const experienceData: Experience[] = [
       "companyUrl": "https://www.microsoft.com/en-us/research/group/ai-for-good-research-lab/"
     },
     {
-      "date": "2022 - 2023",
-      "title": "Ph.D. Research Intern",
-      "company": "SLB (formerly Schlumberger)",
-      "description": "Researched using deep learning to estimate global xCO2 using in-situ ODIAC Fossil fuel emissions and OCO-2 and GOSAT-2 datasets.",
-      "companyUrl": "https://www.slb.com/products-and-services/delivering-digital-at-scale/artificial-intelligence-solutions",
-      "advisor": "Abhinav Kohar"
-    },
-    {
       "date": "2021 - 2022",
       "title": "Senior Machine Learning Engineer",
       "company": "Spruce",

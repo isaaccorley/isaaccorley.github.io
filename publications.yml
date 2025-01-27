@@ -1,9 +1,0 @@
-
-- id: csip
-  title: "Supervising Remote Sensing Change Detection Models with 3D Surface Semantics"
-  venue: ICIP 2022
-  description: "We propose Contrastive Surface-Image Pretraining (CSIP) for joint learning a latent space which extracts surface level features from optical RGB imagery which we show improves the performance in surface relevant tasks  e.g. building segmentation and change detection."
-  project_page: https://github.com/isaaccorley/contrastive-surface-image-pretraining
-  github: isaaccorley/contrastive-surface-image-pretraining
-  arxiv: 2202.13251
-  image: csip.jpg

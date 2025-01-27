@@ -28,6 +28,6 @@ export const educationData: Education[] = [
   {
     year: "2012—2016",
     institution: "Texas A&M University - Kingsville",
-    degree: "B.S. in Electrical EngineeringMinor in Mathematics",
+    degree: "B.S. in Electrical Engineering, Minor in Mathematics",
   },
 ];
