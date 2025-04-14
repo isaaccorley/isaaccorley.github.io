@@ -10,7 +10,14 @@ export interface Experience {
 
 export const experienceData: Experience[] = [
     {
-      "date": "2021 - Present",
+      "date": "2025 - Present",
+      "title": "Senior Machine Learning Engineer",
+      "company": "Wherobots",
+      "description": "Scaling Geospatial Vision and AI models for the Wherobots platform, which provides real-time geospatial data and insights for various industries.",
+      "companyUrl": "https://wherobots.com/"
+    },
+    {
+      "date": "2021 - 2025",
       "title": "Senior Machine Learning Scientist",
       "company": "Zeitview (formerly DroneBase)",
       "description": "Research, develop, train, and deployed computer vision, vision-language models (VLM), and 3D Reconstruction methods at scale for enhancing renewable energy inspections and analytics, including solar farms, wind turbines, commercial and residential rooftops, transmission and distribution stations, and telecom towers.",

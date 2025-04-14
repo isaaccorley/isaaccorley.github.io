@@ -13,6 +13,15 @@ export interface Publication {
 
 export const publicationData: Publication[] = [
   {
+    year: "2025",
+    conference: "CVPR PBVS",
+    title: "Aerial Infrared Health Monitoring of Solar Photovoltaic Farms at Scale",
+    authors: "Isaac Corley, Conor Wallace, Sourav Agrawal, Burton Putrah, Jonathan Lwowski",
+    paperUrl: "https://arxiv.org/abs/2503.02128",
+    tldr: "We collect large-scle aerial infrared dataset of 6k+ solar farms across the continentual U.S. and detail our ML pipeline for detecting anomalies and estimating plant-level power loss due to defective panels.",
+    imageUrl: "/images/nass.jpg",
+  },
+  {
     year: "2024",
     conference: "WACV CV4EO",
     title: "FLAVARS: A Multimodal Foundational Language and Vision Alignment Model for Remote Sensing",
