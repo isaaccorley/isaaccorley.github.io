@@ -14,6 +14,15 @@ export interface Publication {
 export const publicationData: Publication[] = [
   {
     year: "2025",
+    conference: "ICML TerraBytes",
+    title: "Landsat-Bench: Datasets and Benchmarks for Landsat Foundation Models",
+    authors: "Isaac Corley, Lakshay Sharma, Ruth Crasto",
+    paperUrl: "https://arxiv.org/abs/2506.08780",
+    tldr: "This paper introduces Landsat-Bench, a set of benchmarks to evaluate Landsat-based foundation models, showing that pretraining on SSL4EO-L outperforms ImageNet for remote sensing tasks.",
+    imageUrl: "/images/landsat-bench.jpg",
+  },
+  {
+    year: "2025",
     conference: "CVPR PBVS",
     title: "Aerial Infrared Health Monitoring of Solar Photovoltaic Farms at Scale",
     authors: "Isaac Corley, Conor Wallace, Sourav Agrawal, Burton Putrah, Jonathan Lwowski",
