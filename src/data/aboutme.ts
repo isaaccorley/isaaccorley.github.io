@@ -1,3 +1,19 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/blog/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [require("@tailwindcss/typography")],
+};
+
+export default config;
+
 export interface AboutMe {
   name: string;
   title: string;
@@ -28,9 +44,6 @@ export const aboutMe: AboutMe = {
   githubUsername: "isaaccorley",
   linkedinUsername: "isaaccorley",
   twitterUsername: "isaaccorley_",
-  //blogUrl: "https://isaacc.dev",
+  blogUrl: "/blog", // Changed from external URL to local blog page
   cvUrl: "https://github.com/isaaccorley/isaaccorley.github.io/blob/main/public/Isaac_Corley_Resume.pdf",
-  //institutionUrl: "https://www.stanford.edu",
-  // altName: "",
-  // secretDescription: "I like dogs.",
 };
