@@ -189,7 +189,7 @@ export async function runModelOnPatch(
   imageHeight: number,
   scoreThreshold: number,
   normalizationDivisor: number,
-  bboxFormat: 'xywh' | 'xyxy' = 'xywh'
+  bboxFormat: 'xywh' | 'xyxy' | 'auto' = 'xywh'
 ): Promise<Detection[]> {
   const batchedInput = tf.tidy(() => {
     if (patch.channels !== 3) {
