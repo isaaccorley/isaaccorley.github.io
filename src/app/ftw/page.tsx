@@ -656,6 +656,7 @@ export default function DelineatePage() {
   }, [
     isProcessing,
     model,
+    normalizationFactor,
     runDetectionsWithNormalization,
     runDetectionsWithPatchSize,
     runSegmentation,
