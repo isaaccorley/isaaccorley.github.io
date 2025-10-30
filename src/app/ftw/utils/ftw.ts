@@ -5,8 +5,8 @@
  * Uses onnxruntime-web for browser-based inference.
  */
 
-import * as tf from '@tensorflow/tfjs';
 import type { InferenceSession, Tensor } from 'onnxruntime-web';
+import { upsamplePatch } from './common';
 import type { ModelOption } from './model-loader';
 import { MODEL_OPTIONS } from './model-loader';
 
@@ -235,6 +235,7 @@ export interface OnnxSegmentationResult {
   height: number;
   classes: string[];
   classCounts: number[];
+  confidences: number[];
 }
 
 export const runSegmentationInference = async (
@@ -270,19 +271,34 @@ export const runSegmentationInference = async (
   const numPixels = outHeight * outWidth;
   const mask = new Uint8Array(numPixels);
   const counts = new Array(channels).fill(0);
+  const confidences = new Float32Array(numPixels);
 
   for (let idx = 0; idx < numPixels; idx += 1) {
-    let bestClass = 0;
-    let bestScore = -Infinity;
+    // stable softmax per-pixel
+    let maxLogit = -Infinity;
     for (let c = 0; c < channels; c += 1) {
-      const value = values[c * numPixels + idx];
-      if (value > bestScore) {
-        bestScore = value;
+      const v = values[c * numPixels + idx] as number;
+      if (v > maxLogit) maxLogit = v;
+    }
+    let sumExp = 0;
+    const probs = new Float32Array(channels);
+    for (let c = 0; c < channels; c += 1) {
+      const ex = Math.exp((values[c * numPixels + idx] as number) - maxLogit);
+      probs[c] = ex;
+      sumExp += ex;
+    }
+    let bestClass = 0;
+    let bestProb = 0;
+    for (let c = 0; c < channels; c += 1) {
+      const p = probs[c] / (sumExp || 1);
+      if (p > bestProb) {
+        bestProb = p;
         bestClass = c;
       }
     }
-    const finalClass = bestScore >= scoreThreshold ? bestClass : 0;
+    const finalClass = bestProb >= scoreThreshold ? bestClass : 0;
     mask[idx] = finalClass;
+    confidences[idx] = bestProb;
     counts[finalClass] += 1;
   }
 
@@ -292,6 +308,7 @@ export const runSegmentationInference = async (
     height: outHeight,
     classes,
     classCounts: counts,
+    confidences: Array.from(confidences),
   };
 };
 
@@ -327,6 +344,7 @@ export type OnnxPatchResponse = {
   width: number;
   height: number;
   classes: string[];
+  confidences: number[];
 };
 
 const getModelOption = (modelId: string): ModelOption => {
@@ -362,31 +380,6 @@ export const runSegmentationInferenceClient = async (
   return result;
 };
 
-// TensorFlow.js-based bilinear upsampling function for FTW UNet models
-const upsamplePatch = (data: Float32Array, width: number, height: number, scaleFactor: number = 2): { data: Float32Array; width: number; height: number } => {
-  const channels = 4; // RGBN
-  const newWidth = Math.round(width * scaleFactor);
-  const newHeight = Math.round(height * scaleFactor);
-  
-  // Create tensor from Float32Array data
-  const tensor = tf.tensor(data, [height, width, channels], 'float32');
-  
-  // Use TensorFlow.js bilinear resizing
-  const resized = tf.image.resizeBilinear(
-    tensor as tf.Tensor3D,
-    [newHeight, newWidth],
-    true // alignCorners = true for better quality
-  );
-  
-  // Convert back to Float32Array
-  const upsampledData = resized.dataSync() as Float32Array;
-  
-  // Clean up tensors
-  tensor.dispose();
-  resized.dispose();
-  
-  return { data: upsampledData, width: newWidth, height: newHeight };
-};
 
 export const runPatchInferenceClient = async (
   session: InferenceSession,
@@ -420,5 +413,6 @@ export const runPatchInferenceClient = async (
     width: result.width,
     height: result.height,
     classes: result.classes,
+    confidences: result.confidences,
   };
 };

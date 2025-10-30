@@ -1,24 +1,9 @@
 import * as tf from "@tensorflow/tfjs";
 import { fromArrayBuffer } from "geotiff";
+import { extractPatches as extractPatchesShared, GeoImage, Patch } from "./common";
 
 export const PATCH_SIZE = 256;
 export const MODEL_INPUT_SIZE = 512;
-export interface GeoImage {
-  width: number;
-  height: number;
-  data: Float32Array;
-  channels: number;
-}
-
-export interface Patch {
-  index: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  data: Float32Array;
-  channels: number;
-}
 
 export interface Detection {
   bbox: [number, number, number, number];
@@ -41,6 +26,17 @@ const clamp = (value: number, min: number, max: number) =>
 
 const sigmoid = (value: number): number =>
   1 / (1 + Math.exp(-Math.max(-60, Math.min(60, value))));
+
+const softmax = (logits: number[]): number[] => {
+  if (logits.length === 0) return logits;
+  const maxLogit = Math.max(...logits);
+  const exps = logits.map((v) => Math.exp(v - maxLogit));
+  const sum = exps.reduce((a, b) => a + b, 0);
+  return sum > 0 ? exps.map((e) => e / sum) : logits.map(() => 0);
+};
+
+const computeClassScores = (logits: number[], numClasses: number): number[] =>
+  numClasses <= 1 ? [sigmoid(logits[0] ?? 0)] : softmax(logits);
 
 async function loadGeoTiffBands(file: File, bandCount: number): Promise<GeoImage> {
   const arrayBuffer = await file.arrayBuffer();
@@ -68,52 +64,19 @@ async function loadGeoTiffBands(file: File, bandCount: number): Promise<GeoImage
 export const loadGeoTiffRgb = (file: File) => loadGeoTiffBands(file, 3);
 export const loadGeoTiffRgbn = (file: File) => loadGeoTiffBands(file, 4);
 
-export function extractPatches(
+export const extractPatches = (
   image: GeoImage,
   patchSize: number = PATCH_SIZE,
   channels = 3
-): Patch[] {
-  const patches: Patch[] = [];
-  let patchIndex = 0;
-
-  for (let y = 0; y + patchSize <= image.height; y += patchSize) {
-    for (let x = 0; x + patchSize <= image.width; x += patchSize) {
-      const patchBuffer = new Float32Array(patchSize * patchSize * channels);
-      for (let py = 0; py < patchSize; py += 1) {
-        const sourceRow = y + py;
-        const sourceOffset = sourceRow * image.width * image.channels;
-        const targetOffset = py * patchSize * channels;
-        for (let px = 0; px < patchSize; px += 1) {
-          const sourceIndex = sourceOffset + (x + px) * image.channels;
-          const targetIndex = targetOffset + px * channels;
-          for (let c = 0; c < channels; c += 1) {
-            patchBuffer[targetIndex + c] = image.data[sourceIndex + c];
-          }
-        }
-      }
-
-      patches.push({
-        index: patchIndex,
-        x,
-        y,
-        width: patchSize,
-        height: patchSize,
-        data: patchBuffer,
-        channels,
-      });
-      patchIndex += 1;
-    }
-  }
-
-  return patches;
-}
+): Patch[] => extractPatchesShared(image, patchSize, channels) as Patch[];
 
 function decodeDetectionsForPatch(
   predictions: number[][],
   patch: Patch,
   imageWidth: number,
   imageHeight: number,
-  scoreThreshold: number
+  scoreThreshold: number,
+  bboxFormat: 'xywh' | 'xyxy' | 'auto' = 'xywh'
 ): Detection[] {
   const detections: Detection[] = [];
 
@@ -130,40 +93,75 @@ function decodeDetectionsForPatch(
       continue;
     }
 
-    const [rawCx, rawCy, rawW, rawH] = raw;
+    const [a, b, c, d] = raw;
     const objectness = sigmoid(raw[4] ?? 0);
     const classSlice = raw.slice(5, 5 + numClasses);
-    const classScores = classSlice.map((score) => sigmoid(score ?? 0));
+    const classScores = computeClassScores(classSlice, numClasses);
     const maxClassScore = Math.max(...classScores);
-    const classId = classScores.findIndex((score) => score === maxClassScore);
+    const classId = numClasses <= 1 ? 0 : classScores.findIndex((score) => score === maxClassScore);
     const score = objectness * maxClassScore;
 
     if (!Number.isFinite(score) || score < scoreThreshold) {
       continue;
     }
 
-    const isNormalized =
-      Math.max(Math.abs(rawCx), Math.abs(rawCy), Math.abs(rawW), Math.abs(rawH)) <= 1.5;
-
-    const cxModelSpace = isNormalized ? rawCx * MODEL_INPUT_SIZE : rawCx;
-    const cyModelSpace = isNormalized ? rawCy * MODEL_INPUT_SIZE : rawCy;
-    const wModelSpace = isNormalized ? rawW * MODEL_INPUT_SIZE : rawW;
-    const hModelSpace = isNormalized ? rawH * MODEL_INPUT_SIZE : rawH;
-
+    const isNormalized = Math.max(Math.abs(a), Math.abs(b), Math.abs(c), Math.abs(d)) <= 1.5;
+    const toModelSpace = (v: number) => (isNormalized ? v * MODEL_INPUT_SIZE : v);
     const scaleX = patch.width / MODEL_INPUT_SIZE;
     const scaleY = patch.height / MODEL_INPUT_SIZE;
 
-    const cxPixels = cxModelSpace * scaleX;
-    const cyPixels = cyModelSpace * scaleY;
-    const wPixels = Math.max(0, wModelSpace * scaleX);
-    const hPixels = Math.max(0, hModelSpace * scaleY);
+    let x1: number;
+    let y1: number;
+    let x2: number;
+    let y2: number;
 
-    const x1 = clamp(patch.x + cxPixels - wPixels / 2, 0, imageWidth);
-    const y1 = clamp(patch.y + cyPixels - hPixels / 2, 0, imageHeight);
-    const x2 = clamp(patch.x + cxPixels + wPixels / 2, 0, imageWidth);
-    const y2 = clamp(patch.y + cyPixels + hPixels / 2, 0, imageHeight);
+    const makeBoxFromXyxy = (): [number, number, number, number] => {
+      const x1m = toModelSpace(a) * scaleX;
+      const y1m = toModelSpace(b) * scaleY;
+      const x2m = toModelSpace(c) * scaleX;
+      const y2m = toModelSpace(d) * scaleY;
+      const bx1 = clamp(patch.x + Math.min(x1m, x2m), 0, imageWidth);
+      const by1 = clamp(patch.y + Math.min(y1m, y2m), 0, imageHeight);
+      const bx2 = clamp(patch.x + Math.max(x1m, x2m), 0, imageWidth);
+      const by2 = clamp(patch.y + Math.max(y1m, y2m), 0, imageHeight);
+      return [bx1, by1, bx2, by2];
+    };
 
-    if (x2 <= x1 || y2 <= y1 || wPixels <= 1 || hPixels <= 1) {
+    const makeBoxFromXywh = (): [number, number, number, number] => {
+      const cxm = toModelSpace(a);
+      const cym = toModelSpace(b);
+      const wm = toModelSpace(c);
+      const hm = toModelSpace(d);
+      const cxPixels = cxm * scaleX;
+      const cyPixels = cym * scaleY;
+      const wPixels = Math.max(0, wm * scaleX);
+      const hPixels = Math.max(0, hm * scaleY);
+      const bx1 = clamp(patch.x + cxPixels - wPixels / 2, 0, imageWidth);
+      const by1 = clamp(patch.y + cyPixels - hPixels / 2, 0, imageHeight);
+      const bx2 = clamp(patch.x + cxPixels + wPixels / 2, 0, imageWidth);
+      const by2 = clamp(patch.y + cyPixels + hPixels / 2, 0, imageHeight);
+      return [bx1, by1, bx2, by2];
+    };
+
+    if (bboxFormat === 'auto') {
+      const boxA = makeBoxFromXyxy();
+      const boxB = makeBoxFromXywh();
+      const area = (bx: [number, number, number, number]) => Math.max(0, bx[2] - bx[0]) * Math.max(0, bx[3] - bx[1]);
+      const areaA = area(boxA);
+      const areaB = area(boxB);
+      const patchArea = patch.width * patch.height;
+      const valid = (ar: number) => ar > 1 && ar <= patchArea;
+      const chooseA = valid(areaA) && (!valid(areaB) || areaA <= patchArea && areaA >= areaB * 0.25);
+      [x1, y1, x2, y2] = chooseA ? boxA : boxB;
+    } else if (bboxFormat === 'xyxy') {
+      [x1, y1, x2, y2] = makeBoxFromXyxy();
+    } else {
+      [x1, y1, x2, y2] = makeBoxFromXywh();
+    }
+
+    const boxW = x2 - x1;
+    const boxH = y2 - y1;
+    if (x2 <= x1 || y2 <= y1 || boxW <= 1 || boxH <= 1) {
       continue;
     }
 
@@ -190,7 +188,8 @@ export async function runModelOnPatch(
   imageWidth: number,
   imageHeight: number,
   scoreThreshold: number,
-  normalizationDivisor: number
+  normalizationDivisor: number,
+  bboxFormat: 'xywh' | 'xyxy' = 'xywh'
 ): Promise<Detection[]> {
   const batchedInput = tf.tidy(() => {
     if (patch.channels !== 3) {
@@ -237,7 +236,8 @@ export async function runModelOnPatch(
       patch,
       imageWidth,
       imageHeight,
-      scoreThreshold
+      scoreThreshold,
+      bboxFormat
     );
   } catch (error) {
     batchedInput.dispose();
@@ -245,52 +245,39 @@ export async function runModelOnPatch(
   }
 }
 
-export function boxIou(
-  boxA: [number, number, number, number],
-  boxB: [number, number, number, number]
-): number {
-  const x1 = Math.max(boxA[0], boxB[0]);
-  const y1 = Math.max(boxA[1], boxB[1]);
-  const x2 = Math.min(boxA[2], boxB[2]);
-  const y2 = Math.min(boxA[3], boxB[3]);
-
-  const intersection = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
-  if (intersection <= 0) {
-    return 0;
-  }
-
-  const areaA = Math.max(0, boxA[2] - boxA[0]) * Math.max(0, boxA[3] - boxA[1]);
-  const areaB = Math.max(0, boxB[2] - boxB[0]) * Math.max(0, boxB[3] - boxB[1]);
-
-  const union = areaA + areaB - intersection;
-
-  return union > 0 ? intersection / union : 0;
-}
-
-export function boxNms(
+export async function nonMaxSuppressionTf(
   detections: Detection[],
   iouThreshold = 0.3,
   scoreThreshold = 0.05
-): Detection[] {
-  const filtered = detections
-    .filter((d) => Number.isFinite(d.score) && d.score >= scoreThreshold)
-    .sort((a, b) => b.score - a.score);
+): Promise<Detection[]> {
+  const filtered = detections.filter(
+    (d) => Number.isFinite(d.score) && d.score >= scoreThreshold
+  );
+  if (filtered.length === 0) return [];
 
-  const finalDetections: Detection[] = [];
-
-  for (const det of filtered) {
-    let shouldSelect = true;
-    for (const selected of finalDetections) {
-      const overlap = boxIou(det.bbox, selected.bbox);
-      if (overlap > iouThreshold) {
-        shouldSelect = false;
-        break;
-      }
-    }
-    if (shouldSelect) {
-      finalDetections.push(det);
-    }
+  const boxesData = new Float32Array(filtered.length * 4);
+  const scoresData = new Float32Array(filtered.length);
+  for (let i = 0; i < filtered.length; i += 1) {
+    const [x1, y1, x2, y2] = filtered[i].bbox;
+    boxesData[i * 4] = y1;
+    boxesData[i * 4 + 1] = x1;
+    boxesData[i * 4 + 2] = y2;
+    boxesData[i * 4 + 3] = x2;
+    scoresData[i] = filtered[i].score;
   }
-
-  return finalDetections;
+  const boxes = tf.tensor2d(boxesData, [filtered.length, 4], 'float32');
+  const scores = tf.tensor1d(scoresData, 'float32');
+  const maxOutput = filtered.length;
+  const idx = await tf.image.nonMaxSuppressionAsync(
+    boxes,
+    scores,
+    maxOutput,
+    iouThreshold,
+    scoreThreshold
+  );
+  const indices = Array.from(await idx.data());
+  boxes.dispose();
+  scores.dispose();
+  idx.dispose();
+  return indices.map((i) => filtered[i]);
 }
