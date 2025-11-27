@@ -14,6 +14,25 @@ export interface Publication {
 export const publicationData: Publication[] = [
   {
     year: "2025",
+    conference: "ACM SIGSPATIAL",
+    title: "HydroChronos: Forecasting Decades of Surface Water Change",
+    authors: "Daniele Rege Cambrin, Eleonora Poeta, Eliana Pastor, Isaac Corley, Tania Cerquitelli, Elena Baralis, Paolo Garza",
+    paperUrl: "https://arxiv.org/abs/2506.14362",
+    tldr: "We introduce HydroChronos, a large-scale multi-modal dataset of over three decades of satellite imagery & climate data for forecasting long-term surface water dynamics.",
+    imageUrl: "/images/hydrochronos.jpg",
+    award: "🏆 Best Research Paper Candidate"
+  },
+  {
+    year: "2025",
+    conference: "ICCV VISION",
+    title: "InspectVLM: Unified in Theory, Unreliable in Practice",
+    authors: "Conor Wallace, Isaac Corley, Jonathan Lwowski",
+    paperUrl: "https://arxiv.org/abs/2508.01921",
+    tldr: "We present the InspectMM benchmark, a suite of aerial inspection vision tasks for evaluating VLM multi-tasking capabilities.",
+    imageUrl: "/images/inspectvlm.jpg",
+  },
+  {
+    year: "2025",
     conference: "ICML TerraBytes",
     title: "Landsat-Bench: Datasets and Benchmarks for Landsat Foundation Models",
     authors: "Isaac Corley, Lakshay Sharma, Ruth Crasto",

@@ -18,19 +18,19 @@ export const portfolioData: Portfolio[] = [
     codeUrl: "https://github.com/microsoft/torchgeo/",
   },
   {
-    title: "TorchSeg",
+    title: "Segmentation Models PyTorch",
     description:
-      "An up-to-date fork of the segmentation-models.pytorch (smp) library with added features like complete timm ViT backbone support, and more thorough testing/linting/code coverage.",
+      "A library containing a suite of PyTorch-based semantic segmentation decoders along with pretrained timm encoder support.",
     technologies: ["Python", "PyTorch", "Semantic Segmentation"],
     imageUrl: "https://raw.githubusercontent.com/qubvel-org/segmentation_models.pytorch/refs/heads/main/docs/logo.png",
-    codeUrl: "https://github.com/isaaccorley/torchseg",
+    codeUrl: "https://github.com/qubvel-org/segmentation_models.pytorch",
   },
   {
-    title: "PyTorch Enhance",
+    title: "Fields of the World (FTW)",
     description:
-      "A PyTorch domain library of implementations of deep learning-based image super-resolution methods.",
-    technologies: ["Python", "PyTorch", "Image Super-Resolution"],
-    imageUrl: "https://raw.githubusercontent.com/isaaccorley/pytorch-enhance/refs/heads/master/assets/pytorch-enhance-logo.png",
-    codeUrl: "https://github.com/isaaccorley/pytorch-enhance/tree/master",
+      "A library for advancing machine learning models for instance segmentation of agricultural field boundaries in multispectral satellite imagery.",
+    technologies: ["Python", "PyTorch", "Field Boundary Segmentation"],
+    imageUrl: "https://raw.githubusercontent.com/fieldsoftheworld/fieldsoftheworld.github.io/refs/heads/main/static/images/ftw_logo.png",
+    codeUrl: "https://github.com/fieldsoftheworld/ftw-baselines",
   },
 ];
