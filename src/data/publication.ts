@@ -18,6 +18,7 @@ export const publicationData: Publication[] = [
     title: "HydroChronos: Forecasting Decades of Surface Water Change",
     authors: "Daniele Rege Cambrin, Eleonora Poeta, Eliana Pastor, Isaac Corley, Tania Cerquitelli, Elena Baralis, Paolo Garza",
     paperUrl: "https://arxiv.org/abs/2506.14362",
+    codeUrl: "https://github.com/DarthReca/hydro-chronos",
     tldr: "We introduce HydroChronos, a large-scale multi-modal dataset of over three decades of satellite imagery & climate data for forecasting long-term surface water dynamics.",
     imageUrl: "/images/hydrochronos.jpg",
     award: "🏆 Best Research Paper Candidate"
@@ -37,6 +38,7 @@ export const publicationData: Publication[] = [
     title: "Landsat-Bench: Datasets and Benchmarks for Landsat Foundation Models",
     authors: "Isaac Corley, Lakshay Sharma, Ruth Crasto",
     paperUrl: "https://arxiv.org/abs/2506.08780",
+    codeUrl: "https://github.com/isaaccorley/landsatbench",
     tldr: "This paper introduces Landsat-Bench, a set of benchmarks to evaluate Landsat-based foundation models, showing that pretraining on SSL4EO-L outperforms ImageNet for remote sensing tasks.",
     imageUrl: "/images/landsat-bench.jpg",
   },
@@ -46,7 +48,7 @@ export const publicationData: Publication[] = [
     title: "Aerial Infrared Health Monitoring of Solar Photovoltaic Farms at Scale",
     authors: "Isaac Corley, Conor Wallace, Sourav Agrawal, Burton Putrah, Jonathan Lwowski",
     paperUrl: "https://arxiv.org/abs/2503.02128",
-    tldr: "We collect large-scale aerial infrared dataset of 6k+ solar farms across the continental U.S. and detail our end-to-end pipeline for detecting anomalies and estimating plant-level power loss due to defective panels.",
+    tldr: "We collect a large-scale aerial infrared dataset of 6k+ solar farms across the continental U.S. and detail our end-to-end pipeline for detecting anomalies and estimating plant-level power loss due to defective panels.",
     imageUrl: "/images/nass.jpg",
   },
   {
@@ -56,7 +58,7 @@ export const publicationData: Publication[] = [
     authors: "Isaac Corley, Simone Fobi Nsutezo, Anthony Ortiz, Caleb Robinson, Rahul Dodhia, Juan M. Lavista Ferres, Peyman Najafirad",
     paperUrl: "https://arxiv.org/abs/2501.08490",
     codeUrl: "https://huggingface.co/datasets/isaaccorley/FLAVARS",
-    tldr: "We find that pretraining using CLIP+MAE+MLM+SatCLIP objectivers provides better balance for dense vision tasks over pure CLIP and FLAVA pretraining.",
+    tldr: "We find that pretraining using CLIP+MAE+MLM+SatCLIP objectives provides better balance for dense vision tasks over pure CLIP and FLAVA pretraining.",
     imageUrl: "/images/flavars.jpg",
   },
   {
