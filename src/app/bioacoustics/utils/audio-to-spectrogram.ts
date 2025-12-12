@@ -1,0 +1,301 @@
+'use client';
+
+import Essentia from 'essentia.js/dist/essentia.js-core.es.js';
+
+let essentiaInstance: Essentia | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let wasmReadyPromise: Promise<any> | null = null;
+
+async function getEssentiaInstance(): Promise<Essentia> {
+  if (!essentiaInstance) {
+    if (!wasmReadyPromise) {
+      // Dynamically import the WASM module
+      wasmReadyPromise = import('essentia.js/dist/essentia-wasm.web.js').then(async (module) => {
+        // The WASM module is a function that needs to be called
+        const wasmModuleFactory = module.default || module;
+        
+        if (typeof wasmModuleFactory !== 'function') {
+          throw new Error('EssentiaWASM module is not a function. Expected a factory function.');
+        }
+        
+        // Configure the WASM module to find the .wasm file in the public directory
+        const wasmModule = wasmModuleFactory({
+          locateFile: (path: string, prefix?: string) => {
+            // If it's looking for the .wasm file, point it to the public directory
+            if (path.endsWith('.wasm')) {
+              return '/essentia-wasm/essentia-wasm.web.wasm';
+            }
+            // For other files, use the prefix if provided, otherwise just the path
+            return prefix ? prefix + path : path;
+          },
+        });
+        
+        // The WASM module has a .ready property that is a Promise
+        // We need to await it to get the actual module with EssentiaJS
+        if (wasmModule.ready && typeof wasmModule.ready.then === 'function') {
+          // Await the ready Promise to get the initialized module
+          const readyModule = await wasmModule.ready;
+          return readyModule;
+        } else if (wasmModule.EssentiaJS && typeof wasmModule.EssentiaJS === 'function') {
+          // Already initialized and EssentiaJS is available
+          return wasmModule;
+        } else {
+          // Fallback: return the module and hope it initializes
+          return wasmModule;
+        }
+      });
+    }
+    
+    const wasmModule = await wasmReadyPromise;
+    
+    // Verify EssentiaJS is available before creating Essentia instance
+    if (!wasmModule) {
+      throw new Error('EssentiaWASM module failed to load.');
+    }
+    
+    if (!wasmModule.EssentiaJS || typeof wasmModule.EssentiaJS !== 'function') {
+      console.error('WASM Module structure:', {
+        hasEssentiaJS: !!wasmModule.EssentiaJS,
+        typeOfEssentiaJS: typeof wasmModule.EssentiaJS,
+        hasReady: !!wasmModule.ready,
+        keys: Object.keys(wasmModule).slice(0, 20),
+      });
+      throw new Error(
+        'EssentiaWASM module is not properly initialized. EssentiaJS is not available. ' +
+        'The WASM module may not have finished loading. Please try again.'
+      );
+    }
+    
+    essentiaInstance = new Essentia(wasmModule);
+  }
+  return essentiaInstance;
+}
+
+export interface SpectrogramOptions {
+  width?: number;
+  height?: number;
+  sampleRate?: number;
+  duration?: number;
+  dynamicRange?: number;
+}
+
+const DEFAULT_OPTIONS: Required<SpectrogramOptions> = {
+  width: 1000,
+  height: 257,
+  sampleRate: 8000,
+  duration: 12,
+  dynamicRange: 90,
+};
+
+export async function audioFileToSpectrograms(
+  file: File,
+  options: SpectrogramOptions = {}
+): Promise<ImageData[]> {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
+  
+  const audioContext = new AudioContext({ sampleRate: opts.sampleRate });
+  
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    
+    let audioBuffer: AudioBuffer;
+    try {
+      audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    } catch (decodeError) {
+      const fileName = file.name.toLowerCase();
+      const supportedFormats = ['wav', 'mp3', 'ogg', 'm4a', 'mp4', 'aac', 'flac'];
+      const fileExtension = fileName.split('.').pop() || '';
+      
+      if (!supportedFormats.includes(fileExtension)) {
+        throw new Error(
+          `Unsupported audio format: .${fileExtension}. ` +
+          `Supported formats: ${supportedFormats.join(', ')}. ` +
+          `Your browser may also have limited support for some formats.`
+        );
+      }
+      
+      throw new Error(
+        `Failed to decode audio file. The file may be corrupted, ` +
+        `in an unsupported codec, or your browser doesn't support this format. ` +
+        `Error: ${decodeError instanceof Error ? decodeError.message : 'Unknown error'}`
+      );
+    }
+    
+    return await audioBufferToSpectrograms(audioBuffer, opts);
+  } finally {
+    await audioContext.close();
+  }
+}
+
+export async function audioFileToSpectrogram(
+  file: File,
+  options: SpectrogramOptions = {}
+): Promise<ImageData> {
+  const spectrograms = await audioFileToSpectrograms(file, options);
+  return spectrograms[0] ?? new ImageData(1000, 257);
+}
+
+export async function audioBufferToSpectrograms(
+  audioBuffer: AudioBuffer,
+  options: Required<SpectrogramOptions>
+): Promise<ImageData[]> {
+  const { sampleRate, duration } = options;
+  
+  const totalDuration = audioBuffer.duration;
+  const clipDuration = duration;
+  if (totalDuration < clipDuration) {
+    throw new Error(`Audio must be at least ${clipDuration} seconds.`);
+  }
+  const numClips = Math.ceil(totalDuration / clipDuration);
+  
+  const channelData = audioBuffer.getChannelData(0);
+  let monoData: Float32Array;
+  
+  if (audioBuffer.numberOfChannels === 1) {
+    monoData = new Float32Array(audioBuffer.length);
+    for (let i = 0; i < audioBuffer.length; i++) {
+      monoData[i] = channelData[i];
+    }
+  } else {
+    const channel1 = audioBuffer.getChannelData(0);
+    const channel2 = audioBuffer.getChannelData(1);
+    monoData = new Float32Array(audioBuffer.length);
+    for (let i = 0; i < audioBuffer.length; i++) {
+      monoData[i] = (channel1[i] + channel2[i]) / 2;
+    }
+  }
+  
+  let processedData = monoData;
+  if (audioBuffer.sampleRate !== sampleRate) {
+    processedData = await resampleToTargetRate(monoData, audioBuffer.sampleRate, sampleRate);
+  }
+  
+  const spectrograms: ImageData[] = [];
+  const samplesPerClip = Math.floor(clipDuration * sampleRate);
+  
+  for (let clipIdx = 0; clipIdx < numClips; clipIdx++) {
+    const startSample = clipIdx * samplesPerClip;
+    const endSample = Math.min(startSample + samplesPerClip, processedData.length);
+    const clipData = processedData.slice(startSample, endSample);
+    
+    if (clipData.length > 0) {
+      const clipOptions = { ...options };
+      const spectrogram = await generateSpectrogram(clipData, clipOptions);
+      spectrograms.push(spectrogram);
+    }
+  }
+  
+  return spectrograms;
+}
+
+export async function audioBufferToSpectrogram(
+  audioBuffer: AudioBuffer,
+  options: Required<SpectrogramOptions>
+): Promise<ImageData> {
+  const spectrograms = await audioBufferToSpectrograms(audioBuffer, options);
+  return spectrograms[0] ?? new ImageData(1000, 257);
+}
+
+async function resampleToTargetRate(
+  data: Float32Array,
+  originalSampleRate: number,
+  targetSampleRate: number
+): Promise<Float32Array> {
+  if (originalSampleRate === targetSampleRate) {
+    return data;
+  }
+  const durationSeconds = data.length / originalSampleRate;
+  const targetLength = Math.ceil(durationSeconds * targetSampleRate);
+  const offlineCtx = new OfflineAudioContext(1, targetLength, targetSampleRate);
+  const buffer = offlineCtx.createBuffer(1, data.length, originalSampleRate);
+  buffer.copyToChannel(new Float32Array(data), 0);
+  const source = offlineCtx.createBufferSource();
+  source.buffer = buffer;
+  source.connect(offlineCtx.destination);
+  source.start();
+  const rendered = await offlineCtx.startRendering();
+  const out = rendered.getChannelData(0);
+  const copy = new Float32Array(out.length);
+  copy.set(out);
+  return copy;
+}
+
+async function generateSpectrogram(
+  audioData: Float32Array,
+  options: Required<SpectrogramOptions>
+): Promise<ImageData> {
+  const { width, height, dynamicRange } = options;
+  
+  const essentia = await getEssentiaInstance();
+  
+  const fftSize = (height - 1) * 2;
+  const hopLength = Math.floor(audioData.length / width);
+  const windowSize = fftSize;
+  
+  // ImageData expects RGBA; allocate 4 channels per pixel
+  const spectrogram = new Uint8ClampedArray(width * height * 4);
+  
+  for (let x = 0; x < width; x++) {
+    const start = x * hopLength;
+    const end = Math.min(start + windowSize, audioData.length);
+    
+    // Create frame directly as Float32Array
+    const frameArray = new Float32Array(windowSize);
+    const copyLength = Math.min(windowSize, end - start);
+    
+    // Copy the audio data into the frame
+    for (let i = 0; i < copyLength; i++) {
+      frameArray[i] = audioData[start + i];
+    }
+    // Remaining values are already 0 (default for Float32Array)
+    
+    // Convert Float32Array to VectorFloat for essentia.js
+    // Note: essentia.js algorithms expect VectorFloat, not plain Float32Array
+    const frameVector = essentia.arrayToVector(frameArray);
+    
+    const windowedResult = essentia.Windowing(
+      frameVector,
+      true,
+      windowSize,
+      'hamming',
+      0,
+      true
+    );
+    
+    // windowedResult.frame is already a VectorFloat, use it directly for Spectrum
+    if (!windowedResult || !windowedResult.frame) {
+      throw new Error('Windowing failed. Result: ' + JSON.stringify(windowedResult));
+    }
+    
+    const spectrumResult = essentia.Spectrum(windowedResult.frame);
+    
+    type SpectrumResult = { spectrum?: unknown; magnitude?: unknown };
+    const spectrumTyped = spectrumResult as SpectrumResult;
+    const spectrumVector = (spectrumTyped.spectrum ?? spectrumTyped.magnitude ?? spectrumResult) as unknown;
+    
+    if (!spectrumVector) {
+      throw new Error('Spectrum failed. Result: ' + JSON.stringify(spectrumResult));
+    }
+    const magnitude = essentia.vectorToArray(spectrumVector);
+    const numBins = magnitude.length;
+    
+    for (let y = 0; y < height; y++) {
+      const freqIdx = Math.floor((y / height) * numBins);
+      const mag = freqIdx < numBins ? magnitude[freqIdx] : 0;
+      
+      const power = mag;
+      const db = 20 * Math.log10(power + 1e-10);
+      const normalized = Math.max(0, Math.min(1, (db + dynamicRange) / dynamicRange));
+      const pixelValue = Math.floor(normalized * 255);
+      
+      const idx = (height - 1 - y) * width + x;
+      const base = idx * 4;
+      spectrogram[base] = pixelValue;
+      spectrogram[base + 1] = pixelValue;
+      spectrogram[base + 2] = pixelValue;
+      spectrogram[base + 3] = 255;
+    }
+  }
+  
+  return new ImageData(spectrogram, width, height);
+}
