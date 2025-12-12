@@ -6,6 +6,12 @@ let essentiaInstance: Essentia | null = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let wasmReadyPromise: Promise<any> | null = null;
 
+// Export a function to pre-initialize the Essentia instance
+// This allows pre-allocating WASM memory on page load
+export async function preloadEssentia(): Promise<void> {
+  await getEssentiaInstance();
+}
+
 async function getEssentiaInstance(): Promise<Essentia> {
   if (!essentiaInstance) {
     if (!wasmReadyPromise) {
@@ -19,6 +25,8 @@ async function getEssentiaInstance(): Promise<Essentia> {
         }
         
         // Configure the WASM module to find the .wasm file in the public directory
+        // Pre-allocate a larger initial heap (128MB) to reduce heap resize operations
+        // which can cause noticeable pauses during audio processing
         const wasmModule = wasmModuleFactory({
           locateFile: (path: string, prefix?: string) => {
             // If it's looking for the .wasm file, point it to the public directory
@@ -28,6 +36,9 @@ async function getEssentiaInstance(): Promise<Essentia> {
             // For other files, use the prefix if provided, otherwise just the path
             return prefix ? prefix + path : path;
           },
+          // Pre-allocate 256MB of memory to avoid heap resizes during processing
+          // This provides plenty of headroom for processing large audio files
+          INITIAL_MEMORY: 256 * 1024 * 1024, // 256MB in bytes
         });
         
         // The WASM module has a .ready property that is a Promise
@@ -89,7 +100,8 @@ const DEFAULT_OPTIONS: Required<SpectrogramOptions> = {
 
 export async function audioFileToSpectrograms(
   file: File,
-  options: SpectrogramOptions = {}
+  options: SpectrogramOptions = {},
+  onProgress?: (current: number, total: number) => void
 ): Promise<ImageData[]> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   
@@ -121,7 +133,7 @@ export async function audioFileToSpectrograms(
       );
     }
     
-    return await audioBufferToSpectrograms(audioBuffer, opts);
+    return await audioBufferToSpectrograms(audioBuffer, opts, onProgress);
   } finally {
     await audioContext.close();
   }
@@ -137,7 +149,8 @@ export async function audioFileToSpectrogram(
 
 export async function audioBufferToSpectrograms(
   audioBuffer: AudioBuffer,
-  options: Required<SpectrogramOptions>
+  options: Required<SpectrogramOptions>,
+  onProgress?: (current: number, total: number) => void
 ): Promise<ImageData[]> {
   const { sampleRate, duration } = options;
   
@@ -173,6 +186,11 @@ export async function audioBufferToSpectrograms(
   const spectrograms: ImageData[] = [];
   const samplesPerClip = Math.floor(clipDuration * sampleRate);
   
+  // Report initial progress (0%)
+  if (onProgress) {
+    onProgress(0, numClips);
+  }
+  
   for (let clipIdx = 0; clipIdx < numClips; clipIdx++) {
     const startSample = clipIdx * samplesPerClip;
     const endSample = Math.min(startSample + samplesPerClip, processedData.length);
@@ -180,8 +198,22 @@ export async function audioBufferToSpectrograms(
     
     if (clipData.length > 0) {
       const clipOptions = { ...options };
+      // Report progress before starting this clip (shows we're working on it)
+      if (onProgress) {
+        // Show partial progress: clipIdx out of numClips (0-based, so clipIdx/numClips)
+        // This gives a sense of progress even before the clip is done
+        const partialProgress = Math.round((clipIdx / numClips) * 100);
+        onProgress(clipIdx, numClips);
+      }
+      
       const spectrogram = await generateSpectrogram(clipData, clipOptions);
       spectrograms.push(spectrogram);
+      
+      // Report progress after each spectrogram is generated
+      // Use clipIdx + 1 to show 1-based progress (1, 2, 3... out of total)
+      if (onProgress) {
+        onProgress(clipIdx + 1, numClips);
+      }
     }
   }
   
