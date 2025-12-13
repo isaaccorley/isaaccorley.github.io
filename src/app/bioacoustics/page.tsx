@@ -80,8 +80,21 @@ export default function BioacousticsDetectionAnalysisPage() {
   // Temporal analysis toggle state
   const [isTemporalAnalysisExpanded, setIsTemporalAnalysisExpanded] = useState(true);
   
-  // Theme state
+  // Theme state - load from localStorage on mount
   const [isDarkMode, setIsDarkMode] = useState(true);
+  
+  // Load theme preference from localStorage on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('bioacoustics-theme');
+    if (savedTheme !== null) {
+      setIsDarkMode(savedTheme === 'dark');
+    }
+  }, []);
+  
+  // Save theme preference to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('bioacoustics-theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
   
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const waveContainerRef = useRef<HTMLDivElement | null>(null);
@@ -380,17 +393,6 @@ export default function BioacousticsDetectionAnalysisPage() {
           },
         },
         plugins: {
-          beforeDraw: {
-            id: 'customCanvasBackgroundColor',
-            beforeDraw: (chart: any) => {
-              const {ctx} = chart;
-              ctx.save();
-              ctx.globalCompositeOperation = 'destination-over';
-              ctx.fillStyle = isDarkMode ? 'transparent' : 'white';
-              ctx.fillRect(0, 0, chart.width, chart.height);
-              ctx.restore();
-            }
-          },
           tooltip: {
             enabled: false,
             external: (context) => {
@@ -443,6 +445,17 @@ export default function BioacousticsDetectionAnalysisPage() {
           legend: { display: false },
         },
       },
+      plugins: [{
+        id: 'customCanvasBackgroundColor',
+        beforeDraw: (chart: { ctx: CanvasRenderingContext2D; width: number; height: number }) => {
+          const {ctx} = chart;
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.fillStyle = isDarkMode ? 'transparent' : 'white';
+          ctx.fillRect(0, 0, chart.width, chart.height);
+          ctx.restore();
+        }
+      }],
     });
 
     return () => {
@@ -535,17 +548,6 @@ export default function BioacousticsDetectionAnalysisPage() {
             },
           },
           plugins: {
-            beforeDraw: {
-              id: 'customCanvasBackgroundColor',
-              beforeDraw: (chart: any) => {
-                const {ctx} = chart;
-                ctx.save();
-                ctx.globalCompositeOperation = 'destination-over';
-                ctx.fillStyle = isDarkMode ? 'transparent' : 'white';
-                ctx.fillRect(0, 0, chart.width, chart.height);
-                ctx.restore();
-              }
-            },
             legend: { display: false },
             tooltip: {
               callbacks: {
@@ -558,6 +560,17 @@ export default function BioacousticsDetectionAnalysisPage() {
             },
           },
         },
+        plugins: [{
+          id: 'customCanvasBackgroundColor',
+          beforeDraw: (chart: { ctx: CanvasRenderingContext2D; width: number; height: number }) => {
+            const {ctx} = chart;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = isDarkMode ? 'transparent' : 'white';
+            ctx.fillRect(0, 0, chart.width, chart.height);
+            ctx.restore();
+          }
+        }],
       });
       return;
     }
@@ -765,17 +778,6 @@ export default function BioacousticsDetectionAnalysisPage() {
           y: { ...yAxisConfig, grid: { ...yAxisConfig.grid, color: isDarkMode ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.3)' }, ticks: { ...yAxisConfig.ticks, color: isDarkMode ? '#cbd5e1' : '#64748b' }, title: { ...yAxisConfig.title, color: isDarkMode ? '#cbd5e1' : '#64748b' } },
         },
         plugins: {
-          beforeDraw: {
-            id: 'customCanvasBackgroundColor',
-            beforeDraw: (chart: any) => {
-              const {ctx} = chart;
-              ctx.save();
-              ctx.globalCompositeOperation = 'destination-over';
-              ctx.fillStyle = isDarkMode ? 'transparent' : 'white';
-              ctx.fillRect(0, 0, chart.width, chart.height);
-              ctx.restore();
-            }
-          },
           legend: {
             display: selectedMetric === 'combined' || selectedMetric === 'freq-bands',
             position: 'top',
@@ -795,6 +797,17 @@ export default function BioacousticsDetectionAnalysisPage() {
           },
         },
       },
+      plugins: [{
+        id: 'customCanvasBackgroundColor',
+        beforeDraw: (chart: { ctx: CanvasRenderingContext2D; width: number; height: number }) => {
+          const {ctx} = chart;
+          ctx.save();
+          ctx.globalCompositeOperation = 'destination-over';
+          ctx.fillStyle = isDarkMode ? 'transparent' : 'white';
+          ctx.fillRect(0, 0, chart.width, chart.height);
+          ctx.restore();
+        }
+      }],
     });
 
     return () => {
@@ -2155,7 +2168,7 @@ export default function BioacousticsDetectionAnalysisPage() {
             </div>
             <div 
               key={audioObjectUrl || 'no-audio'} 
-              className="h-[140px] w-full rounded-xl border border-slate-800/70 bg-slate-950/60 relative"
+              className={`h-[140px] w-full rounded-xl border relative ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}
             >
               <div 
                 ref={waveContainerRef} 
@@ -2175,7 +2188,7 @@ export default function BioacousticsDetectionAnalysisPage() {
             </div>
             <div 
               key={audioObjectUrl ? `spec-${audioObjectUrl}` : 'no-spec'} 
-              className="h-[200px] w-full rounded-lg border border-slate-800/70 bg-slate-950/60 relative"
+              className={`h-[200px] w-full rounded-lg border relative ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}
             >
               <div 
                 ref={spectrogramContainerRef} 
@@ -2316,7 +2329,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                                 </div>
                               )}
                               {pred.humanReadableName && pred.humanReadableName !== pred.className && (
-                                <span className="text-xs font-mono text-slate-500 bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-700/50">
+                                <span className={`text-xs font-mono px-1.5 py-0.5 rounded border ${isDarkMode ? 'text-slate-500 bg-slate-800/50 border-slate-700/50' : 'text-slate-700 bg-white border-slate-300'}`}>
                                   {pred.className}
                                 </span>
                               )}
@@ -2343,7 +2356,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                                         href={`https://www.google.com/search?q=${encodeURIComponent(displayName)}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-sm font-medium text-slate-100 hover:text-emerald-300 underline transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400 rounded"
+                                        className={`text-sm font-medium underline transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400 rounded ${isDarkMode ? 'text-slate-100 hover:text-emerald-300' : 'text-slate-900 hover:text-emerald-600'}`}
                                         aria-label={`Search for ${speciesName} on Google (opens in new tab)`}
                                       >
                                         {speciesName}
@@ -2352,7 +2365,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                                   }
                                   
                                   return (
-                                    <span className="text-sm font-medium text-slate-100">
+                                    <span className={`text-sm font-medium ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>
                                       {speciesName}
                                     </span>
                                   );
@@ -2524,7 +2537,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                     </div>
 
                     {/* Metric Description */}
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3 text-xs text-slate-300">
+                    <div className={`rounded-lg border p-3 text-xs ${isDarkMode ? 'border-slate-800/70 bg-slate-950/40 text-slate-300' : 'border-slate-200 bg-white text-slate-700 shadow-sm'}`}>
                       {selectedMetric === 'combined' && (
                         <>
                           <strong>Acoustic Indices Combined:</strong> Normalized view of all four acoustic indices for easy comparison. 
@@ -2699,10 +2712,10 @@ export default function BioacousticsDetectionAnalysisPage() {
                 ) : (
                   <>
                     {/* Empty State Placeholder */}
-                    <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-8">
+                    <div className={`rounded-xl border p-8 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
                       <div className="flex flex-col items-center justify-center gap-3 text-center">
-                        <div className="rounded-full bg-slate-800/50 p-4">
-                          <svg className="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <div className={`rounded-full p-4 ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-100'}`}>
+                          <svg className={`h-8 w-8 ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                           </svg>
                         </div>
