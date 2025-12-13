@@ -6,41 +6,36 @@ let essentiaInstance: Essentia | null = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let wasmReadyPromise: Promise<any> | null = null;
 
+export async function preloadEssentia(): Promise<void> {
+  await getEssentiaInstance();
+}
+
 async function getEssentiaInstance(): Promise<Essentia> {
   if (!essentiaInstance) {
     if (!wasmReadyPromise) {
-      // Dynamically import the WASM module
       wasmReadyPromise = import('essentia.js/dist/essentia-wasm.web.js').then(async (module) => {
-        // The WASM module is a function that needs to be called
         const wasmModuleFactory = module.default || module;
         
         if (typeof wasmModuleFactory !== 'function') {
           throw new Error('EssentiaWASM module is not a function. Expected a factory function.');
         }
         
-        // Configure the WASM module to find the .wasm file in the public directory
         const wasmModule = wasmModuleFactory({
           locateFile: (path: string, prefix?: string) => {
-            // If it's looking for the .wasm file, point it to the public directory
             if (path.endsWith('.wasm')) {
               return '/essentia-wasm/essentia-wasm.web.wasm';
             }
-            // For other files, use the prefix if provided, otherwise just the path
             return prefix ? prefix + path : path;
           },
+          INITIAL_MEMORY: 256 * 1024 * 1024, // 256MB in bytes
         });
         
-        // The WASM module has a .ready property that is a Promise
-        // We need to await it to get the actual module with EssentiaJS
         if (wasmModule.ready && typeof wasmModule.ready.then === 'function') {
-          // Await the ready Promise to get the initialized module
           const readyModule = await wasmModule.ready;
           return readyModule;
         } else if (wasmModule.EssentiaJS && typeof wasmModule.EssentiaJS === 'function') {
-          // Already initialized and EssentiaJS is available
           return wasmModule;
         } else {
-          // Fallback: return the module and hope it initializes
           return wasmModule;
         }
       });
@@ -48,7 +43,6 @@ async function getEssentiaInstance(): Promise<Essentia> {
     
     const wasmModule = await wasmReadyPromise;
     
-    // Verify EssentiaJS is available before creating Essentia instance
     if (!wasmModule) {
       throw new Error('EssentiaWASM module failed to load.');
     }
@@ -89,7 +83,8 @@ const DEFAULT_OPTIONS: Required<SpectrogramOptions> = {
 
 export async function audioFileToSpectrograms(
   file: File,
-  options: SpectrogramOptions = {}
+  options: SpectrogramOptions = {},
+  onProgress?: (current: number, total: number) => void
 ): Promise<ImageData[]> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   
@@ -121,7 +116,7 @@ export async function audioFileToSpectrograms(
       );
     }
     
-    return await audioBufferToSpectrograms(audioBuffer, opts);
+    return await audioBufferToSpectrograms(audioBuffer, opts, onProgress);
   } finally {
     await audioContext.close();
   }
@@ -137,7 +132,8 @@ export async function audioFileToSpectrogram(
 
 export async function audioBufferToSpectrograms(
   audioBuffer: AudioBuffer,
-  options: Required<SpectrogramOptions>
+  options: Required<SpectrogramOptions>,
+  onProgress?: (current: number, total: number) => void
 ): Promise<ImageData[]> {
   const { sampleRate, duration } = options;
   
@@ -173,6 +169,10 @@ export async function audioBufferToSpectrograms(
   const spectrograms: ImageData[] = [];
   const samplesPerClip = Math.floor(clipDuration * sampleRate);
   
+  if (onProgress) {
+    onProgress(0, numClips);
+  }
+  
   for (let clipIdx = 0; clipIdx < numClips; clipIdx++) {
     const startSample = clipIdx * samplesPerClip;
     const endSample = Math.min(startSample + samplesPerClip, processedData.length);
@@ -180,8 +180,16 @@ export async function audioBufferToSpectrograms(
     
     if (clipData.length > 0) {
       const clipOptions = { ...options };
+      if (onProgress) {
+        onProgress(clipIdx, numClips);
+      }
+      
       const spectrogram = await generateSpectrogram(clipData, clipOptions);
       spectrograms.push(spectrogram);
+      
+      if (onProgress) {
+        onProgress(clipIdx + 1, numClips);
+      }
     }
   }
   
@@ -232,25 +240,19 @@ async function generateSpectrogram(
   const hopLength = Math.floor(audioData.length / width);
   const windowSize = fftSize;
   
-  // ImageData expects RGBA; allocate 4 channels per pixel
   const spectrogram = new Uint8ClampedArray(width * height * 4);
   
   for (let x = 0; x < width; x++) {
     const start = x * hopLength;
     const end = Math.min(start + windowSize, audioData.length);
     
-    // Create frame directly as Float32Array
     const frameArray = new Float32Array(windowSize);
     const copyLength = Math.min(windowSize, end - start);
     
-    // Copy the audio data into the frame
     for (let i = 0; i < copyLength; i++) {
       frameArray[i] = audioData[start + i];
     }
-    // Remaining values are already 0 (default for Float32Array)
     
-    // Convert Float32Array to VectorFloat for essentia.js
-    // Note: essentia.js algorithms expect VectorFloat, not plain Float32Array
     const frameVector = essentia.arrayToVector(frameArray);
     
     const windowedResult = essentia.Windowing(
@@ -262,7 +264,6 @@ async function generateSpectrogram(
       true
     );
     
-    // windowedResult.frame is already a VectorFloat, use it directly for Spectrum
     if (!windowedResult || !windowedResult.frame) {
       throw new Error('Windowing failed. Result: ' + JSON.stringify(windowedResult));
     }

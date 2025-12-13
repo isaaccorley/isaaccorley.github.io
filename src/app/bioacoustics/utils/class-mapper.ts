@@ -148,6 +148,114 @@ const CLASS_MAPPINGS: Record<string, ClassMetadata> = {
   'ZOLE1': { commonName: 'Zonotrichia leucophrys', soundType: 'call_2' },
 };
 
+const CLASS_THUMBNAILS: Record<string, string> = {
+  "American Crow": "/bioacoustics/assets/thumbnails/american-crow.jpg",
+  "American Goldfinch": "/bioacoustics/assets/thumbnails/american-goldfinch.jpg",
+  "Acorn Woodpecker": "/bioacoustics/assets/thumbnails/acorn-woodpecker.jpg",
+  "Alder Flycatcher": "/bioacoustics/assets/thumbnails/alder-flycatcher.jpg",
+  "Anna's Hummingbird": "/bioacoustics/assets/thumbnails/anna-s-hummingbird.jpg",
+  "Ash-throated Flycatcher": "/bioacoustics/assets/thumbnails/ash-throated-flycatcher.jpg",
+  "Band-tailed Pigeon": "/bioacoustics/assets/thumbnails/band-tailed-pigeon.jpg",
+  "Brown Creeper": "/bioacoustics/assets/thumbnails/brown-creeper.jpg",
+  "Brewer's Blackbird": "/bioacoustics/assets/thumbnails/brewer-s-blackbird.jpg",
+  "Bullock's Oriole": "/bioacoustics/assets/thumbnails/bullock-s-oriole.jpg",
+  "Bushtit": "/bioacoustics/assets/thumbnails/bushtit.jpg",
+  "California Scrub-Jay": "/bioacoustics/assets/thumbnails/california-scrub-jay.jpg",
+  "California Quail": "/bioacoustics/assets/thumbnails/california-quail.jpg",
+  "California Thrasher": "/bioacoustics/assets/thumbnails/california-thrasher.jpg", // Note: Bird images hard to find in PD, using generic thrasher or map if strict PD required. This is a placeholder for actual bird:
+  "California Towhee": "/bioacoustics/assets/thumbnails/california-towhee.jpg",
+  "Cassin's Vireo": "/bioacoustics/assets/thumbnails/cassin-s-vireo.jpg",
+  "Cassin's Auklet": "/bioacoustics/assets/thumbnails/cassin-s-auklet.jpg",
+  "Common Cuckoo": "/bioacoustics/assets/thumbnails/common-cuckoo.jpg",
+  "Cedar Waxwing": "/bioacoustics/assets/thumbnails/cedar-waxwing.jpg",
+  "Chestnut-backed Chickadee": "/bioacoustics/assets/thumbnails/chestnut-backed-chickadee.jpg",
+  "Rooster (Red Junglefowl)": "/bioacoustics/assets/thumbnails/rooster-red-junglefowl.jpg",
+  "Chipping Sparrow": "/bioacoustics/assets/thumbnails/chipping-sparrow.jpg",
+  "Cooper's Hawk": "/bioacoustics/assets/thumbnails/cooper-s-hawk.jpg",
+  "Common Raven": "/bioacoustics/assets/thumbnails/common-raven.jpg",
+  "Common Nighthawk": "/bioacoustics/assets/thumbnails/common-nighthawk.jpg",
+  "Common Yellowthroat": "/bioacoustics/assets/thumbnails/common-yellowthroat.jpg",
+  "Brown-headed Cowbird": "/bioacoustics/assets/thumbnails/brown-headed-cowbird.jpg",
+  "Canyon Wren": "/bioacoustics/assets/thumbnails/canyon-wren.jpg",
+  "Dark-eyed Junco": "/bioacoustics/assets/thumbnails/dark-eyed-junco.jpg",
+  "Downy Woodpecker": "/bioacoustics/assets/thumbnails/downy-woodpecker.jpg",
+  "Woodpecker drum": "/bioacoustics/assets/thumbnails/woodpecker-drum.jpg",
+  "Dusky Flycatcher": "/bioacoustics/assets/thumbnails/dusky-flycatcher.jpg",
+  "Gadwall": "/bioacoustics/assets/thumbnails/gadwall.jpg",
+  "Glaucous-winged Gull": "/bioacoustics/assets/thumbnails/glaucous-winged-gull.jpg",
+  "Hairy Woodpecker": "/bioacoustics/assets/thumbnails/hairy-woodpecker.jpg",
+  "Hammond's Flycatcher": "/bioacoustics/assets/thumbnails/hammond-s-flycatcher.jpg",
+  "Hermit Thrush": "/bioacoustics/assets/thumbnails/hermit-thrush.jpg",
+  "Hutton's Vireo": "/bioacoustics/assets/thumbnails/hutton-s-vireo.jpg",
+  "Pacific Wren": "/bioacoustics/assets/thumbnails/pacific-wren.jpg",
+  "Pileated Woodpecker": "/bioacoustics/assets/thumbnails/pileated-woodpecker.jpg", // Map/generic fallback if photo unavailable, but photo usually preferred:
+  "Pileated Woodpecker_Alt": "/bioacoustics/assets/thumbnails/pileated-woodpecker-alt.jpg",
+  "Pacific-slope Flycatcher": "/bioacoustics/assets/thumbnails/pacific-slope-flycatcher.jpg",
+  "Raptor": "/bioacoustics/assets/thumbnails/raptor.jpg",
+  "Spotted Towhee": "/bioacoustics/assets/thumbnails/spotted-towhee.jpg",
+  "Northern Spotted Owl": "/bioacoustics/assets/thumbnails/northern-spotted-owl.jpg",
+  "Barred Owl": "/bioacoustics/assets/thumbnails/barred-owl.jpg",
+  "Varied Thrush": "/bioacoustics/assets/thumbnails/varied-thrush.jpg",
+  "House Wren": "/bioacoustics/assets/thumbnails/house-wren.jpg",
+  "American Robin": "/bioacoustics/assets/thumbnails/american-robin.jpg",
+  
+  "Ixoreus naevius": "/bioacoustics/assets/thumbnails/ixoreus-naevius.jpg",
+  "Junco hyemalis": "/bioacoustics/assets/thumbnails/junco-hyemalis.jpg",
+  "Leiothlypis celata": "/bioacoustics/assets/thumbnails/leiothlypis-celata.jpg",
+  "Leiothlypis ruficapilla": "/bioacoustics/assets/thumbnails/leiothlypis-ruficapilla.jpg",
+  "Loxia curvirostra": "/bioacoustics/assets/thumbnails/loxia-curvirostra.jpg",
+  "Melospiza melodia": "/bioacoustics/assets/thumbnails/melospiza-melodia.jpg",
+  "Melospiza georgiana": "/bioacoustics/assets/thumbnails/melospiza-georgiana.jpg",
+  "Myadestes townsendi": "/bioacoustics/assets/thumbnails/myadestes-townsendi.jpg",
+  "Nucifraga columbiana": "/bioacoustics/assets/thumbnails/nucifraga-columbiana.jpg",
+  "Oreortyx pictus": "/bioacoustics/assets/thumbnails/oreortyx-pictus.jpg",
+  "Odocoileus sp.": "/bioacoustics/assets/thumbnails/odocoileus-sp.jpg",
+  "Pandion haliaetus": "/bioacoustics/assets/thumbnails/pandion-haliaetus.jpg",
+  "Perisoreus canadensis": "/bioacoustics/assets/thumbnails/perisoreus-canadensis.jpg",
+  "Pheucticus melanocephalus": "/bioacoustics/assets/thumbnails/pheucticus-melanocephalus.jpg",
+  "Phalacrocorax penicillatus": "/bioacoustics/assets/thumbnails/phalacrocorax-penicillatus.jpg",
+  "Pipilo maculatus": "/bioacoustics/assets/thumbnails/pipilo-maculatus.jpg",
+  "Poecile atricapillus": "/bioacoustics/assets/thumbnails/poecile-atricapillus.jpg",
+  "Sitta canadensis": "/bioacoustics/assets/thumbnails/sitta-canadensis.jpg",
+  "Sitta pygmaea": "/bioacoustics/assets/thumbnails/sitta-pygmaea.jpg",
+  "Sphyrapicus ruber": "/bioacoustics/assets/thumbnails/sphyrapicus-ruber.jpg",
+  "Spizella passerina": "/bioacoustics/assets/thumbnails/spizella-passerina.jpg",
+  "Spinus pinus": "/bioacoustics/assets/thumbnails/spinus-pinus.jpg",
+  "Strix varia": "/bioacoustics/assets/thumbnails/strix-varia.jpg",
+  "Strix nebulosa": "/bioacoustics/assets/thumbnails/strix-nebulosa.jpg",
+  "Tachycineta bicolor": "/bioacoustics/assets/thumbnails/tachycineta-bicolor.jpg",
+  "Tamiasciurus douglasii": "/bioacoustics/assets/thumbnails/tamiasciurus-douglasii.jpg",
+  "Troglodytes aedon": "/bioacoustics/assets/thumbnails/troglodytes-aedon.jpg",
+  "Turdus migratorius": "/bioacoustics/assets/thumbnails/turdus-migratorius.jpg",
+  "Vireo huttoni": "/bioacoustics/assets/thumbnails/vireo-huttoni.jpg",
+  "Zonotrichia leucophrys": "/bioacoustics/assets/thumbnails/zonotrichia-leucophrys.jpg",
+  "Uramus sp.": "/bioacoustics/assets/thumbnails/uramus-sp.jpg", // Code typo 'URAM' -> Ursus americanus (Black Bear)
+  "Mega sp.": "/bioacoustics/assets/thumbnails/mega-sp.jpg", // 'MEGA' -> Meleagris gallopavo (Wild Turkey)
+
+  "Airplane": "/bioacoustics/assets/thumbnails/airplane.jpg",
+  "Chainsaw": "/bioacoustics/assets/thumbnails/chainsaw.jpg",
+  "Creek": "/bioacoustics/assets/thumbnails/creek.jpg",
+  "Cricket": "/bioacoustics/assets/thumbnails/cricket.jpg",
+  "Dog": "/bioacoustics/assets/thumbnails/dog.jpg",
+  "Empidonax sp.": "/bioacoustics/assets/thumbnails/empidonax-sp.jpg",
+  "Falcon sp.": "/bioacoustics/assets/thumbnails/falcon-sp.jpg",
+  "Flycatcher sp.": "/bioacoustics/assets/thumbnails/flycatcher-sp.jpg",
+  "Amphibian": "/bioacoustics/assets/thumbnails/amphibian.jpg", // Northern Red-legged Frog (Common PNW amphibian)
+  "Growler": "/bioacoustics/assets/thumbnails/growler.jpg", // Boeing EA-18G Growler (US Navy)
+  "Gunshot": "/bioacoustics/assets/thumbnails/gunshot.jpg",
+  "Highway": "/bioacoustics/assets/thumbnails/highway.jpg",
+  "Truck beep": "/bioacoustics/assets/thumbnails/truck-beep.jpg",
+  "Human": "/bioacoustics/assets/thumbnails/human.jpg",
+  "Rain": "/bioacoustics/assets/thumbnails/rain.jpg",
+  "Survey Tone": "/bioacoustics/assets/thumbnails/survey-tone.jpg",
+  "Thunder": "/bioacoustics/assets/thumbnails/thunder.jpg",
+  "Train": "/bioacoustics/assets/thumbnails/train.jpg",
+  "Tree creak": "/bioacoustics/assets/thumbnails/tree-creak.jpg",
+  "Wildcat": "/bioacoustics/assets/thumbnails/wildcat.jpg",
+  "Yarder": "/bioacoustics/assets/thumbnails/yarder.jpg", // Logging equipment
+  "American Bullfrog": "/bioacoustics/assets/thumbnails/american-bullfrog.jpg"
+};
+
 export async function getClassMetadata(className: string): Promise<ClassMetadata | null> {
   return CLASS_MAPPINGS[className] ?? null;
 }
@@ -168,4 +276,27 @@ export async function getHumanReadableName(className: string): Promise<string> {
 export async function getClassDescription(className: string): Promise<string | null> {
   const metadata = await getClassMetadata(className);
   return metadata?.description ?? null;
+}
+
+export function getClassThumbnail(className: string, humanReadableName?: string): string | null {
+  if (humanReadableName) {
+    const nameWithoutSuffix = humanReadableName.replace(/\s*\([^)]+\)$/, '').trim();
+    if (CLASS_THUMBNAILS[nameWithoutSuffix]) {
+      return CLASS_THUMBNAILS[nameWithoutSuffix];
+    }
+    if (CLASS_THUMBNAILS[humanReadableName]) {
+      return CLASS_THUMBNAILS[humanReadableName];
+    }
+  }
+  
+  const metadata = CLASS_MAPPINGS[className];
+  if (metadata?.commonName && CLASS_THUMBNAILS[metadata.commonName]) {
+    return CLASS_THUMBNAILS[metadata.commonName];
+  }
+  
+  if (CLASS_THUMBNAILS[className]) {
+    return CLASS_THUMBNAILS[className];
+  }
+  
+  return null;
 }
