@@ -307,7 +307,7 @@ export default function BioacousticsDetectionAnalysisPage() {
         cleanupTooltip();
         
         const tooltipEl = document.createElement('div');
-        tooltipEl.className = 'bg-slate-900/95 border border-slate-700 rounded-lg p-3 shadow-xl pointer-events-none';
+        tooltipEl.className = isDarkMode ? 'bg-slate-900/95 border border-slate-700 rounded-lg p-3 shadow-xl pointer-events-none' : 'bg-white border border-slate-300 rounded-lg p-3 shadow-xl pointer-events-none';
         tooltipEl.style.opacity = '0';
         tooltipEl.style.position = 'fixed'; // Use fixed instead of absolute
         tooltipEl.style.transform = 'translate(-50%, 0)';
@@ -363,9 +363,9 @@ export default function BioacousticsDetectionAnalysisPage() {
         animation: false,
         scales: {
           x: {
-            ticks: { display: false },
-            grid: { display: false },
-            title: { display: true, text: '12s segments' },
+            ticks: { display: false, color: isDarkMode ? '#cbd5e1' : '#64748b' },
+            grid: { display: false, color: isDarkMode ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.3)' },
+            title: { display: true, text: '12s segments', color: isDarkMode ? '#cbd5e1' : '#64748b' },
           },
           y: {
             min: 0.5,
@@ -373,11 +373,24 @@ export default function BioacousticsDetectionAnalysisPage() {
             ticks: {
               stepSize: 0.1,
               callback: (value) => `${Number(value).toFixed(2)}`,
+              color: isDarkMode ? '#cbd5e1' : '#64748b',
             },
-            title: { display: true, text: 'Confidence' },
+            grid: { color: isDarkMode ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.3)' },
+            title: { display: true, text: 'Confidence', color: isDarkMode ? '#cbd5e1' : '#64748b' },
           },
         },
         plugins: {
+          beforeDraw: {
+            id: 'customCanvasBackgroundColor',
+            beforeDraw: (chart: any) => {
+              const {ctx} = chart;
+              ctx.save();
+              ctx.globalCompositeOperation = 'destination-over';
+              ctx.fillStyle = isDarkMode ? 'transparent' : 'white';
+              ctx.fillRect(0, 0, chart.width, chart.height);
+              ctx.restore();
+            }
+          },
           tooltip: {
             enabled: false,
             external: (context) => {
@@ -408,15 +421,15 @@ export default function BioacousticsDetectionAnalysisPage() {
               });
               
               const thumbnailHtml = thumbnailUrl 
-                ? `<img src="${thumbnailUrl}" alt="${entry.speciesName}" class="h-12 w-12 rounded-lg object-cover border border-slate-700/50 flex-shrink-0" />`
+                ? `<img src="${thumbnailUrl}" alt="${entry.speciesName}" class="h-12 w-12 rounded-lg object-cover border ${isDarkMode ? 'border-slate-700/50' : 'border-slate-300'} flex-shrink-0" />`
                 : '';
               
               tooltipEl.innerHTML = `
                 <div class="flex items-center gap-3">
                   ${thumbnailHtml}
                   <div class="flex flex-col">
-                    <span class="text-sm font-medium text-slate-100">${entry.speciesName}</span>
-                    <span class="text-xs text-emerald-300">${probability}%</span>
+                    <span class="text-sm font-medium ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}">${entry.speciesName}</span>
+                    <span class="text-xs ${isDarkMode ? 'text-emerald-300' : 'text-emerald-600'}">${probability}%</span>
                   </div>
                 </div>
               `;
@@ -435,7 +448,7 @@ export default function BioacousticsDetectionAnalysisPage() {
     return () => {
       cleanupTooltip();
     };
-  }, [clipConfidenceSeries]);
+  }, [clipConfidenceSeries, isDarkMode]);
 
   useEffect(() => {
     return () => {
@@ -505,9 +518,9 @@ export default function BioacousticsDetectionAnalysisPage() {
           animation: false,
           scales: {
             x: {
-              ticks: { display: false },
-              grid: { display: false },
-              title: { display: true, text: '12s segments', color: '#94a3b8' },
+              ticks: { display: false, color: isDarkMode ? '#cbd5e1' : '#64748b' },
+              grid: { display: false, color: isDarkMode ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.3)' },
+              title: { display: true, text: '12s segments', color: isDarkMode ? '#cbd5e1' : '#64748b' },
             },
             y: {
               min: 0.5,
@@ -515,11 +528,24 @@ export default function BioacousticsDetectionAnalysisPage() {
               ticks: {
                 stepSize: 0.1,
                 callback: (value) => `${Number(value).toFixed(2)}`,
+                color: isDarkMode ? '#cbd5e1' : '#64748b',
               },
-              title: { display: true, text: 'Confidence', color: '#94a3b8' },
+              grid: { color: isDarkMode ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.3)' },
+              title: { display: true, text: 'Confidence', color: isDarkMode ? '#cbd5e1' : '#64748b' },
             },
           },
           plugins: {
+            beforeDraw: {
+              id: 'customCanvasBackgroundColor',
+              beforeDraw: (chart: any) => {
+                const {ctx} = chart;
+                ctx.save();
+                ctx.globalCompositeOperation = 'destination-over';
+                ctx.fillStyle = isDarkMode ? 'transparent' : 'white';
+                ctx.fillRect(0, 0, chart.width, chart.height);
+                ctx.restore();
+              }
+            },
             legend: { display: false },
             tooltip: {
               callbacks: {
@@ -547,7 +573,7 @@ export default function BioacousticsDetectionAnalysisPage() {
     
     // Prepare datasets based on selected metric
     let datasets: { label: string; data: number[]; borderColor: string; backgroundColor: string; borderWidth: number; fill: boolean; tension: number; pointRadius: number; pointHoverRadius: number }[] = [];
-    let yAxisConfig: { beginAtZero?: boolean; min?: number; max?: number; title: { display: boolean; text: string; color?: string } } = { beginAtZero: true, title: { display: true, text: 'Value', color: '#94a3b8' } };
+    let yAxisConfig: { beginAtZero?: boolean; min?: number; max?: number; title: { display: boolean; text: string; color?: string }; grid?: { color?: string }; ticks?: { color?: string } } = { beginAtZero: true, title: { display: true, text: 'Value', color: isDarkMode ? '#cbd5e1' : '#64748b' } };
 
     if (selectedMetric === 'aci') {
       datasets = [{
@@ -561,7 +587,7 @@ export default function BioacousticsDetectionAnalysisPage() {
         pointRadius: 3,
         pointHoverRadius: 5,
       }];
-      yAxisConfig = { beginAtZero: true, title: { display: true, text: 'ACI Value', color: '#94a3b8' } };
+      yAxisConfig = { beginAtZero: true, title: { display: true, text: 'ACI Value', color: isDarkMode ? '#cbd5e1' : '#64748b' } };
     } else if (selectedMetric === 'adi') {
       datasets = [{
         label: 'ADI (Acoustic Diversity Index)',
@@ -574,7 +600,7 @@ export default function BioacousticsDetectionAnalysisPage() {
         pointRadius: 3,
         pointHoverRadius: 5,
       }];
-      yAxisConfig = { min: 0, max: 1, title: { display: true, text: 'ADI (0-1)', color: '#94a3b8' } };
+      yAxisConfig = { min: 0, max: 1, title: { display: true, text: 'ADI (0-1)', color: isDarkMode ? '#cbd5e1' : '#64748b' } };
     } else if (selectedMetric === 'ndsi') {
       datasets = [{
         label: 'NDSI (Normalized Difference Soundscape Index)',
@@ -587,7 +613,7 @@ export default function BioacousticsDetectionAnalysisPage() {
         pointRadius: 3,
         pointHoverRadius: 5,
       }];
-      yAxisConfig = { min: -1, max: 1, title: { display: true, text: 'NDSI (-1 to +1)', color: '#94a3b8' } };
+      yAxisConfig = { min: -1, max: 1, title: { display: true, text: 'NDSI (-1 to +1)', color: isDarkMode ? '#cbd5e1' : '#64748b' } };
     } else if (selectedMetric === 'bi') {
       datasets = [{
         label: 'BI (Bioacoustic Index)',
@@ -600,7 +626,7 @@ export default function BioacousticsDetectionAnalysisPage() {
         pointRadius: 3,
         pointHoverRadius: 5,
       }];
-      yAxisConfig = { beginAtZero: true, title: { display: true, text: 'BI Value', color: '#94a3b8' } };
+      yAxisConfig = { beginAtZero: true, title: { display: true, text: 'BI Value', color: isDarkMode ? '#cbd5e1' : '#64748b' } };
     } else if (selectedMetric === 'combined') {
       // Normalize all metrics to 0-1 range for comparison
       const aciNorm = acousticIndicesData.map(d => d.aci);
@@ -662,7 +688,7 @@ export default function BioacousticsDetectionAnalysisPage() {
           pointHoverRadius: 4,
         },
       ];
-      yAxisConfig = { min: 0, max: 1, title: { display: true, text: 'Normalized Value (0-1)', color: '#94a3b8' } };
+      yAxisConfig = { min: 0, max: 1, title: { display: true, text: 'Normalized Value (0-1)', color: isDarkMode ? '#cbd5e1' : '#64748b' } };
     } else if (selectedMetric === 'freq-bands') {
       datasets = [
         {
@@ -699,7 +725,7 @@ export default function BioacousticsDetectionAnalysisPage() {
           pointHoverRadius: 5,
         },
       ];
-      yAxisConfig = { beginAtZero: true, title: { display: true, text: 'Energy (normalized)', color: '#94a3b8' } };
+      yAxisConfig = { beginAtZero: true, title: { display: true, text: 'Energy (normalized)', color: isDarkMode ? '#cbd5e1' : '#64748b' } };
     }
 
     if (metricsChartInstanceRef.current) {
@@ -732,13 +758,24 @@ export default function BioacousticsDetectionAnalysisPage() {
         },
         scales: {
           x: {
-            ticks: { display: false },
-            grid: { display: false },
-            title: { display: true, text: '12s segments', color: '#94a3b8' },
+            ticks: { display: false, color: isDarkMode ? '#cbd5e1' : '#64748b' },
+            grid: { display: false, color: isDarkMode ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.3)' },
+            title: { display: true, text: '12s segments', color: isDarkMode ? '#cbd5e1' : '#64748b' },
           },
-          y: yAxisConfig,
+          y: { ...yAxisConfig, grid: { ...yAxisConfig.grid, color: isDarkMode ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.3)' }, ticks: { ...yAxisConfig.ticks, color: isDarkMode ? '#cbd5e1' : '#64748b' }, title: { ...yAxisConfig.title, color: isDarkMode ? '#cbd5e1' : '#64748b' } },
         },
         plugins: {
+          beforeDraw: {
+            id: 'customCanvasBackgroundColor',
+            beforeDraw: (chart: any) => {
+              const {ctx} = chart;
+              ctx.save();
+              ctx.globalCompositeOperation = 'destination-over';
+              ctx.fillStyle = isDarkMode ? 'transparent' : 'white';
+              ctx.fillRect(0, 0, chart.width, chart.height);
+              ctx.restore();
+            }
+          },
           legend: {
             display: selectedMetric === 'combined' || selectedMetric === 'freq-bands',
             position: 'top',
@@ -746,7 +783,7 @@ export default function BioacousticsDetectionAnalysisPage() {
               boxWidth: 12,
               padding: 10,
               font: { size: 11 },
-              color: '#cbd5e1',
+              color: isDarkMode ? '#cbd5e1' : '#64748b',
             },
           },
           tooltip: {
@@ -764,7 +801,7 @@ export default function BioacousticsDetectionAnalysisPage() {
       metricsChartInstanceRef.current?.destroy();
       metricsChartInstanceRef.current = null;
     };
-  }, [acousticIndicesData, frequencyBandsData, selectedMetric, clipConfidenceSeries]);
+  }, [acousticIndicesData, frequencyBandsData, selectedMetric, clipConfidenceSeries, isDarkMode]);
 
   // Resize chart when temporal analysis section is expanded/collapsed
   useEffect(() => {
@@ -1651,7 +1688,7 @@ export default function BioacousticsDetectionAnalysisPage() {
     <div className={`min-h-screen transition-colors ${isDarkMode ? 'bg-gradient-to-b from-slate-950 via-slate-930 to-slate-950 text-slate-100' : 'bg-gradient-to-b from-slate-50 via-slate-100 to-slate-50 text-slate-900'}`}>
       <main aria-label="AI Bioacoustics Analysis Application">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-12 pt-12">
-        <section className="relative overflow-hidden rounded-2xl border border-slate-800/70 bg-slate-900/60 px-6 py-6 shadow-[0_25px_80px_rgba(0,0,0,0.45)]" aria-labelledby="page-heading">
+        <section className={`relative overflow-hidden rounded-2xl border px-6 py-6 shadow-[0_25px_80px_rgba(0,0,0,0.45)] ${isDarkMode ? 'border-slate-800/70 bg-slate-900/60' : 'border-slate-200 bg-white'}`} aria-labelledby="page-heading">
           {/* Theme Toggle Button - Top Right */}
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
@@ -1667,14 +1704,14 @@ export default function BioacousticsDetectionAnalysisPage() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(96,165,250,0.18),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(52,211,153,0.18),transparent_30%),radial-gradient(circle_at_50%_90%,rgba(248,113,113,0.12),transparent_25%)]" aria-hidden="true" />
           <div className="relative flex flex-col md:flex-row gap-4 items-start md:items-center">
             <div className="flex flex-col gap-3 md:max-w-[65%]">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-800/80 bg-slate-900/70 px-3 py-1 text-xs text-slate-300">
+            <div className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-1 text-xs ${isDarkMode ? 'border-slate-800/80 bg-slate-900/70 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>
               <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
               Live, in-browser AI-powered bioacoustics toolkit
             </div>
-            <h1 id="page-heading" className="text-3xl font-semibold tracking-tight text-slate-50 md:text-4xl">
+            <h1 id="page-heading" className={`text-3xl font-semibold tracking-tight md:text-4xl ${isDarkMode ? 'text-slate-50' : 'text-slate-900'}`}>
               AI Bioacoustics Analysis Toolkit
             </h1>
-            <p className="text-sm leading-relaxed text-slate-300">
+            <p className={`text-sm leading-relaxed ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
               Upload Audio to Analyze Bird Calls using the{' '}
               <a
                 href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5564664"
@@ -1686,7 +1723,7 @@ export default function BioacousticsDetectionAnalysisPage() {
               </a>{' '}
               model (Lesmeister et al., 2025) trained on 824,120 labeled spectrograms to detect 135 sonotypes (see gallery below). Inference is performed in the browser using the onnx-runtime js library.
             </p>
-            <p className="text-sm text-slate-300">
+            <p className={`text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
               Created by{' '}
               <a
                 href="https://isaacc.dev/"
@@ -1711,13 +1748,13 @@ export default function BioacousticsDetectionAnalysisPage() {
         </section>
 
         {/* Sonotype Gallery Section */}
-        <section className="rounded-2xl border border-slate-800/60 bg-slate-950/80 p-3 shadow-lg backdrop-blur-sm">
+        <section className={`rounded-2xl border p-3 shadow-lg backdrop-blur-sm ${isDarkMode ? 'border-slate-800/60 bg-slate-950/80' : 'border-slate-200 bg-white'}`}>
           <button
             onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
             className="flex w-full items-center justify-between text-left transition-colors hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg p-1"
             aria-expanded={isGalleryExpanded}
           >
-            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+            <h2 className={`text-sm font-semibold uppercase tracking-[0.14em] ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
               Sonotype Gallery
             </h2>
             {isGalleryExpanded ? (
@@ -1737,7 +1774,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                   placeholder="Search species by name..."
                   value={speciesSearch}
                   onChange={(e) => setSpeciesSearch(e.target.value)}
-                  className="w-full rounded-lg border border-slate-700 bg-slate-900/50 py-2 pl-10 pr-4 text-slate-100 placeholder-slate-500 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                  className={`w-full rounded-lg border py-2 pl-10 pr-4 transition-colors focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 ${isDarkMode ? 'border-slate-700 bg-slate-900/50 text-slate-100 placeholder-slate-500' : 'border-slate-300 bg-white text-slate-900 placeholder-slate-400'}`}
                 />
               </div>
 
@@ -1752,7 +1789,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                     .map((species) => (
                     <div
                       key={species.v5Code}
-                      className="group relative flex flex-col items-center gap-1.5 rounded-lg border border-slate-800/80 bg-slate-900/60 p-2 shadow-md transition-all hover:border-emerald-500/50 hover:bg-slate-900/80 hover:shadow-xl hover:z-10"
+                      className={`group relative flex flex-col items-center gap-1.5 rounded-lg border p-2 shadow-md transition-all hover:border-emerald-500/50 hover:shadow-xl hover:z-10 ${isDarkMode ? 'border-slate-800/80 bg-slate-900/60 hover:bg-slate-900/80' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
                     >
                       {species.thumbnail ? (
                         <img
@@ -1766,10 +1803,10 @@ export default function BioacousticsDetectionAnalysisPage() {
                         </div>
                       )}
                       <div className="text-center">
-                        <p className="text-[10px] font-medium text-slate-100 line-clamp-2 leading-tight">
+                        <p className={`text-[10px] font-medium line-clamp-2 leading-tight ${isDarkMode ? 'text-slate-100' : 'text-slate-700'}`}>
                           {species.commonName}
                         </p>
-                        <p className="text-[9px] text-slate-500 mt-0.5">
+                        <p className={`text-[9px] mt-0.5 ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>
                           {species.v5Code}
                         </p>
                       </div>
@@ -1793,16 +1830,16 @@ export default function BioacousticsDetectionAnalysisPage() {
 
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-stretch">
-            <div className="relative flex flex-col space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4 shadow-[0_15px_50px_rgba(0,0,0,0.4)]">
+            <div className={`relative flex flex-col space-y-4 rounded-2xl border p-4 shadow-[0_15px_50px_rgba(0,0,0,0.4)] ${isDarkMode ? 'border-slate-800/70 bg-slate-900/60' : 'border-slate-200 bg-white'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h2 id="audio-input-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  <h2 id="audio-input-heading" className={`text-sm font-semibold uppercase tracking-[0.14em] ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                     Audio Input
                   </h2>
                   <div className="group relative">
-                    <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
-                    <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
-                      <strong className="text-slate-200">How to use:</strong>
+                    <Info className={`h-4 w-4 cursor-help transition-colors ${isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`} />
+                    <div className={`absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 rounded-lg shadow-xl text-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'} border`}>
+                      <strong className={isDarkMode ? 'text-slate-200' : 'text-slate-900'}>How to use:</strong>
                       <ul className="space-y-1 mt-2">
                         <li>• Upload an audio file or paste a URL</li>
                         <li>• Click Process to analyze</li>
@@ -1827,7 +1864,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={!model || isProcessing}
-                    className="group relative rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-emerald-200 shadow-inner shadow-black/20 transition hover:border-emerald-400 hover:text-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    className={`group relative rounded-lg border px-3 py-2 shadow-inner transition disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isDarkMode ? 'border-slate-800 bg-slate-950/60 text-emerald-200 shadow-black/20 hover:border-emerald-400 hover:text-emerald-100' : 'border-slate-300 bg-white text-emerald-600 shadow-slate-200/50 hover:border-emerald-500 hover:bg-emerald-50'}`}
                     title="Upload local file"
                     aria-label="Upload audio file from computer"
                   >
@@ -1843,7 +1880,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                     value={audioUrl}
                     onChange={(e) => setAudioUrl(e.target.value)}
                     disabled={!model || isProcessing}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 shadow-inner shadow-black/20 outline-none ring-1 ring-transparent transition hover:border-slate-700 focus:border-emerald-400 focus:ring-emerald-400/30 disabled:cursor-not-allowed disabled:opacity-60"
+                    className={`w-full rounded-lg border px-3 py-2 text-sm shadow-inner outline-none ring-1 ring-transparent transition disabled:cursor-not-allowed disabled:opacity-60 ${isDarkMode ? 'border-slate-800 bg-slate-950/60 text-slate-100 placeholder:text-slate-500 shadow-black/20 hover:border-slate-700 focus:border-emerald-400 focus:ring-emerald-400/30' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 shadow-slate-200/50 hover:border-slate-400 focus:border-emerald-500 focus:ring-emerald-500/30'}`}
                     aria-label="Audio file URL"
                     aria-describedby="url-help"
                     aria-invalid={errorMessage ? 'true' : 'false'}
@@ -1853,7 +1890,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                   <button
                     type="submit"
                     disabled={!model || isProcessing}
-                    className="rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm font-medium text-emerald-200 shadow-inner shadow-black/30 transition hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    className={`rounded-lg border px-3 py-2 text-sm font-medium shadow-inner transition disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isDarkMode ? 'border-slate-800 bg-slate-950/70 text-emerald-200 shadow-black/30 hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900' : 'border-slate-300 bg-white text-emerald-600 shadow-slate-200/50 hover:border-emerald-500 hover:bg-emerald-50'}`}
                     aria-label="Process audio file for bioacoustic analysis"
                   >
                     Process
@@ -1862,7 +1899,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                     type="button"
                     onClick={handleRandomUrl}
                     disabled={!model || isProcessing || recordingUrls.length === 0}
-                    className="rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm font-medium text-emerald-200 shadow-inner shadow-black/30 transition hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    className={`rounded-lg border px-3 py-2 text-sm font-medium shadow-inner transition disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isDarkMode ? 'border-slate-800 bg-slate-950/70 text-emerald-200 shadow-black/30 hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900' : 'border-slate-300 bg-white text-emerald-600 shadow-slate-200/50 hover:border-emerald-500 hover:bg-emerald-50'}`}
                     aria-label="Load random sample audio file"
                   >
                     Random
@@ -1880,44 +1917,44 @@ export default function BioacousticsDetectionAnalysisPage() {
               </form>
 
               <div className="flex gap-4">
-                <div className="flex-1 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm text-slate-300">
-                  <span className="font-semibold text-slate-100">Model:</span>
+                <div className={`flex-1 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                  <span className={`font-semibold ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>Model:</span>
                   <div role="status" aria-live="polite" aria-atomic="true">
-                    <span className="rounded-full bg-slate-800/80 px-2 py-1 text-xs text-slate-200">
+                    <span className={`rounded-full px-2 py-1 text-xs ${isDarkMode ? 'bg-slate-800/80 text-slate-200' : 'bg-slate-100 text-slate-700'}`}>
                       {modelStatus}
                     </span>
                   </div>
                   
-                  <span className="font-semibold text-slate-100">Processing:</span>
+                  <span className={`font-semibold ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>Processing:</span>
                   <div className="flex items-center gap-2" role="status" aria-live="polite" aria-atomic="true">
                     {processingStatus ? (
                       isProcessing && processingProgress !== null ? (
                         <>
                           <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-emerald-400" aria-hidden="true" />
-                          <span className="text-slate-200">{processingStatus}</span>
+                          <span className={isDarkMode ? 'text-slate-200' : 'text-slate-700'}>{processingStatus}</span>
                           <span className="text-emerald-300 font-medium">{processingProgress}%</span>
                         </>
                       ) : (
-                        <span className="text-slate-200">{processingStatus}</span>
+                        <span className={isDarkMode ? 'text-slate-200' : 'text-slate-700'}>{processingStatus}</span>
                       )
                     ) : (
                       <span className="text-slate-400">—</span>
                     )}
                   </div>
                   
-                  <span className="font-semibold text-slate-100">File:</span>
-                  <span className="text-slate-200">{fileName || <span className="text-slate-400">—</span>}</span>
+                  <span className={`font-semibold ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>File:</span>
+                  <span className={isDarkMode ? 'text-slate-200' : 'text-slate-700'}>{fileName || <span className="text-slate-400">—</span>}</span>
                   
-                  <span className="font-semibold text-slate-100">Segments:</span>
-                  <span className="text-slate-200">{batchResult && batchResult.totalClips > 1 ? batchResult.totalClips : <span className="text-slate-400">—</span>}</span>
+                  <span className={`font-semibold ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>Segments:</span>
+                  <span className={isDarkMode ? 'text-slate-200' : 'text-slate-700'}>{batchResult && batchResult.totalClips > 1 ? batchResult.totalClips : <span className="text-slate-400">—</span>}</span>
                   
-                  <span className="font-semibold text-slate-100">Sample Rate:</span>
-                  <span className="text-slate-200">
+                  <span className={`font-semibold ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>Sample Rate:</span>
+                  <span className={isDarkMode ? 'text-slate-200' : 'text-slate-700'}>
                     {audioMetadata?.sampleRate ? `${(audioMetadata.sampleRate / 1000).toFixed(1)} kHz` : <span className="text-slate-400">—</span>}
                   </span>
                   
-                  <span className="font-semibold text-slate-100">Location:</span>
-                  <span className="text-slate-200">
+                  <span className={`font-semibold ${isDarkMode ? 'text-slate-100' : 'text-slate-900'}`}>Location:</span>
+                  <span className={isDarkMode ? 'text-slate-200' : 'text-slate-700'}>
                     {audioMetadata?.location?.lat !== undefined && audioMetadata.location?.lon !== undefined
                       ? `${audioMetadata.location.lat.toFixed(6)}, ${audioMetadata.location.lon.toFixed(6)}`
                       : <span className="text-slate-400">—</span>
@@ -1940,7 +1977,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                 type="button"
                 onClick={handleDownloadPredictions}
                 disabled={clipPredictions.length === 0}
-                className="w-full md:absolute md:bottom-4 md:right-4 md:w-auto flex items-center justify-center gap-2 rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm font-medium text-emerald-200 shadow-inner shadow-black/30 transition hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-800 disabled:hover:text-emerald-200 disabled:hover:bg-slate-950/70 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                className={`w-full md:absolute md:bottom-4 md:right-4 md:w-auto flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium shadow-inner transition disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isDarkMode ? 'border-slate-800 bg-slate-950/70 text-emerald-200 shadow-black/30 hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900 disabled:hover:border-slate-800 disabled:hover:text-emerald-200 disabled:hover:bg-slate-950/70' : 'border-slate-300 bg-white text-emerald-600 shadow-slate-200/50 hover:border-emerald-500 hover:bg-emerald-50 disabled:hover:border-slate-300 disabled:hover:bg-white'}`}
                 aria-label="Download predictions and acoustic metrics as JSON file"
               >
                 <Download size={16} aria-hidden="true" />
@@ -1949,16 +1986,16 @@ export default function BioacousticsDetectionAnalysisPage() {
               </button>
             </div>
 
-            <section className="w-full flex flex-col justify-self-end space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="equalizer-heading">
+            <section className={`w-full flex flex-col justify-self-end space-y-4 rounded-2xl border p-4 shadow-[0_15px_50px_rgba(0,0,0,0.4)] ${isDarkMode ? 'border-slate-800/70 bg-slate-900/60' : 'border-slate-200 bg-white'}`} aria-labelledby="equalizer-heading">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <h2 id="equalizer-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  <h2 id="equalizer-heading" className={`text-sm font-semibold uppercase tracking-[0.14em] ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                     Equalizer
                   </h2>
                   <div className="group relative">
-                    <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
-                    <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
-                      <strong className="text-slate-200">Audio Equalizer:</strong>
+                    <Info className={`h-4 w-4 cursor-help transition-colors ${isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`} />
+                    <div className={`absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 rounded-lg shadow-xl text-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'} border`}>
+                      <strong className={isDarkMode ? 'text-slate-200' : 'text-slate-900'}>Audio Equalizer:</strong>
                       <p className="mt-2">An equalizer (EQ) allows you to adjust the volume of specific frequency ranges. Use it to:</p>
                       <ul className="space-y-1 mt-2">
                         <li>• <strong>Boost frequencies</strong> where bird calls occur (1-8 kHz)</li>
@@ -1968,13 +2005,13 @@ export default function BioacousticsDetectionAnalysisPage() {
                     </div>
                   </div>
                 </div>
-                <span className="text-[11px] text-slate-300" aria-label="Equalizer range">-40 dB to +40 dB</span>
+                <span className={`text-[11px] ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`} aria-label="Equalizer range">-40 dB to +40 dB</span>
               </div>
-              <div className="flex flex-col gap-2 rounded-lg border border-slate-800/70 bg-slate-950/70 p-3" role="group" aria-label="Equalizer frequency controls">
+              <div className={`flex flex-col gap-2 rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/70' : 'border-slate-200 bg-slate-50'}`} role="group" aria-label="Equalizer frequency controls">
                 {/* Desktop: Vertical sliders */}
                 <div className="hidden md:flex items-end gap-3 overflow-x-auto pb-1">
                   {EQ_BANDS.map((band, idx) => (
-                    <div key={band} className="flex flex-col items-center gap-1 text-xs text-slate-300">
+                    <div key={band} className={`flex flex-col items-center gap-1 text-xs ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
                       <div className="relative flex h-48 w-8 items-center justify-center">
                         <div className="absolute inset-y-2 left-1/2 w-[2px] -translate-x-1/2 rounded-full bg-slate-700/70" aria-hidden="true" />
                         <input
@@ -2046,13 +2083,13 @@ export default function BioacousticsDetectionAnalysisPage() {
           <section aria-labelledby="waveform-heading" className="space-y-4">
           <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 id="waveform-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                <h2 id="waveform-heading" className={`text-sm font-semibold uppercase tracking-[0.14em] ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                   Waveform / Spectrogram
                 </h2>
                 <div className="group relative">
                   <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
-                  <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-80 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
-                    <strong className="text-slate-200">Visualization Guide:</strong>
+                  <div className={`absolute left-0 top-6 z-50 hidden group-hover:block w-80 p-3 rounded-lg shadow-xl text-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'} border`}>
+                    <strong className={isDarkMode ? 'text-slate-200' : 'text-slate-900'}>Visualization Guide:</strong>
                     <ul className="space-y-1 mt-2">
                       <li>• <strong>Top:</strong> Time-series waveform showing audio amplitude over time</li>
                       <li>• <strong>Bottom:</strong> Spectrogram displaying frequency content (darker = less energy, brighter = more energy)</li>
@@ -2062,7 +2099,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-xs text-slate-300" role="group" aria-label="Audio playback controls">
+              <div className={`flex items-center gap-3 text-xs ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`} role="group" aria-label="Audio playback controls">
                 <span aria-live="off" aria-atomic="true">
                   <span className="sr-only">Current time: </span>{formatTime(currentTime)}<span className="sr-only"> of </span> / {formatTime(audioDuration)}
                 </span>
@@ -2070,13 +2107,13 @@ export default function BioacousticsDetectionAnalysisPage() {
                   type="button"
                   onClick={togglePlay}
                   disabled={!audioObjectUrl || isProcessing}
-                  className="rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-xs font-semibold text-emerald-200 shadow-inner shadow-black/30 transition hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                  className={`rounded-lg border px-3 py-2 text-xs font-semibold shadow-inner transition disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400 ${isDarkMode ? 'border-slate-800 bg-slate-950/70 text-emerald-200 shadow-black/30 hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900' : 'border-slate-300 bg-white text-emerald-600 shadow-slate-200/50 hover:border-emerald-500 hover:bg-emerald-50'}`}
                   aria-label={isPlaying ? 'Pause audio playback' : 'Play audio'}
                 >
                   {isPlaying ? 'Pause' : 'Play'}
                 </button>
                 <div className="flex items-center gap-2">
-                  <label htmlFor="playback-speed" className="text-slate-400 text-[10px]">
+                  <label htmlFor="playback-speed" className={`text-[10px] ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                     Speed:
                   </label>
                   <select
@@ -2207,15 +2244,15 @@ export default function BioacousticsDetectionAnalysisPage() {
 
           </section>
 
-          <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="results-heading" aria-busy={isProcessing && !classificationResult ? true : undefined}>
+          <section className={`space-y-4 rounded-2xl border p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)] ${isDarkMode ? 'border-slate-800/70 bg-slate-900/60' : 'border-slate-200 bg-white'}`} aria-labelledby="results-heading" aria-busy={isProcessing && !classificationResult ? true : undefined}>
             {/* Top-5 Detected Species moved to top */}
             <div className="flex items-center gap-2">
-              <h2 id="results-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+              <h2 id="results-heading" className={`text-sm font-semibold uppercase tracking-[0.14em] ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                 Top-5 Detected Species
               </h2>
               <div className="group relative">
-                <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
-                <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
+                <Info className={`h-4 w-4 cursor-help transition-colors ${isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`} />
+                <div className={`absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 rounded-lg shadow-xl text-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'} border`}>
                   Maximum detection confidence for each 12-second audio segment. Shows which species were detected with highest probability across the recording timeline.
                 </div>
               </div>
@@ -2223,7 +2260,7 @@ export default function BioacousticsDetectionAnalysisPage() {
             
             {/* Per-Segment Detection Chart */}
             {clipPredictions.length > 0 && (
-              <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+              <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white'}`}>
                 <div className="relative h-32">
                   <canvas ref={chartCanvasRef} className="h-full w-full" role="img" aria-label="Bar chart showing detection confidence for each 12-second segment" />
                 </div>
@@ -2248,7 +2285,7 @@ export default function BioacousticsDetectionAnalysisPage() {
             ) : classificationResult ? (
               <div className="space-y-1.5">
                 <div className="space-y-1.5" role="list" aria-label="Detected species ranked by confidence">
-                    <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-slate-300" aria-hidden="true">
+                    <div className={`flex items-center justify-between text-[11px] uppercase tracking-[0.12em] ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`} aria-hidden="true">
                       <span className="flex-1">Species</span>
                       <span className="w-14 text-center">Max Score</span>
                     </div>
@@ -2349,20 +2386,20 @@ export default function BioacousticsDetectionAnalysisPage() {
           </section>
 
           {/* Temporal Analysis Section - Moved to bottom and made toggleable */}
-          <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="acoustic-metrics-heading">
+          <section className={`space-y-4 rounded-2xl border p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)] ${isDarkMode ? 'border-slate-800/70 bg-slate-900/60' : 'border-slate-200 bg-white'}`} aria-labelledby="acoustic-metrics-heading">
             <button
               onClick={() => setIsTemporalAnalysisExpanded(!isTemporalAnalysisExpanded)}
               className="flex w-full items-center justify-between text-left transition-colors hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg"
               aria-expanded={isTemporalAnalysisExpanded}
             >
               <div className="flex items-center gap-2">
-                <h2 id="acoustic-metrics-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                <h2 id="acoustic-metrics-heading" className={`text-sm font-semibold uppercase tracking-[0.14em] ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>
                   Temporal Analysis
                 </h2>
                 <div className="group relative" onClick={(e) => e.stopPropagation()}>
-                  <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
-                  <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
-                    <strong className="text-slate-200">Note:</strong> Due to 8 kHz sample rate, frequency analysis is capped at 4 kHz (Nyquist frequency). Full biophony range (2-8 kHz) requires higher sample rates.
+                  <Info className={`h-4 w-4 cursor-help transition-colors ${isDarkMode ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600'}`} />
+                  <div className={`absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 rounded-lg shadow-xl text-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'} border`}>
+                    <strong className={isDarkMode ? 'text-slate-200' : 'text-slate-900'}>Note:</strong> Due to 8 kHz sample rate, frequency analysis is capped at 4 kHz (Nyquist frequency). Full biophony range (2-8 kHz) requires higher sample rates.
                   </div>
                 </div>
               </div>
@@ -2529,7 +2566,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                     </div>
 
                     {/* Chart */}
-                    <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-4">
+                    <div className={`rounded-xl border p-4 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white'}`}>
                       <div className="h-64 w-full">
                         <canvas ref={metricsChartRef} className="h-full w-full" role="img" aria-label={`Line chart showing ${selectedMetric} over time`} />
                       </div>
