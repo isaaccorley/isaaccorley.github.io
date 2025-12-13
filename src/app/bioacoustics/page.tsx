@@ -1435,7 +1435,7 @@ export default function BioacousticsDetectionAnalysisPage() {
           }));
         }
         
-        setProcessingStatus('Converting audio to spectrograms…');
+        setProcessingStatus('Generating spectrograms…');
         
         const spectrogramResult = await audioFileToSpectrograms(
           file,
