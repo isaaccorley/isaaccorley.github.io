@@ -2121,7 +2121,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                     value={playbackSpeed}
                     onChange={(e) => setPlaybackSpeed(Number(e.target.value))}
                     disabled={!audioObjectUrl}
-                    className="rounded border border-slate-800 bg-slate-950/70 px-2 py-1 text-xs text-slate-200 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className={`rounded border px-2 py-1 text-xs focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:opacity-60 disabled:cursor-not-allowed ${isDarkMode ? 'border-slate-800 bg-slate-950/70 text-slate-200' : 'border-slate-300 bg-white text-slate-700'}`}
                     aria-label="Playback speed"
                   >
                     <option value={0.5}>0.5x</option>
@@ -2164,7 +2164,7 @@ export default function BioacousticsDetectionAnalysisPage() {
               />
               {!audioObjectUrl && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                  <p className="text-sm text-slate-400">Upload or paste a URL to see the waveform</p>
+                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Upload or paste a URL to see the waveform</p>
                 </div>
               )}
               {audioObjectUrl && isProcessing && (
@@ -2184,7 +2184,7 @@ export default function BioacousticsDetectionAnalysisPage() {
               />
               {!audioObjectUrl && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                  <p className="text-sm text-slate-400">Upload or paste a URL to see the spectrogram</p>
+                  <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Upload or paste a URL to see the spectrogram</p>
                 </div>
               )}
               {audioObjectUrl && isProcessing && (
@@ -2194,12 +2194,12 @@ export default function BioacousticsDetectionAnalysisPage() {
               )}
             </div>
             <div 
-              className="mt-4 rounded-xl border border-slate-800/70 bg-slate-950/80 px-3 py-2 text-xs text-slate-200 shadow-inner shadow-black/30"
+              className={`mt-4 rounded-xl border px-3 py-2 text-xs ${isDarkMode ? 'border-slate-800/70 bg-slate-950/80 text-slate-200 shadow-inner shadow-black/30' : 'border-slate-200 bg-white text-slate-700 shadow-sm'}`}
               role="status"
               aria-live="polite"
               aria-label="Prediction details at cursor position"
             >
-              <div className="flex items-center justify-between text-[11px] text-slate-300">
+              <div className={`flex items-center justify-between text-[11px] ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
                 <span>{hoverInfo ? `Segment @ ${formatTime(hoverInfo.time)}` : 'Hover over waveform'}</span>
                 <span>Top 3</span>
               </div>
@@ -2271,7 +2271,7 @@ export default function BioacousticsDetectionAnalysisPage() {
               <div className="space-y-1.5" role="status" aria-label="Loading detection results">
                 <span className="sr-only">Loading species detection results...</span>
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex flex-col gap-1 rounded-xl border border-slate-800/80 bg-slate-950/60 px-3 py-1.5 shadow-inner shadow-black/30 animate-pulse" aria-hidden="true">
+                  <div key={i} className={`flex flex-col gap-1 rounded-xl border px-3 py-1.5 animate-pulse ${isDarkMode ? 'border-slate-800/80 bg-slate-950/60 shadow-inner shadow-black/30' : 'border-slate-200 bg-slate-50 shadow-sm'}`} aria-hidden="true">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-lg bg-slate-700/50" />
@@ -2296,7 +2296,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                       return (
                         <div
                           key={pred.classIndex}
-                          className="flex flex-col gap-1 rounded-xl border border-slate-800/80 bg-slate-950/60 px-3 py-1.5 shadow-inner shadow-black/30"
+                          className={`flex flex-col gap-1 rounded-xl border px-3 py-1.5 ${isDarkMode ? 'border-slate-800/80 bg-slate-950/60 shadow-inner shadow-black/30' : 'border-slate-200 bg-white shadow-sm'}`}
                           role="listitem"
                           aria-label={`Rank ${idx + 1}: ${speciesName} detected with ${confidence} percent confidence`}
                         >
@@ -2371,13 +2371,13 @@ export default function BioacousticsDetectionAnalysisPage() {
             ) : (
               <div className="space-y-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex flex-col gap-1 rounded-xl border border-slate-800/80 bg-slate-950/60 px-3 py-2 shadow-inner shadow-black/30 animate-pulse" aria-hidden="true">
+                  <div key={i} className={`flex flex-col gap-1 rounded-xl border px-3 py-2 animate-pulse ${isDarkMode ? 'border-slate-800/80 bg-slate-950/60 shadow-inner shadow-black/30' : 'border-slate-200 bg-slate-50 shadow-sm'}`} aria-hidden="true">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-lg bg-slate-700/50" />
-                        <div className="h-4 w-32 bg-slate-700/50 rounded" />
+                        <div className={`h-10 w-10 rounded-lg ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-200'}`} />
+                        <div className={`h-4 w-32 rounded ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-200'}`} />
                       </div>
-                      <div className="h-4 w-12 bg-slate-700/50 rounded" />
+                      <div className={`h-4 w-12 rounded ${isDarkMode ? 'bg-slate-700/50' : 'bg-slate-200'}`} />
                     </div>
                   </div>
                 ))}
@@ -2412,7 +2412,7 @@ export default function BioacousticsDetectionAnalysisPage() {
 
             {isTemporalAnalysisExpanded && (
               <div className="space-y-4">
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className={`text-xs leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                   Species detections, ecological metrics, and frequency band analysis over time. Select a view to explore detection patterns and habitat quality indicators.
                 </p>
                 
@@ -2421,26 +2421,26 @@ export default function BioacousticsDetectionAnalysisPage() {
                     {/* Skeleton Loading State */}
                     <div className="flex flex-wrap gap-2">
                       {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className="h-8 w-32 rounded-lg bg-slate-800/50 animate-pulse" />
+                        <div key={i} className={`h-8 w-32 rounded-lg animate-pulse ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-200'}`} />
                       ))}
                     </div>
                     
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3 h-16 animate-pulse" />
+                    <div className={`rounded-lg border p-3 h-16 animate-pulse ${isDarkMode ? 'border-slate-800/70 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`} />
                     
-                    <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-4">
-                      <div className="h-64 w-full rounded bg-slate-800/50 animate-pulse flex items-center justify-center">
+                    <div className={`rounded-xl border p-4 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                      <div className={`h-64 w-full rounded animate-pulse flex items-center justify-center ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-100'}`}>
                         <div className="flex flex-col items-center gap-2">
                           <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-400 border-t-emerald-400" />
-                          <span className="text-xs text-slate-400">Computing acoustic indices...</span>
+                          <span className={`text-xs ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Computing acoustic indices...</span>
                         </div>
                       </div>
                     </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3 space-y-2">
-                          <div className="h-3 w-16 bg-slate-800/50 rounded animate-pulse" />
-                          <div className="h-6 w-20 bg-slate-800/50 rounded animate-pulse" />
+                        <div key={i} className={`rounded-lg border p-3 space-y-2 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                          <div className={`h-3 w-16 rounded animate-pulse ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-200'}`} />
+                          <div className={`h-6 w-20 rounded animate-pulse ${isDarkMode ? 'bg-slate-800/50' : 'bg-slate-200'}`} />
                         </div>
                       ))}
                     </div>
@@ -2454,7 +2454,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                         className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                           selectedMetric === 'combined'
                             ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
-                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                            : isDarkMode ? 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300' : 'bg-white border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-700'
                         }`}
                         aria-pressed={selectedMetric === 'combined'}
                         disabled={acousticIndicesData.length === 0}
@@ -2466,7 +2466,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                         className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                           selectedMetric === 'freq-bands'
                             ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
-                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                            : isDarkMode ? 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300' : 'bg-white border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-700'
                         }`}
                         aria-pressed={selectedMetric === 'freq-bands'}
                         disabled={frequencyBandsData.length === 0}
@@ -2478,7 +2478,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                         className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                           selectedMetric === 'aci'
                             ? 'bg-blue-500/20 border-blue-400/50 text-blue-300'
-                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                            : isDarkMode ? 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300' : 'bg-white border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-700'
                         }`}
                         aria-pressed={selectedMetric === 'aci'}
                         disabled={acousticIndicesData.length === 0}
@@ -2490,7 +2490,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                         className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                           selectedMetric === 'adi'
                             ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
-                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                            : isDarkMode ? 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300' : 'bg-white border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-700'
                         }`}
                         aria-pressed={selectedMetric === 'adi'}
                         disabled={acousticIndicesData.length === 0}
@@ -2502,7 +2502,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                         className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                           selectedMetric === 'ndsi'
                             ? 'bg-orange-500/20 border-orange-400/50 text-orange-300'
-                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                            : isDarkMode ? 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300' : 'bg-white border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-700'
                         }`}
                         aria-pressed={selectedMetric === 'ndsi'}
                         disabled={acousticIndicesData.length === 0}
@@ -2514,7 +2514,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                         className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
                           selectedMetric === 'bi'
                             ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
-                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                            : isDarkMode ? 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300' : 'bg-white border-slate-300 text-slate-600 hover:border-slate-400 hover:text-slate-700'
                         }`}
                         aria-pressed={selectedMetric === 'bi'}
                         disabled={acousticIndicesData.length === 0}
@@ -2576,26 +2576,26 @@ export default function BioacousticsDetectionAnalysisPage() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {selectedMetric === 'aci' && acousticIndicesData.length > 0 && (
                         <>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean ACI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Mean ACI</div>
                             <div className="text-lg font-semibold text-blue-300">
                               {(acousticIndicesData.reduce((sum, d) => sum + d.aci, 0) / acousticIndicesData.length).toFixed(2)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max ACI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Max ACI</div>
                             <div className="text-lg font-semibold text-blue-300">
                               {Math.max(...acousticIndicesData.map(d => d.aci)).toFixed(2)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min ACI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Min ACI</div>
                             <div className="text-lg font-semibold text-blue-300">
                               {Math.min(...acousticIndicesData.map(d => d.aci)).toFixed(2)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Std Dev</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Std Dev</div>
                             <div className="text-lg font-semibold text-blue-300">
                               {(() => {
                                 const values = acousticIndicesData.map(d => d.aci);
@@ -2609,26 +2609,26 @@ export default function BioacousticsDetectionAnalysisPage() {
                       )}
                       {selectedMetric === 'adi' && acousticIndicesData.length > 0 && (
                         <>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean ADI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Mean ADI</div>
                             <div className="text-lg font-semibold text-emerald-300">
                               {(acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length).toFixed(3)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max ADI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Max ADI</div>
                             <div className="text-lg font-semibold text-emerald-300">
                               {Math.max(...acousticIndicesData.map(d => d.adi)).toFixed(3)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min ADI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Min ADI</div>
                             <div className="text-lg font-semibold text-emerald-300">
                               {Math.min(...acousticIndicesData.map(d => d.adi)).toFixed(3)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Diversity</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Diversity</div>
                             <div className="text-lg font-semibold text-emerald-300">
                               {acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length > 0.6 ? 'High' : 
                                acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length > 0.4 ? 'Medium' : 'Low'}
@@ -2638,26 +2638,26 @@ export default function BioacousticsDetectionAnalysisPage() {
                       )}
                       {selectedMetric === 'ndsi' && acousticIndicesData.length > 0 && (
                         <>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean NDSI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Mean NDSI</div>
                             <div className="text-lg font-semibold text-orange-300">
                               {(acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length).toFixed(3)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max NDSI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Max NDSI</div>
                             <div className="text-lg font-semibold text-orange-300">
                               {Math.max(...acousticIndicesData.map(d => d.ndsi)).toFixed(3)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min NDSI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Min NDSI</div>
                             <div className="text-lg font-semibold text-orange-300">
                               {Math.min(...acousticIndicesData.map(d => d.ndsi)).toFixed(3)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Soundscape</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Soundscape</div>
                             <div className="text-lg font-semibold text-orange-300">
                               {acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length > 0.2 ? 'Natural' : 
                                acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length > -0.2 ? 'Mixed' : 'Impacted'}
@@ -2667,26 +2667,26 @@ export default function BioacousticsDetectionAnalysisPage() {
                       )}
                       {selectedMetric === 'bi' && acousticIndicesData.length > 0 && (
                         <>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean BI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Mean BI</div>
                             <div className="text-lg font-semibold text-purple-300">
                               {(acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length).toFixed(3)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max BI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Max BI</div>
                             <div className="text-lg font-semibold text-purple-300">
                               {Math.max(...acousticIndicesData.map(d => d.bi)).toFixed(3)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min BI</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Min BI</div>
                             <div className="text-lg font-semibold text-purple-300">
                               {Math.min(...acousticIndicesData.map(d => d.bi)).toFixed(3)}
                             </div>
                           </div>
-                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Bird Activity</div>
+                          <div className={`rounded-lg border p-3 ${isDarkMode ? 'border-slate-800/70 bg-slate-950/60' : 'border-slate-200 bg-white shadow-sm'}`}>
+                            <div className={`text-[10px] uppercase tracking-wider ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>Bird Activity</div>
                             <div className="text-lg font-semibold text-purple-300">
                               {acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length > 0.3 ? 'High' : 
                                acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length > 0.15 ? 'Medium' : 'Low'}
@@ -2707,8 +2707,8 @@ export default function BioacousticsDetectionAnalysisPage() {
                           </svg>
                         </div>
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-slate-300">No Temporal Data Available</p>
-                          <p className="text-xs text-slate-500 max-w-md">
+                          <p className={`text-sm font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>No Temporal Data Available</p>
+                          <p className={`text-xs max-w-md ${isDarkMode ? 'text-slate-500' : 'text-slate-600'}`}>
                             Upload an audio file to see species detections, acoustic indices, and frequency analysis over time.
                           </p>
                         </div>
