@@ -766,6 +766,16 @@ export default function BioacousticsDetectionAnalysisPage() {
     };
   }, [acousticIndicesData, frequencyBandsData, selectedMetric, clipConfidenceSeries]);
 
+  // Resize chart when temporal analysis section is expanded/collapsed
+  useEffect(() => {
+    if (isTemporalAnalysisExpanded && metricsChartInstanceRef.current) {
+      // Delay to ensure DOM is updated
+      setTimeout(() => {
+        metricsChartInstanceRef.current?.resize();
+      }, 0);
+    }
+  }, [isTemporalAnalysisExpanded]);
+
   useEffect(() => {
     if (
       !audioObjectUrl ||
@@ -1638,13 +1648,25 @@ export default function BioacousticsDetectionAnalysisPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-930 to-slate-950 text-slate-100">
+    <div className={`min-h-screen transition-colors ${isDarkMode ? 'bg-gradient-to-b from-slate-950 via-slate-930 to-slate-950 text-slate-100' : 'bg-gradient-to-b from-slate-50 via-slate-100 to-slate-50 text-slate-900'}`}>
       <main aria-label="AI Bioacoustics Analysis Application">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 pb-12 pt-12">
-        <section className="relative overflow-hidden rounded-2xl border border-slate-800/70 bg-slate-900/60 px-8 py-10 shadow-[0_25px_80px_rgba(0,0,0,0.45)]" aria-labelledby="page-heading">
+        <section className="relative overflow-hidden rounded-2xl border border-slate-800/70 bg-slate-900/60 px-6 py-6 shadow-[0_25px_80px_rgba(0,0,0,0.45)]" aria-labelledby="page-heading">
+          {/* Theme Toggle Button - Top Right */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`absolute top-3 right-3 z-10 rounded-lg border p-1.5 text-base transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400 ${
+              isDarkMode
+                ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700'
+                : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+            }`}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? '🌙' : '☀️'}
+          </button>
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(96,165,250,0.18),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(52,211,153,0.18),transparent_30%),radial-gradient(circle_at_50%_90%,rgba(248,113,113,0.12),transparent_25%)]" aria-hidden="true" />
-          <div className="relative flex flex-col md:flex-row gap-6 items-start md:items-center">
-            <div className="flex flex-col gap-4 md:max-w-[65%]">
+          <div className="relative flex flex-col md:flex-row gap-4 items-start md:items-center">
+            <div className="flex flex-col gap-3 md:max-w-[65%]">
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-800/80 bg-slate-900/70 px-3 py-1 text-xs text-slate-300">
               <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
               Live, in-browser AI-powered bioacoustics toolkit
@@ -1682,26 +1704,26 @@ export default function BioacousticsDetectionAnalysisPage() {
               <img 
                 src="/bioacoustics/assets/logo.png" 
                 alt="AI Bioacoustics Analysis Toolkit Logo" 
-                className="w-40 h-40 object-contain"
+                className="w-32 h-32 object-contain"
               />
             </div>
           </div>
         </section>
 
         {/* Sonotype Gallery Section */}
-        <section className="rounded-2xl border border-slate-800/60 bg-slate-950/80 p-4 shadow-lg backdrop-blur-sm">
+        <section className="rounded-2xl border border-slate-800/60 bg-slate-950/80 p-3 shadow-lg backdrop-blur-sm">
           <button
             onClick={() => setIsGalleryExpanded(!isGalleryExpanded)}
-            className="flex w-full items-center justify-between text-left transition-colors hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg p-2"
+            className="flex w-full items-center justify-between text-left transition-colors hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg p-1"
             aria-expanded={isGalleryExpanded}
           >
             <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
-              Detected Sonotype Gallery
+              Sonotype Gallery
             </h2>
             {isGalleryExpanded ? (
-              <ChevronUp className="h-6 w-6 text-slate-400" />
+              <ChevronUp className="h-5 w-5 text-slate-400" />
             ) : (
-              <ChevronDown className="h-6 w-6 text-slate-400" />
+              <ChevronDown className="h-5 w-5 text-slate-400" />
             )}
           </button>
 
@@ -1720,13 +1742,14 @@ export default function BioacousticsDetectionAnalysisPage() {
               </div>
 
               {/* Gallery Grid */}
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
-                {speciesData
-                  .filter((species) =>
-                    species.commonName.toLowerCase().includes(speciesSearch.toLowerCase()) ||
-                    species.v5Code.toLowerCase().includes(speciesSearch.toLowerCase())
-                  )
-                  .map((species) => (
+              <div className="max-h-[420px] overflow-y-auto scrollbar-thin scrollbar-track-slate-900 scrollbar-thumb-slate-700 hover:scrollbar-thumb-slate-600">
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10">
+                  {speciesData
+                    .filter((species) =>
+                      species.commonName.toLowerCase().includes(speciesSearch.toLowerCase()) ||
+                      species.v5Code.toLowerCase().includes(speciesSearch.toLowerCase())
+                    )
+                    .map((species) => (
                     <div
                       key={species.v5Code}
                       className="group relative flex flex-col items-center gap-1.5 rounded-lg border border-slate-800/80 bg-slate-900/60 p-2 shadow-md transition-all hover:border-emerald-500/50 hover:bg-slate-900/80 hover:shadow-xl hover:z-10"
@@ -1752,6 +1775,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                       </div>
                     </div>
                   ))}
+                </div>
               </div>
 
               {/* No results message */}
@@ -1769,7 +1793,7 @@ export default function BioacousticsDetectionAnalysisPage() {
 
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-stretch">
-            <div className="relative flex flex-col space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]">
+            <div className="relative flex flex-col space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4 shadow-[0_15px_50px_rgba(0,0,0,0.4)]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h2 id="audio-input-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
@@ -1803,13 +1827,13 @@ export default function BioacousticsDetectionAnalysisPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={!model || isProcessing}
-                    className="group relative rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-slate-200 shadow-inner shadow-black/20 transition hover:border-emerald-400 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    className="group relative rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2 text-emerald-200 shadow-inner shadow-black/20 transition hover:border-emerald-400 hover:text-emerald-100 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     title="Upload local file"
                     aria-label="Upload audio file from computer"
                   >
                     <div className="flex items-center gap-2">
                       <Paperclip size={16} aria-hidden="true" />
-                      <span className="text-sm font-medium">Upload File</span>
+                      <span className="text-sm font-medium">Upload</span>
                     </div>
                   </button>
                   <input
@@ -1892,11 +1916,6 @@ export default function BioacousticsDetectionAnalysisPage() {
                     {audioMetadata?.sampleRate ? `${(audioMetadata.sampleRate / 1000).toFixed(1)} kHz` : <span className="text-slate-400">—</span>}
                   </span>
                   
-                  <span className="font-semibold text-slate-100">Duration:</span>
-                  <span className="text-slate-200">
-                    {audioMetadata?.duration ? formatTime(audioMetadata.duration) : <span className="text-slate-400">—</span>}
-                  </span>
-                  
                   <span className="font-semibold text-slate-100">Location:</span>
                   <span className="text-slate-200">
                     {audioMetadata?.location?.lat !== undefined && audioMetadata.location?.lon !== undefined
@@ -1930,7 +1949,7 @@ export default function BioacousticsDetectionAnalysisPage() {
               </button>
             </div>
 
-            <section className="w-full flex flex-col justify-self-end space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="equalizer-heading">
+            <section className="w-full flex flex-col justify-self-end space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="equalizer-heading">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <h2 id="equalizer-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
@@ -2188,330 +2207,8 @@ export default function BioacousticsDetectionAnalysisPage() {
 
           </section>
 
-          {/* Temporal Analysis Section - Combined Charts */}
-          <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="acoustic-metrics-heading">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <h2 id="acoustic-metrics-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
-                  Temporal Analysis
-                </h2>
-                <div className="group relative">
-                  <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
-                  <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
-                    <strong className="text-slate-200">Note:</strong> Due to 8 kHz sample rate, frequency analysis is capped at 4 kHz (Nyquist frequency). Full biophony range (2-8 kHz) requires higher sample rates.
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Species detections, ecological metrics, and frequency band analysis over time. Select a view to explore detection patterns and habitat quality indicators.
-              </p>
-            </div>
-            
-            {isProcessing && acousticIndicesData.length === 0 && clipPredictions.length === 0 ? (
-                <>
-                  {/* Skeleton Loading State */}
-                  <div className="flex flex-wrap gap-2">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <div key={i} className="h-8 w-32 rounded-lg bg-slate-800/50 animate-pulse" />
-                    ))}
-                  </div>
-                  
-                  <div className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3 h-16 animate-pulse" />
-                  
-                  <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-4">
-                    <div className="h-64 w-full rounded bg-slate-800/50 animate-pulse flex items-center justify-center">
-                      <div className="flex flex-col items-center gap-2">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-400 border-t-emerald-400" />
-                        <span className="text-xs text-slate-400">Computing acoustic indices...</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {[1, 2, 3, 4].map((i) => (
-                      <div key={i} className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3 space-y-2">
-                        <div className="h-3 w-16 bg-slate-800/50 rounded animate-pulse" />
-                        <div className="h-6 w-20 bg-slate-800/50 rounded animate-pulse" />
-                      </div>
-                    ))}
-                  </div>
-                </>
-              ) : (acousticIndicesData.length > 0 || clipPredictions.length > 0) ? (
-                <>
-                  {/* Actual Content */}
-              
-              {/* Metric Selector Tabs */}
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedMetric('combined')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                    selectedMetric === 'combined'
-                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
-                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
-                  }`}
-                  aria-pressed={selectedMetric === 'combined'}
-                  disabled={acousticIndicesData.length === 0}
-                >
-                  Acoustic Indices
-                </button>
-                <button
-                  onClick={() => setSelectedMetric('freq-bands')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                    selectedMetric === 'freq-bands'
-                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
-                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
-                  }`}
-                  aria-pressed={selectedMetric === 'freq-bands'}
-                  disabled={frequencyBandsData.length === 0}
-                >
-                  Frequency Bands
-                </button>
-                <button
-                  onClick={() => setSelectedMetric('aci')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                    selectedMetric === 'aci'
-                      ? 'bg-blue-500/20 border-blue-400/50 text-blue-300'
-                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
-                  }`}
-                  aria-pressed={selectedMetric === 'aci'}
-                  disabled={acousticIndicesData.length === 0}
-                >
-                  ACI
-                </button>
-                <button
-                  onClick={() => setSelectedMetric('adi')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                    selectedMetric === 'adi'
-                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
-                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
-                  }`}
-                  aria-pressed={selectedMetric === 'adi'}
-                  disabled={acousticIndicesData.length === 0}
-                >
-                  ADI
-                </button>
-                <button
-                  onClick={() => setSelectedMetric('ndsi')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                    selectedMetric === 'ndsi'
-                      ? 'bg-orange-500/20 border-orange-400/50 text-orange-300'
-                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
-                  }`}
-                  aria-pressed={selectedMetric === 'ndsi'}
-                  disabled={acousticIndicesData.length === 0}
-                >
-                  NDSI
-                </button>
-                <button
-                  onClick={() => setSelectedMetric('bi')}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                    selectedMetric === 'bi'
-                      ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
-                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
-                  }`}
-                  aria-pressed={selectedMetric === 'bi'}
-                  disabled={acousticIndicesData.length === 0}
-                >
-                  BI
-                </button>
-              </div>
-
-              {/* Metric Description */}
-              <div className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3 text-xs text-slate-300">
-                {selectedMetric === 'combined' && (
-                  <>
-                    <strong>Acoustic Indices Combined:</strong> Normalized view of all four acoustic indices for easy comparison. 
-                    Values are scaled to 0-1 range. Look for patterns across multiple metrics to assess ecosystem health.
-                  </>
-                )}
-                {selectedMetric === 'freq-bands' && (
-                  <>
-                    <strong>Frequency Band Analysis:</strong> Energy distribution across ecological ranges. 
-                    <span className="text-indigo-300"> Geophony</span> (wind/rain), 
-                    <span className="text-red-300"> Anthrophony</span> (human noise), 
-                    <span className="text-emerald-300"> Biophony</span> (bird calls).
-                  </>
-                )}
-                {selectedMetric === 'aci' && (
-                  <>
-                    <strong>ACI (Acoustic Complexity Index):</strong> Measures sound intensity variability. 
-                    Higher values indicate more complex soundscapes with bird activity.
-                  </>
-                )}
-                {selectedMetric === 'adi' && (
-                  <>
-                    <strong>ADI (Acoustic Diversity Index):</strong> Shannon entropy across frequency bins (0-1). 
-                    Higher values indicate even distribution of sound energy, suggesting biodiverse communities.
-                  </>
-                )}
-                {selectedMetric === 'ndsi' && (
-                  <>
-                    <strong>NDSI (Normalized Difference Soundscape Index):</strong> Ratio of biological to human sounds (-1 to +1). 
-                    Positive values indicate natural soundscapes; negative values indicate human noise pollution.
-                  </>
-                )}
-                {selectedMetric === 'bi' && (
-                  <>
-                    <strong>BI (Bioacoustic Index):</strong> Total sound energy in bird frequency range (2-4 kHz). 
-                    Higher values suggest more bird activity and abundance.
-                  </>
-                )}
-              </div>
-
-              {/* Chart */}
-              <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-4">
-                <div className="h-64 w-full">
-                  <canvas ref={metricsChartRef} className="h-full w-full" role="img" aria-label={`Line chart showing ${selectedMetric} over time`} />
-                </div>
-              </div>
-
-              {/* Summary Statistics */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {selectedMetric === 'aci' && acousticIndicesData.length > 0 && (
-                  <>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean ACI</div>
-                      <div className="text-lg font-semibold text-blue-300">
-                        {(acousticIndicesData.reduce((sum, d) => sum + d.aci, 0) / acousticIndicesData.length).toFixed(2)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max ACI</div>
-                      <div className="text-lg font-semibold text-blue-300">
-                        {Math.max(...acousticIndicesData.map(d => d.aci)).toFixed(2)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min ACI</div>
-                      <div className="text-lg font-semibold text-blue-300">
-                        {Math.min(...acousticIndicesData.map(d => d.aci)).toFixed(2)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Std Dev</div>
-                      <div className="text-lg font-semibold text-blue-300">
-                        {(() => {
-                          const values = acousticIndicesData.map(d => d.aci);
-                          const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
-                          const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
-                          return Math.sqrt(variance).toFixed(2);
-                        })()}
-                      </div>
-                    </div>
-                  </>
-                )}
-                {selectedMetric === 'adi' && acousticIndicesData.length > 0 && (
-                  <>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean ADI</div>
-                      <div className="text-lg font-semibold text-emerald-300">
-                        {(acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length).toFixed(3)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max ADI</div>
-                      <div className="text-lg font-semibold text-emerald-300">
-                        {Math.max(...acousticIndicesData.map(d => d.adi)).toFixed(3)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min ADI</div>
-                      <div className="text-lg font-semibold text-emerald-300">
-                        {Math.min(...acousticIndicesData.map(d => d.adi)).toFixed(3)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Diversity</div>
-                      <div className="text-lg font-semibold text-emerald-300">
-                        {acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length > 0.6 ? 'High' : 
-                         acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length > 0.4 ? 'Medium' : 'Low'}
-                      </div>
-                    </div>
-                  </>
-                )}
-                {selectedMetric === 'ndsi' && acousticIndicesData.length > 0 && (
-                  <>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean NDSI</div>
-                      <div className="text-lg font-semibold text-orange-300">
-                        {(acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length).toFixed(3)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max NDSI</div>
-                      <div className="text-lg font-semibold text-orange-300">
-                        {Math.max(...acousticIndicesData.map(d => d.ndsi)).toFixed(3)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min NDSI</div>
-                      <div className="text-lg font-semibold text-orange-300">
-                        {Math.min(...acousticIndicesData.map(d => d.ndsi)).toFixed(3)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Soundscape</div>
-                      <div className="text-lg font-semibold text-orange-300">
-                        {acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length > 0.2 ? 'Natural' : 
-                         acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length > -0.2 ? 'Mixed' : 'Impacted'}
-                      </div>
-                    </div>
-                  </>
-                )}
-                {selectedMetric === 'bi' && acousticIndicesData.length > 0 && (
-                  <>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean BI</div>
-                      <div className="text-lg font-semibold text-purple-300">
-                        {(acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length).toFixed(3)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max BI</div>
-                      <div className="text-lg font-semibold text-purple-300">
-                        {Math.max(...acousticIndicesData.map(d => d.bi)).toFixed(3)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min BI</div>
-                      <div className="text-lg font-semibold text-purple-300">
-                        {Math.min(...acousticIndicesData.map(d => d.bi)).toFixed(3)}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
-                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Bird Activity</div>
-                      <div className="text-lg font-semibold text-purple-300">
-                        {acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length > 0.3 ? 'High' : 
-                         acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length > 0.15 ? 'Medium' : 'Low'}
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-                </>
-              ) : (
-                <>
-                  {/* Empty State Placeholder */}
-                  <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-8">
-                    <div className="flex flex-col items-center justify-center gap-3 text-center">
-                      <div className="rounded-full bg-slate-800/50 p-4">
-                        <svg className="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium text-slate-300">No Temporal Data Available</p>
-                        <p className="text-xs text-slate-500 max-w-md">
-                          Upload an audio file to see species detections, acoustic indices, and frequency analysis over time.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </section>
-
           <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="results-heading" aria-busy={isProcessing && !classificationResult ? true : undefined}>
+            {/* Top-5 Detected Species moved to top */}
             <div className="flex items-center gap-2">
               <h2 id="results-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
                 Top-5 Detected Species
@@ -2650,6 +2347,342 @@ export default function BioacousticsDetectionAnalysisPage() {
               </div>
             )}
           </section>
+
+          {/* Temporal Analysis Section - Moved to bottom and made toggleable */}
+          <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="acoustic-metrics-heading">
+            <button
+              onClick={() => setIsTemporalAnalysisExpanded(!isTemporalAnalysisExpanded)}
+              className="flex w-full items-center justify-between text-left transition-colors hover:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg"
+              aria-expanded={isTemporalAnalysisExpanded}
+            >
+              <div className="flex items-center gap-2">
+                <h2 id="acoustic-metrics-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  Temporal Analysis
+                </h2>
+                <div className="group relative" onClick={(e) => e.stopPropagation()}>
+                  <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
+                  <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
+                    <strong className="text-slate-200">Note:</strong> Due to 8 kHz sample rate, frequency analysis is capped at 4 kHz (Nyquist frequency). Full biophony range (2-8 kHz) requires higher sample rates.
+                  </div>
+                </div>
+              </div>
+              {isTemporalAnalysisExpanded ? (
+                <ChevronUp className="h-5 w-5 text-slate-400" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-slate-400" />
+              )}
+            </button>
+
+            {isTemporalAnalysisExpanded && (
+              <div className="space-y-4">
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Species detections, ecological metrics, and frequency band analysis over time. Select a view to explore detection patterns and habitat quality indicators.
+                </p>
+                
+                {isProcessing && acousticIndicesData.length === 0 && clipPredictions.length === 0 ? (
+                  <>
+                    {/* Skeleton Loading State */}
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div key={i} className="h-8 w-32 rounded-lg bg-slate-800/50 animate-pulse" />
+                      ))}
+                    </div>
+                    
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3 h-16 animate-pulse" />
+                    
+                    <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-4">
+                      <div className="h-64 w-full rounded bg-slate-800/50 animate-pulse flex items-center justify-center">
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-400 border-t-emerald-400" />
+                          <span className="text-xs text-slate-400">Computing acoustic indices...</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3 space-y-2">
+                          <div className="h-3 w-16 bg-slate-800/50 rounded animate-pulse" />
+                          <div className="h-6 w-20 bg-slate-800/50 rounded animate-pulse" />
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (acousticIndicesData.length > 0 || clipPredictions.length > 0) ? (
+                  <>
+                    {/* Metric Selector Tabs */}
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => setSelectedMetric('combined')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                          selectedMetric === 'combined'
+                            ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                        }`}
+                        aria-pressed={selectedMetric === 'combined'}
+                        disabled={acousticIndicesData.length === 0}
+                      >
+                        Acoustic Indices
+                      </button>
+                      <button
+                        onClick={() => setSelectedMetric('freq-bands')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                          selectedMetric === 'freq-bands'
+                            ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                        }`}
+                        aria-pressed={selectedMetric === 'freq-bands'}
+                        disabled={frequencyBandsData.length === 0}
+                      >
+                        Frequency Bands
+                      </button>
+                      <button
+                        onClick={() => setSelectedMetric('aci')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                          selectedMetric === 'aci'
+                            ? 'bg-blue-500/20 border-blue-400/50 text-blue-300'
+                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                        }`}
+                        aria-pressed={selectedMetric === 'aci'}
+                        disabled={acousticIndicesData.length === 0}
+                      >
+                        ACI
+                      </button>
+                      <button
+                        onClick={() => setSelectedMetric('adi')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                          selectedMetric === 'adi'
+                            ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                        }`}
+                        aria-pressed={selectedMetric === 'adi'}
+                        disabled={acousticIndicesData.length === 0}
+                      >
+                        ADI
+                      </button>
+                      <button
+                        onClick={() => setSelectedMetric('ndsi')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                          selectedMetric === 'ndsi'
+                            ? 'bg-orange-500/20 border-orange-400/50 text-orange-300'
+                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                        }`}
+                        aria-pressed={selectedMetric === 'ndsi'}
+                        disabled={acousticIndicesData.length === 0}
+                      >
+                        NDSI
+                      </button>
+                      <button
+                        onClick={() => setSelectedMetric('bi')}
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                          selectedMetric === 'bi'
+                            ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
+                            : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                        }`}
+                        aria-pressed={selectedMetric === 'bi'}
+                        disabled={acousticIndicesData.length === 0}
+                      >
+                        BI
+                      </button>
+                    </div>
+
+                    {/* Metric Description */}
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3 text-xs text-slate-300">
+                      {selectedMetric === 'combined' && (
+                        <>
+                          <strong>Acoustic Indices Combined:</strong> Normalized view of all four acoustic indices for easy comparison. 
+                          Values are scaled to 0-1 range. Look for patterns across multiple metrics to assess ecosystem health.
+                        </>
+                      )}
+                      {selectedMetric === 'freq-bands' && (
+                        <>
+                          <strong>Frequency Band Analysis:</strong> Energy distribution across ecological ranges. 
+                          <span className="text-indigo-300"> Geophony</span> (wind/rain), 
+                          <span className="text-red-300"> Anthrophony</span> (human noise), 
+                          <span className="text-emerald-300"> Biophony</span> (bird calls).
+                        </>
+                      )}
+                      {selectedMetric === 'aci' && (
+                        <>
+                          <strong>ACI (Acoustic Complexity Index):</strong> Measures sound intensity variability. 
+                          Higher values indicate more complex soundscapes with bird activity.
+                        </>
+                      )}
+                      {selectedMetric === 'adi' && (
+                        <>
+                          <strong>ADI (Acoustic Diversity Index):</strong> Shannon entropy across frequency bins (0-1). 
+                          Higher values indicate even distribution of sound energy, suggesting biodiverse communities.
+                        </>
+                      )}
+                      {selectedMetric === 'ndsi' && (
+                        <>
+                          <strong>NDSI (Normalized Difference Soundscape Index):</strong> Ratio of biological to human sounds (-1 to +1). 
+                          Positive values indicate natural soundscapes; negative values indicate human noise pollution.
+                        </>
+                      )}
+                      {selectedMetric === 'bi' && (
+                        <>
+                          <strong>BI (Bioacoustic Index):</strong> Total sound energy in bird frequency range (2-4 kHz). 
+                          Higher values suggest more bird activity and abundance.
+                        </>
+                      )}
+                    </div>
+
+                    {/* Chart */}
+                    <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-4">
+                      <div className="h-64 w-full">
+                        <canvas ref={metricsChartRef} className="h-full w-full" role="img" aria-label={`Line chart showing ${selectedMetric} over time`} />
+                      </div>
+                    </div>
+
+                    {/* Summary Statistics */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {selectedMetric === 'aci' && acousticIndicesData.length > 0 && (
+                        <>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean ACI</div>
+                            <div className="text-lg font-semibold text-blue-300">
+                              {(acousticIndicesData.reduce((sum, d) => sum + d.aci, 0) / acousticIndicesData.length).toFixed(2)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max ACI</div>
+                            <div className="text-lg font-semibold text-blue-300">
+                              {Math.max(...acousticIndicesData.map(d => d.aci)).toFixed(2)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min ACI</div>
+                            <div className="text-lg font-semibold text-blue-300">
+                              {Math.min(...acousticIndicesData.map(d => d.aci)).toFixed(2)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Std Dev</div>
+                            <div className="text-lg font-semibold text-blue-300">
+                              {(() => {
+                                const values = acousticIndicesData.map(d => d.aci);
+                                const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+                                const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+                                return Math.sqrt(variance).toFixed(2);
+                              })()}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {selectedMetric === 'adi' && acousticIndicesData.length > 0 && (
+                        <>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean ADI</div>
+                            <div className="text-lg font-semibold text-emerald-300">
+                              {(acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length).toFixed(3)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max ADI</div>
+                            <div className="text-lg font-semibold text-emerald-300">
+                              {Math.max(...acousticIndicesData.map(d => d.adi)).toFixed(3)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min ADI</div>
+                            <div className="text-lg font-semibold text-emerald-300">
+                              {Math.min(...acousticIndicesData.map(d => d.adi)).toFixed(3)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Diversity</div>
+                            <div className="text-lg font-semibold text-emerald-300">
+                              {acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length > 0.6 ? 'High' : 
+                               acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length > 0.4 ? 'Medium' : 'Low'}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {selectedMetric === 'ndsi' && acousticIndicesData.length > 0 && (
+                        <>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean NDSI</div>
+                            <div className="text-lg font-semibold text-orange-300">
+                              {(acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length).toFixed(3)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max NDSI</div>
+                            <div className="text-lg font-semibold text-orange-300">
+                              {Math.max(...acousticIndicesData.map(d => d.ndsi)).toFixed(3)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min NDSI</div>
+                            <div className="text-lg font-semibold text-orange-300">
+                              {Math.min(...acousticIndicesData.map(d => d.ndsi)).toFixed(3)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Soundscape</div>
+                            <div className="text-lg font-semibold text-orange-300">
+                              {acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length > 0.2 ? 'Natural' : 
+                               acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length > -0.2 ? 'Mixed' : 'Impacted'}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                      {selectedMetric === 'bi' && acousticIndicesData.length > 0 && (
+                        <>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean BI</div>
+                            <div className="text-lg font-semibold text-purple-300">
+                              {(acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length).toFixed(3)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max BI</div>
+                            <div className="text-lg font-semibold text-purple-300">
+                              {Math.max(...acousticIndicesData.map(d => d.bi)).toFixed(3)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min BI</div>
+                            <div className="text-lg font-semibold text-purple-300">
+                              {Math.min(...acousticIndicesData.map(d => d.bi)).toFixed(3)}
+                            </div>
+                          </div>
+                          <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                            <div className="text-[10px] text-slate-400 uppercase tracking-wider">Bird Activity</div>
+                            <div className="text-lg font-semibold text-purple-300">
+                              {acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length > 0.3 ? 'High' : 
+                               acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length > 0.15 ? 'Medium' : 'Low'}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Empty State Placeholder */}
+                    <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-8">
+                      <div className="flex flex-col items-center justify-center gap-3 text-center">
+                        <div className="rounded-full bg-slate-800/50 p-4">
+                          <svg className="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                          </svg>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-slate-300">No Temporal Data Available</p>
+                          <p className="text-xs text-slate-500 max-w-md">
+                            Upload an audio file to see species detections, acoustic indices, and frequency analysis over time.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </section>
+
           {errorMessage && (
               <div 
                 className="rounded-xl border border-red-500/40 bg-red-950/50 px-3 py-2 text-sm text-red-200 shadow-inner shadow-red-900/40"
