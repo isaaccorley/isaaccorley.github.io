@@ -3,25 +3,24 @@
 import type { InferenceSession, Tensor } from 'onnxruntime-web';
 import { getHumanReadableName } from './class-mapper';
 
+// These are the v5_Code values from the target_classes.csv
 export const CLASSES = [
-  'ACCO1', 'ACGE1', 'ACGE2', 'ACST1', 'AEAC1', 'AEAC2', 'Airplane', 'ANCA1',
-  'ASOT1', 'BOUM1', 'BRCA1', 'BRMA1', 'BRMA2', 'BUJA1', 'BUJA2', 'Bullfrog',
-  'BUVI1', 'BUVI2', 'CACA1', 'CAGU1', 'CAGU2', 'CAGU3', 'CALA1', 'CALU1',
-  'CAPU1', 'CAUS1', 'CAUS2', 'CCOO1', 'CCOO2', 'CECA1', 'Chainsaw', 'CHFA1',
-  'Chicken', 'CHMI1', 'CHMI2', 'COAU1', 'COAU2', 'COBR1', 'COCO1', 'COSO1',
-  'Cow', 'Creek', 'Cricket', 'CYST1', 'CYST2', 'DEFU1', 'DEFU2', 'Dog',
-  'DRPU1', 'Drum', 'EMDI1', 'EMOB1', 'FACO1', 'FASP1', 'Fly', 'Frog',
-  'GADE1', 'GLGN1', 'Growler', 'Gunshot', 'HALE1', 'HAPU1', 'HEVE1',
-  'Highway', 'Horn', 'Human', 'HYPI1', 'IXNA1', 'IXNA2', 'JUHY1', 'LEAL1',
-  'LECE1', 'LEVI1', 'LEVI2', 'LOCU1', 'MEFO1', 'MEGA1', 'MEKE1', 'MEKE2',
-  'MEKE3', 'MYTO1', 'NUCO1', 'OCPR1', 'ODOC1', 'ORPI1', 'ORPI2', 'PAFA1',
-  'PAFA2', 'PAHA1', 'PECA1', 'PHME1', 'PHNU1', 'PILU1', 'PILU2', 'PIMA1',
-  'PIMA2', 'POEC1', 'POEC2', 'PSFL1', 'Rain', 'Raptor', 'SICU1', 'SITT1',
-  'SITT2', 'SPHY1', 'SPHY2', 'SPPA1', 'SPPI1', 'SPTH1', 'STDE1', 'STNE1',
-  'STNE2', 'STOC_4Note', 'STOC_Series', 'Strix_Bark', 'Strix_Whistle',
-  'STVA_8Note', 'STVA_Insp', 'STVA_Series', 'Survey_Tone', 'TADO1', 'TADO2',
-  'TAMI1', 'Thunder', 'TRAE1', 'Train', 'Tree', 'TUMI1', 'TUMI2', 'URAM1',
-  'VIHU1', 'Wildcat', 'Yarder', 'ZEMA1', 'ZOLE1',
+  'ACGE1', 'ACGE2', 'ACCO1', 'ACST1', 'BUJA1', 'BUJA2', 'HALE1', 'PAHA1', 'Raptor',
+  'BRCA1', 'CHMI1', 'CHMI2', 'PHNU1', 'BRMA1', 'BRMA2', 'GADE1', 'PAFA1', 'PAFA2',
+  'STDE1', 'ZEMA1', 'FACO1', 'FASP1', 'BOUM1', 'CACA1', 'DEFU1', 'DEFU2', 'MEGA1',
+  'ORPI1', 'ORPI2', 'ANCA1', 'PHME1', 'PILU1', 'PILU2', 'COBR1', 'COCO1', 'CYST1',
+  'CYST2', 'NUCO1', 'PECA1', 'HAPU1', 'HEVE1', 'LOCU1', 'SPPI1', 'CHFA1', 'CAPU1',
+  'LECE1', 'POEC1', 'POEC2', 'JUHY1', 'PIMA1', 'PIMA2', 'SPPA1', 'ZOLE1', 'SITT1',
+  'SITT2', 'TRAE1', 'CAGU1', 'CAGU2', 'CAGU3', 'CAUS1', 'CAUS2', 'IXNA1', 'IXNA2',
+  'MYTO1', 'SICU1', 'TUMI1', 'TUMI2', 'CCOO1', 'CCOO2', 'COSO1', 'EMDI1', 'EMOB1',
+  'VIHU1', 'COAU1', 'COAU2', 'DRPU1', 'HYPI1', 'LEAL1', 'LEVI1', 'LEVI2', 'MEFO1',
+  'SPHY1', 'SPHY2', 'SPTH1', 'Drum', 'AEAC1', 'AEAC2', 'ASOT1', 'BUVI1', 'BUVI2',
+  'GLGN1', 'MEKE1', 'MEKE2', 'MEKE3', 'PSFL1', 'STNE1', 'STNE2', 'STOC_4Note',
+  'STOC_Series', 'Strix_Bark', 'Strix_Whistle', 'STVA_8Note', 'STVA_Insp', 'STVA_Series',
+  'CECA1', 'CALA1', 'CALU1', 'ODOC1', 'OCPR1', 'TAMI1', 'TADO1', 'TADO2', 'URAM1',
+  'Bullfrog', 'Frog', 'Fly', 'Chicken', 'Cow', 'Creek', 'Dog', 'Rain', 'Thunder',
+  'Tree', 'Cricket', 'Airplane', 'Chainsaw', 'Growler', 'Gunshot', 'Highway', 'Horn',
+  'Human', 'Survey_Tone', 'Train', 'Yarder',
 ];
 
 export interface ClassificationResult {
@@ -63,26 +62,7 @@ export async function classifySpectrogram(
     grayscaleData[i] = pixelData[i * 4] / 255.0;
   }
 
-  const sampleValues = Array.from(grayscaleData.slice(0, 8));
-  let min = Number.POSITIVE_INFINITY;
-  let max = Number.NEGATIVE_INFINITY;
-  let sum = 0;
-  for (let i = 0; i < grayscaleData.length; i++) {
-    const v = grayscaleData[i];
-    if (v < min) min = v;
-    if (v > max) max = v;
-    sum += v;
-  }
-  const mean = sum / grayscaleData.length;
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('[classifySpectrogram] stats', {
-      min: Number.isFinite(min) ? min : 0,
-      max: Number.isFinite(max) ? max : 0,
-      mean: Number.isFinite(mean) ? mean : 0,
-      sampleValues,
-      shape: [imageData.height, imageData.width],
-    });
-  }
+
   
   const tensorShape = [1, imageData.height, imageData.width, 1];
   const tensor = new ort.Tensor('float32', grayscaleData, tensorShape);
@@ -104,10 +84,6 @@ export async function classifySpectrogram(
   }
   
   const logits = outputTensor.data as Float32Array | Float64Array | number[];
-
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('[classifySpectrogram] output sample', Array.from(logits).slice(0, 8));
-  }
   
   const sigmoidProbs = sigmoid(Array.from(logits).map(v => Number(v)));
   
