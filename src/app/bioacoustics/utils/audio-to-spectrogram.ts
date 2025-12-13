@@ -1,6 +1,8 @@
 'use client';
 
 import Essentia from 'essentia.js/dist/essentia.js-core.es.js';
+import { AcousticIndices, calculateAcousticIndices } from './acoustic-indices';
+import { calculateFrequencyBands, FrequencyBandEnergies } from './frequency-bands';
 
 let essentiaInstance: Essentia | null = null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -73,6 +75,18 @@ export interface SpectrogramOptions {
   dynamicRange?: number;
 }
 
+export interface SpectrogramResult {
+  imageData: ImageData;
+  acousticIndices: AcousticIndices;
+  frequencyBands: FrequencyBandEnergies;
+}
+
+export interface SpectrogramsResult {
+  spectrograms: ImageData[];
+  acousticIndices: AcousticIndices[];
+  frequencyBands: FrequencyBandEnergies[];
+}
+
 const DEFAULT_OPTIONS: Required<SpectrogramOptions> = {
   width: 1000,
   height: 257,
@@ -85,7 +99,7 @@ export async function audioFileToSpectrograms(
   file: File,
   options: SpectrogramOptions = {},
   onProgress?: (current: number, total: number) => void
-): Promise<ImageData[]> {
+): Promise<SpectrogramsResult> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   
   const audioContext = new AudioContext({ sampleRate: opts.sampleRate });
@@ -125,16 +139,20 @@ export async function audioFileToSpectrograms(
 export async function audioFileToSpectrogram(
   file: File,
   options: SpectrogramOptions = {}
-): Promise<ImageData> {
-  const spectrograms = await audioFileToSpectrograms(file, options);
-  return spectrograms[0] ?? new ImageData(1000, 257);
+): Promise<SpectrogramResult> {
+  const result = await audioFileToSpectrograms(file, options);
+  return {
+    imageData: result.spectrograms[0] ?? new ImageData(1000, 257),
+    acousticIndices: result.acousticIndices[0] ?? { aci: 0, adi: 0, ndsi: 0, bi: 0 },
+    frequencyBands: result.frequencyBands[0] ?? { geophony: 0, anthrophony: 0, biophony: 0 },
+  };
 }
 
 export async function audioBufferToSpectrograms(
   audioBuffer: AudioBuffer,
   options: Required<SpectrogramOptions>,
   onProgress?: (current: number, total: number) => void
-): Promise<ImageData[]> {
+): Promise<SpectrogramsResult> {
   const { sampleRate, duration } = options;
   
   const totalDuration = audioBuffer.duration;
@@ -167,7 +185,12 @@ export async function audioBufferToSpectrograms(
   }
   
   const spectrograms: ImageData[] = [];
+  const acousticIndices: AcousticIndices[] = [];
+  const frequencyBands: FrequencyBandEnergies[] = [];
   const samplesPerClip = Math.floor(clipDuration * sampleRate);
+  
+  // Calculate max frequency (Nyquist frequency)
+  const maxFrequency = sampleRate / 2;
   
   if (onProgress) {
     onProgress(0, numClips);
@@ -187,21 +210,36 @@ export async function audioBufferToSpectrograms(
       const spectrogram = await generateSpectrogram(clipData, clipOptions);
       spectrograms.push(spectrogram);
       
+      // Calculate acoustic indices and frequency bands
+      const indices = calculateAcousticIndices(spectrogram, maxFrequency);
+      const bands = calculateFrequencyBands(spectrogram, maxFrequency);
+      
+      acousticIndices.push(indices);
+      frequencyBands.push(bands);
+      
       if (onProgress) {
         onProgress(clipIdx + 1, numClips);
       }
     }
   }
   
-  return spectrograms;
+  return {
+    spectrograms,
+    acousticIndices,
+    frequencyBands,
+  };
 }
 
 export async function audioBufferToSpectrogram(
   audioBuffer: AudioBuffer,
   options: Required<SpectrogramOptions>
-): Promise<ImageData> {
-  const spectrograms = await audioBufferToSpectrograms(audioBuffer, options);
-  return spectrograms[0] ?? new ImageData(1000, 257);
+): Promise<SpectrogramResult> {
+  const result = await audioBufferToSpectrograms(audioBuffer, options);
+  return {
+    imageData: result.spectrograms[0] ?? new ImageData(1000, 257),
+    acousticIndices: result.acousticIndices[0] ?? { aci: 0, adi: 0, ndsi: 0, bi: 0 },
+    frequencyBands: result.frequencyBands[0] ?? { geophony: 0, anthrophony: 0, biophony: 0 },
+  };
 }
 
 async function resampleToTargetRate(
