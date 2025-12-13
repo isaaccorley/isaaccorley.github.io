@@ -5,6 +5,7 @@ import Chart from 'chart.js/auto';
 import { Download, Info, Paperclip, Volume2 } from 'lucide-react';
 
 
+import { LocationMap } from '@/components/location-map';
 import type { InferenceSession } from 'onnxruntime-web';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type WaveSurfer from 'wavesurfer.js';
@@ -13,6 +14,7 @@ import type { AcousticIndices } from './utils/acoustic-indices';
 import { audioFileToSpectrograms, preloadEssentia } from './utils/audio-to-spectrogram';
 import { getClassThumbnail } from './utils/class-mapper';
 import type { FrequencyBandEnergies } from './utils/frequency-bands';
+import { extractGPSFromAudio } from './utils/gps-extractor';
 import { classifySpectrogramsBatch, type BatchInferenceResult, type InferenceResult } from './utils/inference';
 import { loadBioacousticsModel } from './utils/model-loader';
 
@@ -49,13 +51,12 @@ export default function BioacousticsDetectionAnalysisPage() {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const [volume, setVolume] = useState<number>(0.75);
-  const [showHelp, setShowHelp] = useState<boolean>(false);
   const [audioMetadata, setAudioMetadata] = useState<{
     sampleRate?: number;
     duration?: number;
     dateTime?: string;
     location?: { lat?: number; lon?: number; name?: string };
-  } | null>(null);
+  }>({});
   const [recordingUrls, setRecordingUrls] = useState<string[]>([]);
   const [clipPredictions, setClipPredictions] = useState<InferenceResult[]>([]);
   const [hoverInfo, setHoverInfo] = useState<{
@@ -890,10 +891,11 @@ export default function BioacousticsDetectionAnalysisPage() {
             null);
         
         const duration = waveSurferInstance.getDuration() || 0;
-        setAudioMetadata({
+        setAudioMetadata(prev => ({
+          ...prev,
           sampleRate: sr && Number.isFinite(sr) ? sr : undefined,
           duration: duration > 0 ? duration : undefined,
-        });
+        }));
         
         if (sr && Number.isFinite(sr)) {
           const nyquistFreq = sr / 2;
@@ -1380,6 +1382,28 @@ export default function BioacousticsDetectionAnalysisPage() {
           setAudioObjectUrl(objectUrl);
         }
         blobUrlAlreadySetRef.current = false;
+        
+        // Extract GPS coordinates independently
+        setProcessingStatus('Extracting metadata…');
+        const gpsCoordinates = await extractGPSFromAudio(file);
+        if (gpsCoordinates) {
+          setAudioMetadata(prev => ({
+            ...prev,
+            location: {
+              lat: gpsCoordinates.lat,
+              lon: gpsCoordinates.lon,
+              name: gpsCoordinates.name,
+            },
+          }));
+          console.log('GPS coordinates extracted:', gpsCoordinates);
+        } else {
+          // Clear location if no GPS found
+          setAudioMetadata(prev => ({
+            ...prev,
+            location: undefined,
+          }));
+        }
+        
         setProcessingStatus('Converting audio to spectrograms…');
         
         const spectrogramResult = await audioFileToSpectrograms(
@@ -1656,31 +1680,15 @@ export default function BioacousticsDetectionAnalysisPage() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-stretch">
             <div className="relative flex flex-col space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]">
               <div className="flex items-center justify-between">
-                <h2 id="audio-input-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
-                  Audio Input
-                </h2>
-                <div className="relative">
-                  <button
-                    type="button"
-                    onMouseEnter={() => setShowHelp(true)}
-                    onMouseLeave={() => setShowHelp(false)}
-                    onFocus={() => setShowHelp(true)}
-                    onBlur={() => setShowHelp(false)}
-                    className="rounded-full p-1 text-slate-400 hover:text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                    aria-label="Show help information"
-                    aria-expanded={showHelp}
-                    aria-haspopup="true"
-                  >
-                    <Info size={16} aria-hidden="true" />
-                  </button>
-                  {showHelp && (
-                    <div 
-                      className="absolute right-0 top-6 z-50 w-64 rounded-lg border border-slate-700 bg-slate-900 p-3 text-xs text-slate-200 shadow-xl"
-                      role="tooltip"
-                      aria-label="Help information"
-                    >
-                      <p className="mb-2 font-semibold">How to use:</p>
-                      <ul className="space-y-1 text-slate-300">
+                <div className="flex items-center gap-2">
+                  <h2 id="audio-input-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                    Audio Input
+                  </h2>
+                  <div className="group relative">
+                    <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
+                    <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
+                      <strong className="text-slate-200">How to use:</strong>
+                      <ul className="space-y-1 mt-2">
                         <li>• Upload an audio file or paste a URL</li>
                         <li>• Click Process to analyze</li>
                         <li>• Hover over the waveform to see predictions</li>
@@ -1688,7 +1696,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                         <li>• Keyboard shortcuts: Space (play/pause), ← → (seek)</li>
                       </ul>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
               <form
@@ -1753,47 +1761,68 @@ export default function BioacousticsDetectionAnalysisPage() {
                 </div>
               </form>
 
-              <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm text-slate-300">
-                <span className="font-semibold text-slate-100">Model:</span>
-                <div role="status" aria-live="polite" aria-atomic="true">
-                  <span className="rounded-full bg-slate-800/80 px-2 py-1 text-xs text-slate-200">
-                    {modelStatus}
+              <div className="flex gap-4">
+                <div className="flex-1 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm text-slate-300">
+                  <span className="font-semibold text-slate-100">Model:</span>
+                  <div role="status" aria-live="polite" aria-atomic="true">
+                    <span className="rounded-full bg-slate-800/80 px-2 py-1 text-xs text-slate-200">
+                      {modelStatus}
+                    </span>
+                  </div>
+                  
+                  <span className="font-semibold text-slate-100">Processing:</span>
+                  <div className="flex items-center gap-2" role="status" aria-live="polite" aria-atomic="true">
+                    {processingStatus ? (
+                      isProcessing && processingProgress !== null ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-emerald-400" aria-hidden="true" />
+                          <span className="text-slate-200">{processingStatus}</span>
+                          <span className="text-emerald-300 font-medium">{processingProgress}%</span>
+                        </>
+                      ) : (
+                        <span className="text-slate-200">{processingStatus}</span>
+                      )
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
+                  </div>
+                  
+                  <span className="font-semibold text-slate-100">File:</span>
+                  <span className="text-slate-200">{fileName || <span className="text-slate-400">—</span>}</span>
+                  
+                  <span className="font-semibold text-slate-100">Segments:</span>
+                  <span className="text-slate-200">{batchResult && batchResult.totalClips > 1 ? batchResult.totalClips : <span className="text-slate-400">—</span>}</span>
+                  
+                  <span className="font-semibold text-slate-100">Sample Rate:</span>
+                  <span className="text-slate-200">
+                    {audioMetadata?.sampleRate ? `${(audioMetadata.sampleRate / 1000).toFixed(1)} kHz` : <span className="text-slate-400">—</span>}
+                  </span>
+                  
+                  <span className="font-semibold text-slate-100">Duration:</span>
+                  <span className="text-slate-200">
+                    {audioMetadata?.duration ? formatTime(audioMetadata.duration) : <span className="text-slate-400">—</span>}
+                  </span>
+                  
+                  <span className="font-semibold text-slate-100">Location:</span>
+                  <span className="text-slate-200">
+                    {audioMetadata?.location?.lat !== undefined && audioMetadata.location?.lon !== undefined
+                      ? `${audioMetadata.location.lat.toFixed(6)}, ${audioMetadata.location.lon.toFixed(6)}`
+                      : <span className="text-slate-400">—</span>
+                    }
                   </span>
                 </div>
                 
-                <span className="font-semibold text-slate-100">Processing:</span>
-                <div className="flex items-center gap-2" role="status" aria-live="polite" aria-atomic="true">
-                  {processingStatus ? (
-                    isProcessing && processingProgress !== null ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-emerald-400" aria-hidden="true" />
-                        <span className="text-slate-200">{processingStatus}</span>
-                        <span className="text-emerald-300 font-medium">{processingProgress}%</span>
-                      </>
-                    ) : (
-                      <span className="text-slate-200">{processingStatus}</span>
-                    )
-                  ) : (
-                    <span className="text-slate-400">—</span>
-                  )}
-                </div>
-                
-                <span className="font-semibold text-slate-100">File:</span>
-                <span className="text-slate-200">{fileName || <span className="text-slate-400">—</span>}</span>
-                
-                <span className="font-semibold text-slate-100">Segments:</span>
-                <span className="text-slate-200">{batchResult && batchResult.totalClips > 1 ? batchResult.totalClips : <span className="text-slate-400">—</span>}</span>
-                
-                <span className="font-semibold text-slate-100">Sample Rate:</span>
-                <span className="text-slate-200">
-                  {audioMetadata?.sampleRate ? `${(audioMetadata.sampleRate / 1000).toFixed(1)} kHz` : <span className="text-slate-400">—</span>}
-                </span>
-                
-                <span className="font-semibold text-slate-100">Duration:</span>
-                <span className="text-slate-200">
-                  {audioMetadata?.duration ? formatTime(audioMetadata.duration) : <span className="text-slate-400">—</span>}
-                </span>
+                {audioMetadata?.location?.lat !== undefined && audioMetadata.location?.lon !== undefined && (
+                  <div className="flex-shrink-0">
+                    <LocationMap
+                      lat={audioMetadata.location.lat}
+                      lon={audioMetadata.location.lon}
+                      className="h-32 w-32"
+                    />
+                  </div>
+                )}
               </div>
+              
               <button
                 type="button"
                 onClick={handleDownloadPredictions}
@@ -1809,9 +1838,23 @@ export default function BioacousticsDetectionAnalysisPage() {
 
             <section className="w-full flex flex-col justify-self-end space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="equalizer-heading">
               <div className="flex items-center justify-between">
-                <h2 id="equalizer-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
-                  Equalizer
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 id="equalizer-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                    Equalizer
+                  </h2>
+                  <div className="group relative">
+                    <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
+                    <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
+                      <strong className="text-slate-200">Audio Equalizer:</strong>
+                      <p className="mt-2">An equalizer (EQ) allows you to adjust the volume of specific frequency ranges. Use it to:</p>
+                      <ul className="space-y-1 mt-2">
+                        <li>• <strong>Boost frequencies</strong> where bird calls occur (1-8 kHz)</li>
+                        <li>• <strong>Reduce low frequencies</strong> to minimize background noise (wind, traffic)</li>
+                        <li>• <strong>Enhance clarity</strong> of specific vocalizations by adjusting individual bands</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
                 <span className="text-[11px] text-slate-300" aria-label="Equalizer range">-40 dB to +40 dB</span>
               </div>
               <div className="flex flex-col gap-2 rounded-lg border border-slate-800/70 bg-slate-950/70 p-3" role="group" aria-label="Equalizer frequency controls">
@@ -1819,7 +1862,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                 <div className="hidden md:flex items-end gap-3 overflow-x-auto pb-1">
                   {EQ_BANDS.map((band, idx) => (
                     <div key={band} className="flex flex-col items-center gap-1 text-[10px] text-slate-300">
-                      <div className="relative flex h-44 w-8 items-center justify-center">
+                      <div className="relative flex h-48 w-8 items-center justify-center">
                         <div className="absolute inset-y-2 left-1/2 w-[2px] -translate-x-1/2 rounded-full bg-slate-700/70" aria-hidden="true" />
                         <input
                           type="range"
@@ -1836,7 +1879,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                               return copy;
                             });
                           }}
-                          className="relative z-10 h-44 w-3 appearance-none bg-transparent accent-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                          className="relative z-10 h-48 w-3 appearance-none bg-transparent accent-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-400"
                           aria-label={`${band >= 1000 ? `${band / 1000} kilohertz` : `${band} hertz`} frequency band. Current gain: ${eqGains[idx] > 0 ? '+' : ''}${eqGains[idx].toFixed(1)} decibels`}
                           aria-valuemin={-40}
                           aria-valuemax={40}
@@ -1889,9 +1932,23 @@ export default function BioacousticsDetectionAnalysisPage() {
           </div>
           <section aria-labelledby="waveform-heading" className="space-y-4">
           <div className="flex items-center justify-between">
-              <h2 id="waveform-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
-                Waveform / Spectrogram
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 id="waveform-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  Waveform / Spectrogram
+                </h2>
+                <div className="group relative">
+                  <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
+                  <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-80 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
+                    <strong className="text-slate-200">Visualization Guide:</strong>
+                    <ul className="space-y-1 mt-2">
+                      <li>• <strong>Top:</strong> Time-series waveform showing audio amplitude over time</li>
+                      <li>• <strong>Bottom:</strong> Spectrogram displaying frequency content (darker = less energy, brighter = more energy)</li>
+                      <li>• <strong>Bird frequencies:</strong> Most bird calls/songs occur between 1-8 kHz</li>
+                      <li>• <strong>Hover:</strong> Move your cursor over the waveform to see the top detected species at that time point</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
               <div className="flex items-center gap-3 text-xs text-slate-300" role="group" aria-label="Audio playback controls">
                 <span aria-live="off" aria-atomic="true">
                   <span className="sr-only">Current time: </span>{formatTime(currentTime)}<span className="sr-only"> of </span> / {formatTime(audioDuration)}
@@ -2041,9 +2098,17 @@ export default function BioacousticsDetectionAnalysisPage() {
           {(acousticIndicesData.length > 0 || clipPredictions.length > 0 || isProcessing) && (
             <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="acoustic-metrics-heading">
               <div className="flex flex-col gap-2">
-                <h2 id="acoustic-metrics-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
-                  Temporal Analysis
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 id="acoustic-metrics-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                    Temporal Analysis
+                  </h2>
+                  <div className="group relative">
+                    <Info className="h-4 w-4 text-slate-500 hover:text-slate-300 cursor-help transition-colors" />
+                    <div className="absolute left-0 top-6 z-50 hidden group-hover:block w-72 p-3 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs text-slate-300">
+                      <strong className="text-slate-200">Note:</strong> Due to 8 kHz sample rate, frequency analysis is capped at 4 kHz (Nyquist frequency). Full biophony range (2-8 kHz) requires higher sample rates.
+                    </div>
+                  </div>
+                </div>
                 <p className="text-xs text-slate-400 leading-relaxed">
                   Species detections, ecological metrics, and frequency band analysis over time. Select a view to explore detection patterns and habitat quality indicators.
                 </p>
@@ -2077,8 +2142,6 @@ export default function BioacousticsDetectionAnalysisPage() {
                       </div>
                     ))}
                   </div>
-                  
-                  <div className="text-xs text-slate-400 bg-slate-950/40 border border-slate-800/50 rounded-lg p-3 h-12 animate-pulse" />
                 </>
               ) : (
                 <>
@@ -2350,13 +2413,6 @@ export default function BioacousticsDetectionAnalysisPage() {
                   </>
                 )}
               </div>
-
-              {selectedMetric !== 'detections' && (
-                <div className="text-xs text-slate-400 bg-slate-950/40 border border-slate-800/50 rounded-lg p-3">
-                  <strong className="text-slate-300">Note:</strong> Due to 8 kHz sample rate, frequency analysis is capped at 4 kHz (Nyquist frequency). 
-                  Full biophony range (2-8 kHz) requires higher sample rates.
-                </div>
-              )}
                 </>
               )}
             </section>
@@ -2364,13 +2420,13 @@ export default function BioacousticsDetectionAnalysisPage() {
 
           <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="results-heading" aria-busy={isProcessing && !classificationResult ? true : undefined}>
             <h2 id="results-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
-              Top-5 Detected Species / Sources
+              Top-5 Detected Species
             </h2>
             {isProcessing && !classificationResult ? (
-              <div className="space-y-3" role="status" aria-label="Loading detection results">
+              <div className="space-y-1.5" role="status" aria-label="Loading detection results">
                 <span className="sr-only">Loading species detection results...</span>
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex flex-col gap-1 rounded-xl border border-slate-800/80 bg-slate-950/60 px-3 py-2 shadow-inner shadow-black/30 animate-pulse" aria-hidden="true">
+                  <div key={i} className="flex flex-col gap-1 rounded-xl border border-slate-800/80 bg-slate-950/60 px-3 py-1.5 shadow-inner shadow-black/30 animate-pulse" aria-hidden="true">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-lg bg-slate-700/50" />
@@ -2382,8 +2438,8 @@ export default function BioacousticsDetectionAnalysisPage() {
                 ))}
               </div>
             ) : classificationResult ? (
-              <div className="space-y-3">
-                <div className="space-y-3" role="list" aria-label="Detected species ranked by confidence">
+              <div className="space-y-1.5">
+                <div className="space-y-1.5" role="list" aria-label="Detected species ranked by confidence">
                     <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.12em] text-slate-300" aria-hidden="true">
                       <span className="flex-1">Species</span>
                       <span className="w-14 text-center">Max Score</span>
@@ -2395,7 +2451,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                       return (
                         <div
                           key={pred.classIndex}
-                          className="flex flex-col gap-1 rounded-xl border border-slate-800/80 bg-slate-950/60 px-3 py-2 shadow-inner shadow-black/30"
+                          className="flex flex-col gap-1 rounded-xl border border-slate-800/80 bg-slate-950/60 px-3 py-1.5 shadow-inner shadow-black/30"
                           role="listitem"
                           aria-label={`Rank ${idx + 1}: ${speciesName} detected with ${confidence} percent confidence`}
                         >
@@ -2413,6 +2469,11 @@ export default function BioacousticsDetectionAnalysisPage() {
                                     }}
                                   />
                                 </div>
+                              )}
+                              {pred.humanReadableName && pred.humanReadableName !== pred.className && (
+                                <span className="text-xs font-mono text-slate-500 bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-700/50">
+                                  {pred.className}
+                                </span>
                               )}
                               <div className="flex items-center gap-2">
                                 {(() => {
@@ -2457,11 +2518,6 @@ export default function BioacousticsDetectionAnalysisPage() {
                               {((pred.maxConfidence ?? pred.confidence) * 100).toFixed(1)}%
                             </span>
                           </div>
-                          {pred.humanReadableName && pred.humanReadableName !== pred.className && (
-                            <span className="text-xs text-slate-500">
-                              {pred.className}
-                            </span>
-                          )}
                         </div>
                       );
                     })}
