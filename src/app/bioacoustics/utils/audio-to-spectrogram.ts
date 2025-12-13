@@ -200,9 +200,6 @@ export async function audioBufferToSpectrograms(
       const clipOptions = { ...options };
       // Report progress before starting this clip (shows we're working on it)
       if (onProgress) {
-        // Show partial progress: clipIdx out of numClips (0-based, so clipIdx/numClips)
-        // This gives a sense of progress even before the clip is done
-        const partialProgress = Math.round((clipIdx / numClips) * 100);
         onProgress(clipIdx, numClips);
       }
       
