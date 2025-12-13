@@ -9,14 +9,27 @@ import type { InferenceSession } from 'onnxruntime-web';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type WaveSurfer from 'wavesurfer.js';
 import type RegionsPluginType from 'wavesurfer.js/dist/plugins/regions.esm.js';
+import type { AcousticIndices } from './utils/acoustic-indices';
 import { audioFileToSpectrograms, preloadEssentia } from './utils/audio-to-spectrogram';
 import { getClassThumbnail } from './utils/class-mapper';
+import type { FrequencyBandEnergies } from './utils/frequency-bands';
 import { classifySpectrogramsBatch, type BatchInferenceResult, type InferenceResult } from './utils/inference';
 import { loadBioacousticsModel } from './utils/model-loader';
 
 const MODEL_PATH = '/bioacoustics/assets/Final_Model_slim.onnx';
 const EQ_BANDS = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000] as const;
 const MAX_SPECTROGRAM_HZ = 22050;
+
+// Helper function to get emerald color class based on confidence percentage
+const getConfidenceColorClass = (confidence: number): string => {
+  const percentage = confidence * 100;
+  if (percentage >= 90) return 'text-emerald-100';
+  if (percentage >= 80) return 'text-emerald-200';
+  if (percentage >= 70) return 'text-emerald-300';
+  if (percentage >= 60) return 'text-emerald-400';
+  if (percentage >= 50) return 'text-emerald-500';
+  return 'text-slate-400';
+};
 
 
 export default function BioacousticsDetectionAnalysisPage() {
@@ -53,6 +66,9 @@ export default function BioacousticsDetectionAnalysisPage() {
     { id: string; start: number; end: number; label: string }[]
   >([]);
   const [eqGains, setEqGains] = useState<number[]>(() => EQ_BANDS.map(() => 0));
+  const [acousticIndicesData, setAcousticIndicesData] = useState<AcousticIndices[]>([]);
+  const [frequencyBandsData, setFrequencyBandsData] = useState<FrequencyBandEnergies[]>([]);
+  const [selectedMetric, setSelectedMetric] = useState<'aci' | 'adi' | 'ndsi' | 'bi' | 'combined' | 'freq-bands' | 'detections'>('combined');
   const specMaxHzRef = useRef(MAX_SPECTROGRAM_HZ);
   
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -70,6 +86,9 @@ export default function BioacousticsDetectionAnalysisPage() {
   const chartCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstanceRef = useRef<ChartJS<'bar', number[], string> | null>(null);
   const tooltipElementRef = useRef<HTMLDivElement | null>(null);
+  // Combined acoustic metrics chart ref - supports both 'line' and 'bar' types
+  const metricsChartRef = useRef<HTMLCanvasElement | null>(null);
+  const metricsChartInstanceRef = useRef<ChartJS<'line' | 'bar', number[], string> | null>(null);
   const audioBlobUrlsRef = useRef<Set<string>>(new Set());
   const audioUrlCacheRef = useRef<Map<string, { blobUrl: string; file: File }>>(new Map());
   const blobUrlAlreadySetRef = useRef<boolean>(false);
@@ -413,6 +432,317 @@ export default function BioacousticsDetectionAnalysisPage() {
       }
     };
   }, []);
+
+  // Combined Acoustic Metrics Chart (includes detections bar chart)
+  useEffect(() => {
+    const ctx = metricsChartRef.current?.getContext('2d');
+    if (!ctx) return;
+
+    // Detections mode requires clipPredictions
+    if (selectedMetric === 'detections') {
+      if (clipConfidenceSeries.length === 0) {
+        metricsChartInstanceRef.current?.destroy();
+        metricsChartInstanceRef.current = null;
+        return;
+      }
+
+      const labels = clipConfidenceSeries.map(() => '');
+      const datasetValues = clipConfidenceSeries.map(({ confidence }) => confidence);
+
+      if (metricsChartInstanceRef.current) {
+        // Check if we need to recreate for type change
+        const currentType = (metricsChartInstanceRef.current.config as { type?: string }).type;
+        if (currentType !== 'bar') {
+          metricsChartInstanceRef.current.destroy();
+          metricsChartInstanceRef.current = null;
+        } else {
+          metricsChartInstanceRef.current.data.labels = labels;
+          metricsChartInstanceRef.current.data.datasets[0].data = datasetValues;
+          metricsChartInstanceRef.current.update('none');
+          return;
+        }
+      }
+
+      metricsChartInstanceRef.current = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Max probability',
+            data: datasetValues,
+            borderWidth: 1,
+            backgroundColor: 'rgba(16, 185, 129, 0.85)',
+            borderColor: '#10b981',
+            borderRadius: 6,
+            barPercentage: 0.75,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          scales: {
+            x: {
+              ticks: { display: false },
+              grid: { display: false },
+              title: { display: true, text: '12s segments', color: '#94a3b8' },
+            },
+            y: {
+              min: 0.5,
+              max: 1,
+              ticks: {
+                stepSize: 0.1,
+                callback: (value) => `${Number(value).toFixed(2)}`,
+              },
+              title: { display: true, text: 'Confidence', color: '#94a3b8' },
+            },
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const entry = clipConfidenceSeries[context.dataIndex];
+                  const probability = (entry?.confidence ?? 0) * 100;
+                  return `${entry?.speciesName ?? `Segment ${context.dataIndex + 1}`}: ${probability.toFixed(1)}%`;
+                },
+              },
+            },
+          },
+        },
+      });
+      return;
+    }
+
+    // Line chart modes (acoustic indices)
+    if (acousticIndicesData.length === 0 || frequencyBandsData.length === 0) {
+      metricsChartInstanceRef.current?.destroy();
+      metricsChartInstanceRef.current = null;
+      return;
+    }
+
+    const labels = acousticIndicesData.map((_, i) => `${i + 1}`);
+    
+    // Prepare datasets based on selected metric
+    let datasets: { label: string; data: number[]; borderColor: string; backgroundColor: string; borderWidth: number; fill: boolean; tension: number; pointRadius: number; pointHoverRadius: number }[] = [];
+    let yAxisConfig: { beginAtZero?: boolean; min?: number; max?: number; title: { display: boolean; text: string; color?: string } } = { beginAtZero: true, title: { display: true, text: 'Value', color: '#94a3b8' } };
+
+    if (selectedMetric === 'aci') {
+      datasets = [{
+        label: 'ACI (Acoustic Complexity Index)',
+        data: acousticIndicesData.map(d => d.aci),
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+      }];
+      yAxisConfig = { beginAtZero: true, title: { display: true, text: 'ACI Value', color: '#94a3b8' } };
+    } else if (selectedMetric === 'adi') {
+      datasets = [{
+        label: 'ADI (Acoustic Diversity Index)',
+        data: acousticIndicesData.map(d => d.adi),
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+      }];
+      yAxisConfig = { min: 0, max: 1, title: { display: true, text: 'ADI (0-1)', color: '#94a3b8' } };
+    } else if (selectedMetric === 'ndsi') {
+      datasets = [{
+        label: 'NDSI (Normalized Difference Soundscape Index)',
+        data: acousticIndicesData.map(d => d.ndsi),
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+      }];
+      yAxisConfig = { min: -1, max: 1, title: { display: true, text: 'NDSI (-1 to +1)', color: '#94a3b8' } };
+    } else if (selectedMetric === 'bi') {
+      datasets = [{
+        label: 'BI (Bioacoustic Index)',
+        data: acousticIndicesData.map(d => d.bi),
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+      }];
+      yAxisConfig = { beginAtZero: true, title: { display: true, text: 'BI Value', color: '#94a3b8' } };
+    } else if (selectedMetric === 'combined') {
+      // Normalize all metrics to 0-1 range for comparison
+      const aciNorm = acousticIndicesData.map(d => d.aci);
+      const maxAci = Math.max(...aciNorm, 1);
+      const minAci = Math.min(...aciNorm, 0);
+      const aciNormalized = aciNorm.map(v => maxAci === minAci ? 0.5 : (v - minAci) / (maxAci - minAci));
+
+      const ndsiData = acousticIndicesData.map(d => d.ndsi);
+      const ndsiNormalized = ndsiData.map(v => (v + 1) / 2); // -1 to 1 → 0 to 1
+
+      const biNorm = acousticIndicesData.map(d => d.bi);
+      const maxBi = Math.max(...biNorm, 1);
+      const minBi = Math.min(...biNorm, 0);
+      const biNormalized = biNorm.map(v => maxBi === minBi ? 0.5 : (v - minBi) / (maxBi - minBi));
+
+      datasets = [
+        {
+          label: 'ACI (normalized)',
+          data: aciNormalized,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+        },
+        {
+          label: 'ADI',
+          data: acousticIndicesData.map(d => d.adi),
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+        },
+        {
+          label: 'NDSI (normalized)',
+          data: ndsiNormalized,
+          borderColor: '#f59e0b',
+          backgroundColor: 'rgba(245, 158, 11, 0.1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+        },
+        {
+          label: 'BI (normalized)',
+          data: biNormalized,
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139, 92, 246, 0.1)',
+          borderWidth: 2,
+          fill: false,
+          tension: 0.3,
+          pointRadius: 2,
+          pointHoverRadius: 4,
+        },
+      ];
+      yAxisConfig = { min: 0, max: 1, title: { display: true, text: 'Normalized Value (0-1)', color: '#94a3b8' } };
+    } else if (selectedMetric === 'freq-bands') {
+      datasets = [
+        {
+          label: 'Geophony (< 1 kHz)',
+          data: frequencyBandsData.map(d => d.geophony),
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99, 102, 241, 0.2)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+        },
+        {
+          label: 'Anthrophony (1-2 kHz)',
+          data: frequencyBandsData.map(d => d.anthrophony),
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239, 68, 68, 0.2)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+        },
+        {
+          label: 'Biophony (2-4 kHz)',
+          data: frequencyBandsData.map(d => d.biophony),
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.2)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointHoverRadius: 5,
+        },
+      ];
+      yAxisConfig = { beginAtZero: true, title: { display: true, text: 'Energy (normalized)', color: '#94a3b8' } };
+    }
+
+    if (metricsChartInstanceRef.current) {
+      // Check if we need to recreate for type change (line vs bar)
+      const currentType = (metricsChartInstanceRef.current.config as { type?: string }).type;
+      if (currentType !== 'line') {
+        metricsChartInstanceRef.current.destroy();
+        metricsChartInstanceRef.current = null;
+      } else {
+        metricsChartInstanceRef.current.data.labels = labels;
+        metricsChartInstanceRef.current.data.datasets = datasets;
+        if (metricsChartInstanceRef.current.options.scales?.y) {
+          Object.assign(metricsChartInstanceRef.current.options.scales.y, yAxisConfig);
+        }
+        metricsChartInstanceRef.current.update('none');
+        return;
+      }
+    }
+
+    metricsChartInstanceRef.current = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        scales: {
+          x: {
+            ticks: { display: false },
+            grid: { display: false },
+            title: { display: true, text: '12s segments', color: '#94a3b8' },
+          },
+          y: yAxisConfig,
+        },
+        plugins: {
+          legend: {
+            display: selectedMetric === 'combined' || selectedMetric === 'freq-bands',
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              padding: 10,
+              font: { size: 11 },
+              color: '#cbd5e1',
+            },
+          },
+          tooltip: {
+            mode: 'index',
+            intersect: false,
+            callbacks: {
+              label: (context) => `${context.dataset.label}: ${(context.parsed.y ?? 0).toFixed(3)}`,
+            },
+          },
+        },
+      },
+    });
+
+    return () => {
+      metricsChartInstanceRef.current?.destroy();
+      metricsChartInstanceRef.current = null;
+    };
+  }, [acousticIndicesData, frequencyBandsData, selectedMetric, clipConfidenceSeries]);
 
   useEffect(() => {
     if (
@@ -1052,7 +1382,7 @@ export default function BioacousticsDetectionAnalysisPage() {
         blobUrlAlreadySetRef.current = false;
         setProcessingStatus('Converting audio to spectrograms…');
         
-        const spectrograms = await audioFileToSpectrograms(
+        const spectrogramResult = await audioFileToSpectrograms(
           file,
           {
             width: 1000,
@@ -1063,16 +1393,20 @@ export default function BioacousticsDetectionAnalysisPage() {
           }
         );
 
-        if (spectrograms.length === 0) {
+        if (spectrogramResult.spectrograms.length === 0) {
           throw new Error('No spectrograms generated from audio file');
         }
 
-        setProcessingStatus(`Analyzing ${spectrograms.length} segment${spectrograms.length > 1 ? 's' : ''}…`);
+        // Store acoustic metrics
+        setAcousticIndicesData(spectrogramResult.acousticIndices);
+        setFrequencyBandsData(spectrogramResult.frequencyBands);
+
+        setProcessingStatus(`Analyzing ${spectrogramResult.spectrograms.length} segment${spectrogramResult.spectrograms.length > 1 ? 's' : ''}…`);
         setProcessingProgress(0);
         
         const batchResult = await classifySpectrogramsBatch(
           model,
-          spectrograms,
+          spectrogramResult.spectrograms,
           (current, total) => {
             requestAnimationFrame(() => {
               const percentage = Math.round((current / total) * 100);
@@ -1084,7 +1418,7 @@ export default function BioacousticsDetectionAnalysisPage() {
         setBatchResult(batchResult);
         setClipPredictions(batchResult.results);
         const clipDuration = 12;
-        const totalDuration = spectrograms.length * clipDuration;
+        const totalDuration = spectrogramResult.spectrograms.length * clipDuration;
         setAudioDuration(totalDuration);
         const regions = batchResult.results.map((res, idx) => {
           const start = idx * clipDuration;
@@ -1190,11 +1524,19 @@ export default function BioacousticsDetectionAnalysisPage() {
         classIndex: pred.classIndex,
       }));
 
+      // Add acoustic indices if available
+      const acousticIndices = acousticIndicesData[index] || null;
+      
+      // Add frequency band energies if available
+      const frequencyBands = frequencyBandsData[index] || null;
+
       return {
         segmentIndex: index,
         startTime,
         endTime,
         predictions: top5,
+        acousticIndices,
+        frequencyBands,
       };
     });
 
@@ -1212,7 +1554,7 @@ export default function BioacousticsDetectionAnalysisPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `per-segment-predictions-${Date.now()}.json`;
+    a.download = `predictions-${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
@@ -1221,7 +1563,7 @@ export default function BioacousticsDetectionAnalysisPage() {
       }
       URL.revokeObjectURL(url);
     }, 100);
-  }, [clipPredictions]);
+  }, [clipPredictions, acousticIndicesData, frequencyBandsData]);
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -1252,19 +1594,20 @@ export default function BioacousticsDetectionAnalysisPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-930 to-slate-950 text-slate-100">
-      <main aria-label="Bioacoustic Detection and Analysis Application">
+      <main aria-label="AI Bioacoustics Analysis Application">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 pb-12 pt-12">
         <section className="relative overflow-hidden rounded-2xl border border-slate-800/70 bg-slate-900/60 px-8 py-10 shadow-[0_25px_80px_rgba(0,0,0,0.45)]" aria-labelledby="page-heading">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(96,165,250,0.18),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(52,211,153,0.18),transparent_30%),radial-gradient(circle_at_50%_90%,rgba(248,113,113,0.12),transparent_25%)]" aria-hidden="true" />
-          <div className="relative flex flex-col gap-4">
+          <div className="relative flex flex-col md:flex-row gap-6 items-start md:items-center">
+            <div className="flex flex-col gap-4 md:max-w-[65%]">
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-800/80 bg-slate-900/70 px-3 py-1 text-xs text-slate-300">
               <span className="h-2 w-2 rounded-full bg-emerald-400" aria-hidden="true" />
-              Live, in-browser bioacoustics detection and identification toolkit
+              Live, in-browser AI-powered bioacoustics toolkit
             </div>
             <h1 id="page-heading" className="text-3xl font-semibold tracking-tight text-slate-50 md:text-4xl">
-              Bioacoustics ID and Analysis Toolkit
+              AI Bioacoustics Analysis Toolkit
             </h1>
-            <p className="max-w-2xl text-sm leading-relaxed text-slate-300">
+            <p className="text-sm leading-relaxed text-slate-300">
               Paste a URL or attach audio to analyze. We generate spectrograms and run the{' '}
               <a
                 href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5564664"
@@ -1283,9 +1626,9 @@ export default function BioacousticsDetectionAnalysisPage() {
               >
                 Avian dawn chorus recordings dataset
               </a>{' '}
-              (Weldy et al., 2024) and processes audio in 12-second segments, returning top species predictions with human-readable labels.
+              (Weldy et al., 2024) and processes audio in 12-second segments, returning top species predictions with human-readable labels. We also provide pre-computed acoustic indices for habitat quality analysis. Predictions and acoustic metrics can be exported to JSON by clicking the download button.
             </p>
-            <p className="max-w-2xl text-sm text-slate-300">
+            <p className="text-sm text-slate-300">
               Created by{' '}
               <a
                 href="https://isaacc.dev/"
@@ -1297,6 +1640,15 @@ export default function BioacousticsDetectionAnalysisPage() {
               </a>
               .
             </p>
+            </div>
+            <div className="hidden md:flex md:items-center md:justify-center md:flex-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src="/bioacoustics/assets/logo.png" 
+                alt="AI Bioacoustics Analysis Toolkit Logo" 
+                className="w-40 h-40 object-contain"
+              />
+            </div>
           </div>
         </section>
 
@@ -1446,11 +1798,12 @@ export default function BioacousticsDetectionAnalysisPage() {
                 type="button"
                 onClick={handleDownloadPredictions}
                 disabled={clipPredictions.length === 0}
-                className="absolute bottom-4 right-4 flex items-center gap-2 rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm font-medium text-emerald-200 shadow-inner shadow-black/30 transition hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-800 disabled:hover:text-emerald-200 disabled:hover:bg-slate-950/70 focus:outline-none focus:ring-2 focus:ring-emerald-400"
-                aria-label="Download per-segment predictions as JSON file"
+                className="w-full md:absolute md:bottom-4 md:right-4 md:w-auto flex items-center justify-center gap-2 rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2 text-sm font-medium text-emerald-200 shadow-inner shadow-black/30 transition hover:border-emerald-300 hover:text-emerald-100 hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-800 disabled:hover:text-emerald-200 disabled:hover:bg-slate-950/70 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                aria-label="Download predictions and acoustic metrics as JSON file"
               >
                 <Download size={16} aria-hidden="true" />
-                Download Per-Segment Predictions
+                <span className="hidden md:inline">Download Predictions</span>
+                <span className="md:hidden">Download</span>
               </button>
             </div>
 
@@ -1502,17 +1855,17 @@ export default function BioacousticsDetectionAnalysisPage() {
                 </div>
                 {/* Mobile: Horizontal sliders */}
                 <div className="flex md:hidden flex-col gap-2">
-                  {EQ_BANDS.map((band, idx) => (
+                  {EQ_BANDS.filter(band => band <= 4000).map((band, idx) => (
                     <div key={band} className="flex items-center gap-2">
                       <span className="w-12 text-[10px] text-slate-300" aria-hidden="true">{band >= 1000 ? `${band / 1000}k` : band}</span>
                       <input
                         type="range"
-                        min={-40}
-                        max={40}
+                        min={40}
+                        max={-40}
                         step={0.5}
-                        value={eqGains[idx]}
+                        value={-eqGains[idx]}
                         onChange={(e) => {
-                          const next = Number(e.target.value);
+                          const next = -Number(e.target.value);
                           if (Number.isNaN(next)) return;
                           setEqGains((g) => {
                             const copy = [...g];
@@ -1572,7 +1925,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                     <option value={2}>2x</option>
                   </select>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="hidden md:flex items-center gap-2">
                   <Volume2 size={14} className="text-slate-400" aria-hidden="true" />
                   <input
                     type="range"
@@ -1660,10 +2013,9 @@ export default function BioacousticsDetectionAnalysisPage() {
                                 (e.target as HTMLImageElement).style.display = 'none';
                               }}
                             />
-                          )}
-                          <span className="truncate">{item.label}</span>
+                          )}                          <span className="truncate">{item.label}</span>
                         </div>
-                        <span className="text-emerald-300 flex-shrink-0">{(item.confidence * 100).toFixed(1)}%</span>
+                        <span className={`flex-shrink-0 ${getConfidenceColorClass(item.confidence)}`}>{(item.confidence * 100).toFixed(1)}%</span>
                       </div>
                     );
                   })
@@ -1682,21 +2034,334 @@ export default function BioacousticsDetectionAnalysisPage() {
                 )}
               </div>
             </div>
-            <section className="space-y-3 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4 shadow-[0_10px_35px_rgba(0,0,0,0.35)]" aria-labelledby="detections-heading">
-              <h2 id="detections-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
-                Per-Segment Detections
-              </h2>
-              <div className="h-56 w-full rounded-xl border border-slate-800/70 bg-slate-950/60 p-2 relative">
-                <canvas ref={chartCanvasRef} className="h-full w-full" role="img" aria-label="Bar chart showing maximum probability for each audio segment" />
-                {isProcessing && (
-                  <div className="absolute inset-0 flex items-center justify-center" role="status" aria-label="Loading chart data">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-emerald-400" aria-hidden="true" />
-                    <span className="sr-only">Loading detection data...</span>
+
+          </section>
+
+          {/* Temporal Analysis Section - Combined Charts */}
+          {(acousticIndicesData.length > 0 || clipPredictions.length > 0 || isProcessing) && (
+            <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="acoustic-metrics-heading">
+              <div className="flex flex-col gap-2">
+                <h2 id="acoustic-metrics-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  Temporal Analysis
+                </h2>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Species detections, ecological metrics, and frequency band analysis over time. Select a view to explore detection patterns and habitat quality indicators.
+                </p>
+              </div>
+              
+              {isProcessing && acousticIndicesData.length === 0 && clipPredictions.length === 0 ? (
+                <>
+                  {/* Skeleton Loading State */}
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <div key={i} className="h-8 w-32 rounded-lg bg-slate-800/50 animate-pulse" />
+                    ))}
                   </div>
+                  
+                  <div className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3 h-16 animate-pulse" />
+                  
+                  <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-4">
+                    <div className="h-64 w-full rounded bg-slate-800/50 animate-pulse flex items-center justify-center">
+                      <div className="flex flex-col items-center gap-2">
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-400 border-t-emerald-400" />
+                        <span className="text-xs text-slate-400">Computing acoustic indices...</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3 space-y-2">
+                        <div className="h-3 w-16 bg-slate-800/50 rounded animate-pulse" />
+                        <div className="h-6 w-20 bg-slate-800/50 rounded animate-pulse" />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="text-xs text-slate-400 bg-slate-950/40 border border-slate-800/50 rounded-lg p-3 h-12 animate-pulse" />
+                </>
+              ) : (
+                <>
+                  {/* Actual Content */}
+              
+              {/* Metric Selector Tabs */}
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedMetric('combined')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                    selectedMetric === 'combined'
+                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                  }`}
+                  aria-pressed={selectedMetric === 'combined'}
+                  disabled={acousticIndicesData.length === 0}
+                >
+                  Acoustic Indices
+                </button>
+                <button
+                  onClick={() => setSelectedMetric('detections')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                    selectedMetric === 'detections'
+                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                  }`}
+                  aria-pressed={selectedMetric === 'detections'}
+                  disabled={clipPredictions.length === 0}
+                >
+                  Species Detections
+                </button>
+                <button
+                  onClick={() => setSelectedMetric('freq-bands')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                    selectedMetric === 'freq-bands'
+                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                  }`}
+                  aria-pressed={selectedMetric === 'freq-bands'}
+                  disabled={frequencyBandsData.length === 0}
+                >
+                  Frequency Bands
+                </button>
+                <button
+                  onClick={() => setSelectedMetric('aci')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                    selectedMetric === 'aci'
+                      ? 'bg-blue-500/20 border-blue-400/50 text-blue-300'
+                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                  }`}
+                  aria-pressed={selectedMetric === 'aci'}
+                  disabled={acousticIndicesData.length === 0}
+                >
+                  ACI
+                </button>
+                <button
+                  onClick={() => setSelectedMetric('adi')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                    selectedMetric === 'adi'
+                      ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300'
+                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                  }`}
+                  aria-pressed={selectedMetric === 'adi'}
+                  disabled={acousticIndicesData.length === 0}
+                >
+                  ADI
+                </button>
+                <button
+                  onClick={() => setSelectedMetric('ndsi')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                    selectedMetric === 'ndsi'
+                      ? 'bg-orange-500/20 border-orange-400/50 text-orange-300'
+                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                  }`}
+                  aria-pressed={selectedMetric === 'ndsi'}
+                  disabled={acousticIndicesData.length === 0}
+                >
+                  NDSI
+                </button>
+                <button
+                  onClick={() => setSelectedMetric('bi')}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                    selectedMetric === 'bi'
+                      ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
+                      : 'bg-slate-950/60 border-slate-800/70 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                  }`}
+                  aria-pressed={selectedMetric === 'bi'}
+                  disabled={acousticIndicesData.length === 0}
+                >
+                  BI
+                </button>
+              </div>
+
+              {/* Metric Description */}
+              <div className="rounded-lg border border-slate-800/70 bg-slate-950/40 p-3 text-xs text-slate-300">
+                {selectedMetric === 'combined' && (
+                  <>
+                    <strong>Acoustic Indices Combined:</strong> Normalized view of all four acoustic indices for easy comparison. 
+                    Values are scaled to 0-1 range. Look for patterns across multiple metrics to assess ecosystem health.
+                  </>
+                )}
+                {selectedMetric === 'detections' && (
+                  <>
+                    <strong>Species Detections:</strong> Maximum detection confidence for each 12-second audio segment. 
+                    Shows which species were detected with highest probability across the recording timeline.
+                  </>
+                )}
+                {selectedMetric === 'freq-bands' && (
+                  <>
+                    <strong>Frequency Band Analysis:</strong> Energy distribution across ecological ranges. 
+                    <span className="text-indigo-300"> Geophony</span> (wind/rain), 
+                    <span className="text-red-300"> Anthrophony</span> (human noise), 
+                    <span className="text-emerald-300"> Biophony</span> (bird calls).
+                  </>
+                )}
+                {selectedMetric === 'aci' && (
+                  <>
+                    <strong>ACI (Acoustic Complexity Index):</strong> Measures sound intensity variability. 
+                    Higher values indicate more complex soundscapes with bird activity.
+                  </>
+                )}
+                {selectedMetric === 'adi' && (
+                  <>
+                    <strong>ADI (Acoustic Diversity Index):</strong> Shannon entropy across frequency bins (0-1). 
+                    Higher values indicate even distribution of sound energy, suggesting biodiverse communities.
+                  </>
+                )}
+                {selectedMetric === 'ndsi' && (
+                  <>
+                    <strong>NDSI (Normalized Difference Soundscape Index):</strong> Ratio of biological to human sounds (-1 to +1). 
+                    Positive values indicate natural soundscapes; negative values indicate human noise pollution.
+                  </>
+                )}
+                {selectedMetric === 'bi' && (
+                  <>
+                    <strong>BI (Bioacoustic Index):</strong> Total sound energy in bird frequency range (2-4 kHz). 
+                    Higher values suggest more bird activity and abundance.
+                  </>
                 )}
               </div>
+
+              {/* Chart */}
+              <div className="rounded-xl border border-slate-800/70 bg-slate-950/60 p-4">
+                <div className="h-64 w-full">
+                  <canvas ref={metricsChartRef} className="h-full w-full" role="img" aria-label={`Line chart showing ${selectedMetric} over time`} />
+                </div>
+              </div>
+
+              {/* Summary Statistics */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {selectedMetric === 'aci' && acousticIndicesData.length > 0 && (
+                  <>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean ACI</div>
+                      <div className="text-lg font-semibold text-blue-300">
+                        {(acousticIndicesData.reduce((sum, d) => sum + d.aci, 0) / acousticIndicesData.length).toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max ACI</div>
+                      <div className="text-lg font-semibold text-blue-300">
+                        {Math.max(...acousticIndicesData.map(d => d.aci)).toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min ACI</div>
+                      <div className="text-lg font-semibold text-blue-300">
+                        {Math.min(...acousticIndicesData.map(d => d.aci)).toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Std Dev</div>
+                      <div className="text-lg font-semibold text-blue-300">
+                        {(() => {
+                          const values = acousticIndicesData.map(d => d.aci);
+                          const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
+                          const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
+                          return Math.sqrt(variance).toFixed(2);
+                        })()}
+                      </div>
+                    </div>
+                  </>
+                )}
+                {selectedMetric === 'adi' && acousticIndicesData.length > 0 && (
+                  <>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean ADI</div>
+                      <div className="text-lg font-semibold text-emerald-300">
+                        {(acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length).toFixed(3)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max ADI</div>
+                      <div className="text-lg font-semibold text-emerald-300">
+                        {Math.max(...acousticIndicesData.map(d => d.adi)).toFixed(3)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min ADI</div>
+                      <div className="text-lg font-semibold text-emerald-300">
+                        {Math.min(...acousticIndicesData.map(d => d.adi)).toFixed(3)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Diversity</div>
+                      <div className="text-lg font-semibold text-emerald-300">
+                        {acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length > 0.6 ? 'High' : 
+                         acousticIndicesData.reduce((sum, d) => sum + d.adi, 0) / acousticIndicesData.length > 0.4 ? 'Medium' : 'Low'}
+                      </div>
+                    </div>
+                  </>
+                )}
+                {selectedMetric === 'ndsi' && acousticIndicesData.length > 0 && (
+                  <>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean NDSI</div>
+                      <div className="text-lg font-semibold text-orange-300">
+                        {(acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length).toFixed(3)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max NDSI</div>
+                      <div className="text-lg font-semibold text-orange-300">
+                        {Math.max(...acousticIndicesData.map(d => d.ndsi)).toFixed(3)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min NDSI</div>
+                      <div className="text-lg font-semibold text-orange-300">
+                        {Math.min(...acousticIndicesData.map(d => d.ndsi)).toFixed(3)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Soundscape</div>
+                      <div className="text-lg font-semibold text-orange-300">
+                        {acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length > 0.2 ? 'Natural' : 
+                         acousticIndicesData.reduce((sum, d) => sum + d.ndsi, 0) / acousticIndicesData.length > -0.2 ? 'Mixed' : 'Impacted'}
+                      </div>
+                    </div>
+                  </>
+                )}
+                {selectedMetric === 'bi' && acousticIndicesData.length > 0 && (
+                  <>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Mean BI</div>
+                      <div className="text-lg font-semibold text-purple-300">
+                        {(acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length).toFixed(3)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Max BI</div>
+                      <div className="text-lg font-semibold text-purple-300">
+                        {Math.max(...acousticIndicesData.map(d => d.bi)).toFixed(3)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Min BI</div>
+                      <div className="text-lg font-semibold text-purple-300">
+                        {Math.min(...acousticIndicesData.map(d => d.bi)).toFixed(3)}
+                      </div>
+                    </div>
+                    <div className="rounded-lg border border-slate-800/70 bg-slate-950/60 p-3">
+                      <div className="text-[10px] text-slate-400 uppercase tracking-wider">Bird Activity</div>
+                      <div className="text-lg font-semibold text-purple-300">
+                        {acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length > 0.3 ? 'High' : 
+                         acousticIndicesData.reduce((sum, d) => sum + d.bi, 0) / acousticIndicesData.length > 0.15 ? 'Medium' : 'Low'}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {selectedMetric !== 'detections' && (
+                <div className="text-xs text-slate-400 bg-slate-950/40 border border-slate-800/50 rounded-lg p-3">
+                  <strong className="text-slate-300">Note:</strong> Due to 8 kHz sample rate, frequency analysis is capped at 4 kHz (Nyquist frequency). 
+                  Full biophony range (2-8 kHz) requires higher sample rates.
+                </div>
+              )}
+                </>
+              )}
             </section>
-          </section>
+          )}
+
           <section className="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/60 p-6 shadow-[0_15px_50px_rgba(0,0,0,0.4)]" aria-labelledby="results-heading" aria-busy={isProcessing && !classificationResult ? true : undefined}>
             <h2 id="results-heading" className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">
               Top-5 Detected Species / Sources
@@ -1725,7 +2390,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                     </div>
                     {classificationResult.topPredictions.slice(0, 5).map((pred, idx) => {
                       const thumbnailUrl = getClassThumbnail(pred.className, pred.humanReadableName);
-                      const confidence = ((pred.maxConfidence ?? pred.confidence) * 100).toFixed(2);
+                      const confidence = ((pred.maxConfidence ?? pred.confidence) * 100).toFixed(1);
                       const speciesName = pred.humanReadableName ?? pred.className;
                       return (
                         <div
@@ -1788,8 +2453,8 @@ export default function BioacousticsDetectionAnalysisPage() {
                                 })()}
                               </div>
                             </div>
-                            <span className="w-14 text-right text-sm text-emerald-300">
-                              {((pred.maxConfidence ?? pred.confidence) * 100).toFixed(2)}%
+                            <span className={`w-14 text-right text-sm font-semibold ${getConfidenceColorClass(pred.maxConfidence ?? pred.confidence)}`}>
+                              {((pred.maxConfidence ?? pred.confidence) * 100).toFixed(1)}%
                             </span>
                           </div>
                           {pred.humanReadableName && pred.humanReadableName !== pred.className && (
