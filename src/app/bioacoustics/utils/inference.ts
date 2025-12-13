@@ -63,7 +63,6 @@ export async function classifySpectrogram(
     grayscaleData[i] = pixelData[i * 4] / 255.0;
   }
 
-  // Debug stats to catch constant inputs
   const sampleValues = Array.from(grayscaleData.slice(0, 8));
   let min = Number.POSITIVE_INFINITY;
   let max = Number.NEGATIVE_INFINITY;
@@ -85,7 +84,6 @@ export async function classifySpectrogram(
     });
   }
   
-  // Model expects NHWC: [1, height, width, 1]
   const tensorShape = [1, imageData.height, imageData.width, 1];
   const tensor = new ort.Tensor('float32', grayscaleData, tensorShape);
   

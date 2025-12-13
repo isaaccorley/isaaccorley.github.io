@@ -4,8 +4,6 @@ import type { Chart as ChartJS } from 'chart.js';
 import Chart from 'chart.js/auto';
 import { Download, Info, Paperclip, Volume2 } from 'lucide-react';
 
-// Add CSS for screen reader only content if not already in globals.css
-// .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border-width: 0; }
 
 import type { InferenceSession } from 'onnxruntime-web';
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -75,7 +73,6 @@ export default function BioacousticsDetectionAnalysisPage() {
   const audioBlobUrlsRef = useRef<Set<string>>(new Set());
   const audioUrlCacheRef = useRef<Map<string, { blobUrl: string; file: File }>>(new Map());
   const blobUrlAlreadySetRef = useRef<boolean>(false);
-  // Keep File objects in memory to prevent garbage collection
   const fileCacheRef = useRef<Map<string, File>>(new Map());
   const clipConfidenceSeries = useMemo<
     { clipNumber: number; speciesName: string; confidence: number; className?: string; humanReadableName?: string }[]
@@ -100,8 +97,6 @@ export default function BioacousticsDetectionAnalysisPage() {
     const loadModel = async () => {
       try {
         setModelStatus('Loading model…');
-        // Pre-initialize Essentia WASM to pre-allocate memory on page load
-        // This prevents heap resize pauses during audio processing
         void preloadEssentia();
         
         const loadedModel = await loadBioacousticsModel(MODEL_PATH);
@@ -142,7 +137,6 @@ export default function BioacousticsDetectionAnalysisPage() {
           setRecordingUrls(urls);
         }
       } catch {
-        // ignore
       }
     };
     void loadRecordings();
@@ -155,15 +149,12 @@ export default function BioacousticsDetectionAnalysisPage() {
     if (!ws) return;
     if (eqFiltersRef.current) return;
     
-    // Get the media element from WaveSurfer (v7 specific)
     const media = (ws as unknown as { getMediaElement?: () => HTMLMediaElement | null }).getMediaElement?.();
     if (!media) {
       console.warn('setupEqualizer: Media element not available');
       return;
     }
 
-    // Create a new AudioContext for this audio session
-    // (We'll close it when the audio changes)
     const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) {
       throw new Error('AudioContext is not supported in this browser');
@@ -171,16 +162,10 @@ export default function BioacousticsDetectionAnalysisPage() {
     const ctx = new AudioContextClass();
     eqAudioContextRef.current = ctx;
     
-    // Create a MediaElementAudioSourceNode from the media element
-    // This connects the HTML5 audio element to the Web Audio API
-    // Note: createMediaElementSource can only be called once per media element
-    // If it throws, the element is already connected - we'll handle that
     let source: MediaElementAudioSourceNode;
     try {
       source = ctx.createMediaElementSource(media);
     } catch (error) {
-      // Media element is already connected to an AudioContext
-      // This shouldn't happen in normal flow, but handle gracefully
       console.warn('Media element already connected to AudioContext:', error);
       ctx.close().catch(console.error);
       eqAudioContextRef.current = null;
@@ -188,18 +173,15 @@ export default function BioacousticsDetectionAnalysisPage() {
     }
     eqSourceNodeRef.current = source;
     
-    // Create the filters
     const filters = EQ_BANDS.map((band, idx) => {
       const filter = ctx.createBiquadFilter();
       filter.type = band <= 32 ? 'lowshelf' : band >= 16000 ? 'highshelf' : 'peaking';
       filter.Q.value = 1;
       filter.frequency.value = band;
-      // Invert the value because the slider is visually inverted due to RTL + rotation
       filter.gain.value = -(eqGainsRef.current[idx] ?? 0);
       return filter;
     });
 
-    // Connect: source -> filter1 -> filter2 -> ... -> destination
     let currentNode: AudioNode = source;
     filters.forEach((filter) => {
       currentNode.connect(filter);
@@ -207,18 +189,12 @@ export default function BioacousticsDetectionAnalysisPage() {
     });
     currentNode.connect(ctx.destination);
     
-    // Verify the connection chain
     console.log('Connection chain: source ->', filters.length, 'filters -> destination');
     console.log('Source node:', source);
     console.log('Last filter:', filters[filters.length - 1]);
     console.log('Destination:', ctx.destination);
 
-    // Important: When createMediaElementSource is called, the media element's audio
-    // is automatically routed through the Web Audio API. The direct output is NOT
-    // automatically disconnected, but we need to mute it to avoid double audio.
-    // However, we'll do this only after confirming the AudioContext is running.
 
-    // Save reference so the slider useEffect can update .gain values later
     eqFiltersRef.current = filters;
     
     console.log('Equalizer setup complete. AudioContext state:', ctx.state);
@@ -229,7 +205,6 @@ export default function BioacousticsDetectionAnalysisPage() {
     const filters = eqFiltersRef.current;
     if (!filters) return;
     filters.forEach((f, idx) => {
-      // Invert the value because the slider is visually inverted due to RTL + rotation
       const invertedGain = -eqGains[idx];
       if (f.gain.value !== invertedGain) {
         f.gain.value = invertedGain;
@@ -240,17 +215,14 @@ export default function BioacousticsDetectionAnalysisPage() {
 
   useEffect(() => {
     return () => {
-      // Disconnect filters
       if (eqFiltersRef.current) {
         eqFiltersRef.current.forEach((f) => f.disconnect());
         eqFiltersRef.current = null;
       }
-      // Disconnect source node
       if (eqSourceNodeRef.current) {
         eqSourceNodeRef.current.disconnect();
         eqSourceNodeRef.current = null;
       }
-      // Restore media element volume
       const ws = waveSurferRef.current;
       if (ws) {
         const media = (ws as unknown as { getMediaElement?: () => HTMLMediaElement | null }).getMediaElement?.();
@@ -258,7 +230,6 @@ export default function BioacousticsDetectionAnalysisPage() {
           media.volume = 1;
         }
       }
-      // Note: We keep the AudioContext alive for reuse, but could close it here if needed
     };
   }, []);
 
@@ -266,17 +237,13 @@ export default function BioacousticsDetectionAnalysisPage() {
     const ctx = chartCanvasRef.current?.getContext('2d');
     if (!ctx) return;
 
-    // Clean up any existing tooltip from previous effect run
     const cleanupTooltip = () => {
       if (tooltipElementRef.current instanceof HTMLDivElement) {
         const tooltipEl = tooltipElementRef.current;
-        // Check if element is still connected to the DOM
         if (tooltipEl.isConnected && tooltipEl.parentNode) {
           try {
-            // Use remove() which is safer - it doesn't throw if element is not a child
             tooltipEl.remove();
           } catch (e) {
-            // Silently ignore - element was already removed
             console.debug('Tooltip already removed:', e);
           }
         }
@@ -284,16 +251,13 @@ export default function BioacousticsDetectionAnalysisPage() {
       }
     };
 
-    // Create custom tooltip element
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const getOrCreateTooltip = (chart: ChartJS) => {
-      // If tooltip exists but is not connected to the DOM, clean it up first
       if (tooltipElementRef.current && !tooltipElementRef.current.isConnected) {
         tooltipElementRef.current = null;
       }
       
       if (!tooltipElementRef.current) {
-        // Clean up any existing tooltip before creating a new one
         cleanupTooltip();
         
         const tooltipEl = document.createElement('div');
@@ -304,7 +268,6 @@ export default function BioacousticsDetectionAnalysisPage() {
         tooltipEl.style.transition = 'opacity 0.1s';
         tooltipEl.style.pointerEvents = 'none';
         tooltipEl.style.zIndex = '1000';
-        // Append to document.body instead of chart parent to avoid React reconciliation issues
         document.body.appendChild(tooltipEl);
         tooltipElementRef.current = tooltipEl;
       }
@@ -328,10 +291,7 @@ export default function BioacousticsDetectionAnalysisPage() {
     const datasetValues = clipConfidenceSeries.map(({ confidence }) => confidence);
 
     if (chartInstanceRef.current) {
-      // Chart exists - just update the data
-      // Ensure tooltip is still valid (it should be, but check if it's orphaned)
       if (tooltipElementRef.current && !tooltipElementRef.current.isConnected) {
-        // Tooltip was orphaned, clean it up - it will be recreated by getOrCreateTooltip when needed
         tooltipElementRef.current = null;
       }
       
@@ -420,11 +380,9 @@ export default function BioacousticsDetectionAnalysisPage() {
                 </div>
               `;
 
-              // Calculate position relative to viewport since tooltip is now fixed
               const position = chart.canvas.getBoundingClientRect();
               tooltipEl.style.opacity = '1';
               tooltipEl.style.left = (position.left + tooltip.caretX) + 'px';
-              // Position tooltip higher above the cursor (subtract 60px offset)
               tooltipEl.style.top = (position.top + tooltip.caretY - 70) + 'px';
             },
           },
@@ -442,16 +400,12 @@ export default function BioacousticsDetectionAnalysisPage() {
     return () => {
       chartInstanceRef.current?.destroy();
       chartInstanceRef.current = null;
-      // Clean up tooltip on unmount
       if (tooltipElementRef.current instanceof HTMLDivElement) {
         const tooltipEl = tooltipElementRef.current;
-        // Check if element is still connected to the DOM and has a parent
         if (tooltipEl.isConnected && tooltipEl.parentNode) {
           try {
-            // Use remove() which is safer - it doesn't throw if element is not a child
             tooltipEl.remove();
           } catch (e) {
-            // Silently ignore - element was already removed
             console.debug('Tooltip already removed on unmount:', e);
           }
         }
@@ -469,25 +423,18 @@ export default function BioacousticsDetectionAnalysisPage() {
       return;
     }
     
-    // Prevent duplicate WaveSurfer creation for the same URL
-    // Check if we already have a WaveSurfer instance for this exact URL
     const existingWs = waveSurferRef.current;
     if (existingWs) {
-      // Get the media element and check if it's using the same URL
       const media = (existingWs as unknown as { getMediaElement?: () => HTMLMediaElement | null }).getMediaElement?.();
       if (media && media.src === audioObjectUrl) {
         console.log('WaveSurfer already exists for this URL, skipping duplicate creation');
         return;
       }
-      // If URL changed, destroy the old one first (will happen in cleanup)
       console.log('URL changed, will destroy old WaveSurfer in cleanup');
     }
     
-    // Additional safety: check if containers are already populated by plugins
-    // This can happen in React Strict Mode where effects run twice
     if (waveContainerRef.current?.children.length || spectrogramContainerRef.current?.children.length) {
       console.warn('Containers already have children, cleaning up before creating new WaveSurfer');
-      // Clean up any existing plugins first
       if (waveSurferRef.current) {
         try {
           waveSurferRef.current.destroy();
@@ -514,13 +461,11 @@ export default function BioacousticsDetectionAnalysisPage() {
       }
     }
     
-    // Capture the current URL for this effect instance
     const currentUrl = audioObjectUrl;
     
     let ws: WaveSurfer | null = null;
     let regionsPlugin: RegionsPluginType | null = null;
     let cancelled = false;
-    // Capture container refs at the start of the effect for cleanup
     const containerForCleanup = waveContainerRef.current;
       (async () => {
       const WaveSurfer = (await import('wavesurfer.js')).default;
@@ -529,7 +474,6 @@ export default function BioacousticsDetectionAnalysisPage() {
       const HoverPlugin = (await import('wavesurfer.js/dist/plugins/hover.esm.js')).default;
       if (cancelled) return;
       regionsPlugin = RegionsPlugin.create();
-      // Create formatHoverLabel function that reads from ref to show top predicted class
       const formatHoverLabel = (seconds: number): string => {
         if (!Number.isFinite(seconds)) {
           return formatTime(seconds);
@@ -556,8 +500,6 @@ export default function BioacousticsDetectionAnalysisPage() {
       if (!waveformContainer || !spectrogramContainer) {
         return;
       }
-        // Create spectrogram - will be recreated with correct frequency range once sample rate is known
-        // For now, create with a placeholder that will be replaced
         const spectrogram = SpectrogramPlugin.create({
           container: spectrogramContainer,
           height: 200,
@@ -568,7 +510,6 @@ export default function BioacousticsDetectionAnalysisPage() {
           scale: 'linear' as const,
         });
         spectrogramPluginRef.current = spectrogram;
-      // Verify the URL exists
       if (!currentUrl) {
         console.warn('Missing audio URL');
         return;
@@ -609,7 +550,6 @@ export default function BioacousticsDetectionAnalysisPage() {
         
         setAudioDuration(waveSurferInstance.getDuration() || 0);
         setCurrentTime(0);
-        // Setup equalizer after a small delay to ensure media element is fully ready
         setTimeout(() => {
           setupEqualizer(waveSurferInstance);
         }, 100);
@@ -619,7 +559,6 @@ export default function BioacousticsDetectionAnalysisPage() {
           ((waveSurferInstance as unknown as { backend?: { buffer?: AudioBuffer | null } }).backend?.buffer?.sampleRate ??
             null);
         
-        // Update metadata
         const duration = waveSurferInstance.getDuration() || 0;
         setAudioMetadata({
           sampleRate: sr && Number.isFinite(sr) ? sr : undefined,
@@ -631,17 +570,13 @@ export default function BioacousticsDetectionAnalysisPage() {
           const targetMax = Math.min(MAX_SPECTROGRAM_HZ, nyquistFreq);
           const previousFreq = specMaxHzRef.current;
           
-          // Update ref for future WaveSurfer instances
           specMaxHzRef.current = targetMax;
           
-          // Always recreate spectrogram on first load or if frequency range changed
-          // This ensures it's properly initialized with WaveSurfer
           const shouldRecreate = Math.abs(targetMax - previousFreq) > 1 || previousFreq === MAX_SPECTROGRAM_HZ;
           
           if (shouldRecreate) {
             console.log(`Sample rate detected: ${sr}Hz, recreating spectrogram with frequency range 0-${targetMax}Hz (Nyquist: ${nyquistFreq}Hz)`);
             
-            // Destroy old spectrogram (it will clean up its own DOM)
             if (spectrogramPluginRef.current) {
               try {
                 spectrogramPluginRef.current.destroy?.();
@@ -651,7 +586,6 @@ export default function BioacousticsDetectionAnalysisPage() {
               spectrogramPluginRef.current = null;
             }
             
-            // Create new spectrogram with correct frequency range
             const newSpectrogram = SpectrogramPlugin.create({
               container: spectrogramContainer,
               height: 200,
@@ -662,13 +596,9 @@ export default function BioacousticsDetectionAnalysisPage() {
               scale: 'linear' as const,
             });
             
-            // Update the plugin reference
             spectrogramPluginRef.current = newSpectrogram;
             
-            // Re-initialize the spectrogram with the WaveSurfer instance
-            // Try multiple methods to ensure it's properly connected
             if (newSpectrogram) {
-              // Method 1: Try init method if it exists
               type SpectrogramWithInit = typeof newSpectrogram & { init?: (ws: WaveSurfer) => void };
               const spectrogramWithInit = newSpectrogram as SpectrogramWithInit;
               if (spectrogramWithInit.init) {
@@ -679,7 +609,6 @@ export default function BioacousticsDetectionAnalysisPage() {
                 }
               }
               
-              // Method 2: Try registerPlugin if it exists on WaveSurfer
               type WaveSurferWithRegister = WaveSurfer & { registerPlugin?: (plugin: unknown) => void };
               const wsWithRegister = waveSurferInstance as WaveSurferWithRegister;
               if (wsWithRegister.registerPlugin) {
@@ -690,7 +619,6 @@ export default function BioacousticsDetectionAnalysisPage() {
                 }
               }
               
-              // Method 3: Force a redraw by seeking to current position
               setTimeout(() => {
                 const currentTime = waveSurferInstance.getCurrentTime();
                 waveSurferInstance.seekTo(currentTime / waveSurferInstance.getDuration());
@@ -698,8 +626,6 @@ export default function BioacousticsDetectionAnalysisPage() {
             }
           }
         } else {
-          // If sample rate couldn't be detected, ensure initial spectrogram is rendered
-          // by forcing a redraw
           setTimeout(() => {
             if (spectrogramPluginRef.current && waveSurferInstance) {
               const currentTime = waveSurferInstance.getCurrentTime();
@@ -710,12 +636,7 @@ export default function BioacousticsDetectionAnalysisPage() {
             }
           }, 200);
         }
-        // Update regions if available
-        // Note: clipRegions might be empty initially, but will be updated by the separate useEffect
-        // We don't clear/add regions here to avoid race conditions - let the separate useEffect handle it
         
-        // Register hover handler now that WaveSurfer is ready
-        // Try multiple approaches for WaveSurfer v7
         type WaveSurferWithHover = WaveSurfer & {
           on(event: 'hover', callback: (time: number) => void): void;
         };
@@ -725,7 +646,6 @@ export default function BioacousticsDetectionAnalysisPage() {
         };
         
         if (hoverHandlerRef.current) {
-          // Try WaveSurfer instance
           try {
             (waveSurferInstance as WaveSurferWithHover).on('hover', hoverHandlerRef.current);
             console.log('Hover handler registered on WaveSurfer instance');
@@ -733,7 +653,6 @@ export default function BioacousticsDetectionAnalysisPage() {
             console.warn('Failed to register hover on WaveSurfer:', e);
           }
           
-          // Try hoverPlugin
           try {
             if ((hoverPlugin as HoverPluginWithEvents).on) {
               (hoverPlugin as HoverPluginWithEvents).on('hover', hoverHandlerRef.current);
@@ -746,8 +665,6 @@ export default function BioacousticsDetectionAnalysisPage() {
             console.warn('Failed to register hover on hoverPlugin:', e);
           }
           
-          // Also add direct mouse move listener as fallback
-          // This will work even if WaveSurfer's hover event doesn't fire
           const container = waveContainerRef.current;
           if (container) {
             const handleMouseMove = (e: MouseEvent) => {
@@ -767,7 +684,6 @@ export default function BioacousticsDetectionAnalysisPage() {
             container.addEventListener('mousemove', handleMouseMove);
             console.log('Direct mousemove listener added as fallback');
             
-            // Store cleanup function
             type ContainerWithCleanup = HTMLDivElement & { _hoverCleanup?: () => void };
             (container as ContainerWithCleanup)._hoverCleanup = () => {
               container.removeEventListener('mousemove', handleMouseMove);
@@ -780,7 +696,6 @@ export default function BioacousticsDetectionAnalysisPage() {
       });
       waveSurferInstance.on('play', async () => {
         setIsPlaying(true);
-        // Ensure AudioContext is resumed when playback starts (required for audio)
         if (eqAudioContextRef.current) {
           if (eqAudioContextRef.current.state === 'suspended') {
             try {
@@ -792,7 +707,6 @@ export default function BioacousticsDetectionAnalysisPage() {
             }
           }
           
-          // Verify the connection chain
           if (eqSourceNodeRef.current && eqFiltersRef.current && eqFiltersRef.current.length > 0) {
             const lastFilter = eqFiltersRef.current[eqFiltersRef.current.length - 1];
             console.log('AudioContext state:', eqAudioContextRef.current.state);
@@ -800,8 +714,6 @@ export default function BioacousticsDetectionAnalysisPage() {
             console.log('Last filter:', lastFilter);
             console.log('Destination:', eqAudioContextRef.current.destination);
             
-            // Test: Try connecting source directly to destination to see if that works
-            // (This will help us debug if the issue is with the filters)
             if (eqAudioContextRef.current.state === 'running') {
               console.log('Audio should be playing through Web Audio API');
             }
@@ -814,8 +726,6 @@ export default function BioacousticsDetectionAnalysisPage() {
       });
       waveSurferInstance.on('pause', () => setIsPlaying(false));
       
-      // Create hover handler that reads from ref to avoid stale closures
-      // This will be registered in the 'ready' event handler
       const hoverHandler = (time: number) => {
         console.log('Hover event fired, time:', time, 'predictions count:', clipPredictionsRef.current.length);
         setCurrentTime(time);
@@ -845,8 +755,6 @@ export default function BioacousticsDetectionAnalysisPage() {
     })();
     return () => {
       cancelled = true;
-      // Clean up mousemove listener if it was added
-      // Use the captured container value from the start of the effect
       if (containerForCleanup) {
         type ContainerWithCleanup = HTMLDivElement & { _hoverCleanup?: () => void };
         const containerWithCleanup = containerForCleanup as ContainerWithCleanup;
@@ -856,7 +764,6 @@ export default function BioacousticsDetectionAnalysisPage() {
         }
       }
       
-      // Destroy plugins in the correct order: spectrogram -> regions -> wavesurfer
       if (spectrogramPluginRef.current) {
         try {
           spectrogramPluginRef.current.destroy?.();
@@ -881,7 +788,6 @@ export default function BioacousticsDetectionAnalysisPage() {
       }
       waveSurferRef.current = null;
       regionsPluginRef.current = null;
-      // Clean up equalizer
       if (eqFiltersRef.current) {
         eqFiltersRef.current.forEach((f) => f.disconnect());
         eqFiltersRef.current = null;
@@ -890,7 +796,6 @@ export default function BioacousticsDetectionAnalysisPage() {
         eqSourceNodeRef.current.disconnect();
         eqSourceNodeRef.current = null;
       }
-      // Restore media element volume before closing context
       if (ws) {
         const media = (ws as unknown as { getMediaElement?: () => HTMLMediaElement | null }).getMediaElement?.();
         if (media) {
@@ -901,13 +806,9 @@ export default function BioacousticsDetectionAnalysisPage() {
         eqAudioContextRef.current.close().catch(console.error);
         eqAudioContextRef.current = null;
       }
-      // Don't revoke blob URLs here - let them persist
-      // Blob URLs are automatically cleaned up when the page unloads
-      // Revoking them during normal operation causes race conditions
     };
   }, [audioObjectUrl, setupEqualizer]); // Only recreate WaveSurfer when audioObjectUrl changes
 
-  // Cleanup blob URLs on component unmount
   useEffect(() => {
     const urlsToCleanup = audioBlobUrlsRef.current;
     return () => {
@@ -915,7 +816,6 @@ export default function BioacousticsDetectionAnalysisPage() {
         try {
           URL.revokeObjectURL(url);
         } catch {
-          // Ignore errors when revoking
         }
       });
       urlsToCleanup.clear();
@@ -927,14 +827,11 @@ export default function BioacousticsDetectionAnalysisPage() {
     if (!regionsPlugin) return;
     
     try {
-      // Safely clear regions - wrap in try-catch in case regions are already being cleared elsewhere
       regionsPlugin.clearRegions();
     } catch (e) {
-      // Regions might already be cleared or in an invalid state, ignore
       console.warn('Error clearing regions (ignored):', e);
     }
     
-    // Add new regions
     clipRegions.forEach((r) => {
       try {
         regionsPlugin.addRegion({
@@ -945,14 +842,11 @@ export default function BioacousticsDetectionAnalysisPage() {
           resize: false,
         });
       } catch (e) {
-        // Region might fail to add if plugin is in invalid state, ignore
         console.warn('Error adding region (ignored):', e);
       }
     });
   }, [clipRegions]);
 
-  // Update clipPredictions ref when clipPredictions state changes
-  // This ensures the hover handler always has access to the latest predictions
   useEffect(() => {
     clipPredictionsRef.current = clipPredictions;
     console.log('clipPredictions updated, count:', clipPredictions.length);
@@ -962,8 +856,6 @@ export default function BioacousticsDetectionAnalysisPage() {
     const ws = waveSurferRef.current;
     if (!ws) return;
     
-    // Resume AudioContext if suspended (required for audio playback)
-    // This MUST happen on user interaction (clicking play button)
     if (eqAudioContextRef.current) {
       if (eqAudioContextRef.current.state === 'suspended') {
         try {
@@ -974,7 +866,6 @@ export default function BioacousticsDetectionAnalysisPage() {
         }
       }
       
-      // Verify connection chain exists
       if (!eqSourceNodeRef.current || !eqFiltersRef.current || eqFiltersRef.current.length === 0) {
         console.warn('Equalizer not properly set up. Source:', !!eqSourceNodeRef.current, 'Filters:', eqFiltersRef.current?.length ?? 0);
       } else {
@@ -991,10 +882,8 @@ export default function BioacousticsDetectionAnalysisPage() {
     }
   }, []);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in inputs
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
       }
@@ -1027,7 +916,6 @@ export default function BioacousticsDetectionAnalysisPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [audioObjectUrl, togglePlay]);
 
-  // Update playback speed and volume
   useEffect(() => {
     const ws = waveSurferRef.current;
     if (!ws) return;
@@ -1035,9 +923,7 @@ export default function BioacousticsDetectionAnalysisPage() {
     const media = (ws as unknown as { getMediaElement?: () => HTMLMediaElement | null }).getMediaElement?.();
     if (media) {
       media.playbackRate = playbackSpeed;
-      // Volume is handled by the equalizer, but we can also set it on the media element as a fallback
       if (eqAudioContextRef.current && eqSourceNodeRef.current) {
-        // Volume is controlled by equalizer, but we can set media volume as backup
         media.volume = volume;
       }
     }
@@ -1120,18 +1006,14 @@ export default function BioacousticsDetectionAnalysisPage() {
       setIsProcessing(true);
       setIsPlaying(false); // Reset play state when processing new audio
       
-      // Stop any currently playing audio
       const currentWaveSurfer = waveSurferRef.current;
       if (currentWaveSurfer) {
         try {
           currentWaveSurfer.pause();
         } catch {
-          // Ignore errors if WaveSurfer is not ready
         }
       }
       
-      // Animate EQ sliders back to default (all zeros) smoothly
-      // Use the ref to get the current values (avoids stale closure)
       const currentGains = [...eqGainsRef.current];
       const targetGains = EQ_BANDS.map(() => 0);
       const duration = 300; // milliseconds
@@ -1140,7 +1022,6 @@ export default function BioacousticsDetectionAnalysisPage() {
       const animate = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        // Use ease-out easing for smooth deceleration
         const eased = 1 - Math.pow(1 - progress, 3);
         
         const newGains = currentGains.map((current, idx) => {
@@ -1154,7 +1035,6 @@ export default function BioacousticsDetectionAnalysisPage() {
         if (progress < 1) {
           requestAnimationFrame(animate);
         } else {
-          // Ensure we end exactly at 0
           setEqGains(targetGains);
           eqGainsRef.current = targetGains;
         }
@@ -1163,19 +1043,14 @@ export default function BioacousticsDetectionAnalysisPage() {
       requestAnimationFrame(animate);
 
       try {
-        // Create blob URL and track it
-        // If blob URL was already set (from URL cache), don't create a new one
-        // This ensures we use the same blob URL that WaveSurfer will use
         if (!blobUrlAlreadySetRef.current) {
           const objectUrl = URL.createObjectURL(file);
           audioBlobUrlsRef.current.add(objectUrl);
           fileCacheRef.current.set(objectUrl, file); // Keep File alive by blob URL
           setAudioObjectUrl(objectUrl);
         }
-        // Reset the flag for next time
         blobUrlAlreadySetRef.current = false;
         setProcessingStatus('Converting audio to spectrograms…');
-        // Don't show progress for spectrogram conversion
         
         const spectrograms = await audioFileToSpectrograms(
           file,
@@ -1186,7 +1061,6 @@ export default function BioacousticsDetectionAnalysisPage() {
             duration: 12,
             dynamicRange: 90,
           }
-          // No progress callback - don't show progress for spectrogram conversion
         );
 
         if (spectrograms.length === 0) {
@@ -1200,7 +1074,6 @@ export default function BioacousticsDetectionAnalysisPage() {
           model,
           spectrograms,
           (current, total) => {
-            // Use requestAnimationFrame to ensure smooth UI updates
             requestAnimationFrame(() => {
               const percentage = Math.round((current / total) * 100);
               setProcessingProgress(percentage);
@@ -1254,7 +1127,6 @@ export default function BioacousticsDetectionAnalysisPage() {
       }
       setErrorMessage(null);
       try {
-        // Check if we have this URL cached
         let cached = audioUrlCacheRef.current.get(url);
         
         if (!cached) {
@@ -1267,9 +1139,6 @@ export default function BioacousticsDetectionAnalysisPage() {
           const arrayBuffer = await response.arrayBuffer();
           const inferredName = url.split('/').pop() || 'audio-from-url.wav';
           const file = new File([arrayBuffer], inferredName, { type: contentType });
-          
-          // Create blob URL and cache it
-          // Keep the File object in a separate cache to prevent garbage collection
           const blobUrl = URL.createObjectURL(file);
           audioBlobUrlsRef.current.add(blobUrl);
           fileCacheRef.current.set(blobUrl, file); // Keep File alive by blob URL
@@ -1278,18 +1147,10 @@ export default function BioacousticsDetectionAnalysisPage() {
         }
         
         setFileName(cached.file.name);
-        
-        // Use the cached blob URL - this ensures WaveSurfer uses the same URL
-        // that we'll use for processing, preventing the ERR_FILE_NOT_FOUND error
-        // Set the blob URL and wait a bit to ensure state updates
         setAudioObjectUrl(cached.blobUrl);
         blobUrlAlreadySetRef.current = true; // Signal that blob URL is already set
         
-        // Small delay to ensure the state update propagates and useEffect starts
         await new Promise(resolve => setTimeout(resolve, 50));
-        
-        // Process the cached file
-        // processAudioFile will see that blobUrlAlreadySetRef is true and won't create a new URL
         await processAudioFile(cached.file);
       } catch (error) {
         console.error('Error processing URL audio:', error);
@@ -1354,7 +1215,6 @@ export default function BioacousticsDetectionAnalysisPage() {
     a.download = `per-segment-predictions-${Date.now()}.json`;
     document.body.appendChild(a);
     a.click();
-    // Use setTimeout to ensure the click event completes before removing
     setTimeout(() => {
       if (document.body.contains(a)) {
         document.body.removeChild(a);
@@ -1884,7 +1744,6 @@ export default function BioacousticsDetectionAnalysisPage() {
                                     alt={`Photo of ${pred.humanReadableName ?? pred.className}`}
                                     className="h-10 w-10 rounded-lg object-cover border border-slate-700/50 transition-all duration-200 ease-in-out cursor-pointer group-hover:scale-[2.5] group-hover:shadow-2xl group-hover:border-emerald-400/50"
                                     onError={(e) => {
-                                      // Hide image if it fails to load
                                       (e.target as HTMLImageElement).style.display = 'none';
                                     }}
                                   />
@@ -1892,7 +1751,6 @@ export default function BioacousticsDetectionAnalysisPage() {
                               )}
                               <div className="flex items-center gap-2">
                                 {(() => {
-                                  // Only make species name a link for bird species, not for non-bird classes
                                   const nonBirdClasses = [
                                     'Airplane', 'Chainsaw', 'Creek', 'Rain', 'Highway', 'Dog', 'Human', 
                                     'Train', 'Thunder', 'Gunshot', 'Cricket', 'Amphibian', 'Growler',

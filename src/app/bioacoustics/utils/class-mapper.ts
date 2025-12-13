@@ -148,12 +148,7 @@ const CLASS_MAPPINGS: Record<string, ClassMetadata> = {
   'ZOLE1': { commonName: 'Zonotrichia leucophrys', soundType: 'call_2' },
 };
 
-// Thumbnail URLs - using local paths for reliability
-// Images are placed in /public/bioacoustics/assets/thumbnails/
-// Paths are relative to the public folder root (served at /)
-// Filename format: sanitize the common name (lowercase, replace spaces with hyphens, remove special chars)
 const CLASS_THUMBNAILS: Record<string, string> = {
-  // --- Birds (Common Names) ---
   "American Crow": "/bioacoustics/assets/thumbnails/american-crow.jpg",
   "American Goldfinch": "/bioacoustics/assets/thumbnails/american-goldfinch.jpg",
   "Acorn Woodpecker": "/bioacoustics/assets/thumbnails/acorn-woodpecker.jpg",
@@ -204,7 +199,6 @@ const CLASS_THUMBNAILS: Record<string, string> = {
   "House Wren": "/bioacoustics/assets/thumbnails/house-wren.jpg",
   "American Robin": "/bioacoustics/assets/thumbnails/american-robin.jpg",
   
-  // --- Scientific Names (Mapped to images) ---
   "Ixoreus naevius": "/bioacoustics/assets/thumbnails/ixoreus-naevius.jpg",
   "Junco hyemalis": "/bioacoustics/assets/thumbnails/junco-hyemalis.jpg",
   "Leiothlypis celata": "/bioacoustics/assets/thumbnails/leiothlypis-celata.jpg",
@@ -238,7 +232,6 @@ const CLASS_THUMBNAILS: Record<string, string> = {
   "Uramus sp.": "/bioacoustics/assets/thumbnails/uramus-sp.jpg", // Code typo 'URAM' -> Ursus americanus (Black Bear)
   "Mega sp.": "/bioacoustics/assets/thumbnails/mega-sp.jpg", // 'MEGA' -> Meleagris gallopavo (Wild Turkey)
 
-  // --- Machinery / Environment / Other ---
   "Airplane": "/bioacoustics/assets/thumbnails/airplane.jpg",
   "Chainsaw": "/bioacoustics/assets/thumbnails/chainsaw.jpg",
   "Creek": "/bioacoustics/assets/thumbnails/creek.jpg",
@@ -286,26 +279,21 @@ export async function getClassDescription(className: string): Promise<string | n
 }
 
 export function getClassThumbnail(className: string, humanReadableName?: string): string | null {
-  // First try to get thumbnail by human readable name (common name)
   if (humanReadableName) {
-    // Remove any sound type suffix like " (call_1)" or " (engine_1)"
     const nameWithoutSuffix = humanReadableName.replace(/\s*\([^)]+\)$/, '').trim();
     if (CLASS_THUMBNAILS[nameWithoutSuffix]) {
       return CLASS_THUMBNAILS[nameWithoutSuffix];
     }
-    // Also try the full human readable name
     if (CLASS_THUMBNAILS[humanReadableName]) {
       return CLASS_THUMBNAILS[humanReadableName];
     }
   }
   
-  // Try to get metadata and use common name
   const metadata = CLASS_MAPPINGS[className];
   if (metadata?.commonName && CLASS_THUMBNAILS[metadata.commonName]) {
     return CLASS_THUMBNAILS[metadata.commonName];
   }
   
-  // Try the class name directly
   if (CLASS_THUMBNAILS[className]) {
     return CLASS_THUMBNAILS[className];
   }
