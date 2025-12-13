@@ -3,6 +3,7 @@
 import type { InferenceSession, Tensor } from 'onnxruntime-web';
 import { getHumanReadableName } from './class-mapper';
 
+// These are the v5_Code values from the target_classes.csv
 export const CLASSES = [
   'ACCO1', 'ACGE1', 'ACGE2', 'ACST1', 'AEAC1', 'AEAC2', 'Airplane', 'ANCA1',
   'ASOT1', 'BOUM1', 'BRCA1', 'BRMA1', 'BRMA2', 'BUJA1', 'BUJA2', 'Bullfrog',
@@ -63,26 +64,7 @@ export async function classifySpectrogram(
     grayscaleData[i] = pixelData[i * 4] / 255.0;
   }
 
-  const sampleValues = Array.from(grayscaleData.slice(0, 8));
-  let min = Number.POSITIVE_INFINITY;
-  let max = Number.NEGATIVE_INFINITY;
-  let sum = 0;
-  for (let i = 0; i < grayscaleData.length; i++) {
-    const v = grayscaleData[i];
-    if (v < min) min = v;
-    if (v > max) max = v;
-    sum += v;
-  }
-  const mean = sum / grayscaleData.length;
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('[classifySpectrogram] stats', {
-      min: Number.isFinite(min) ? min : 0,
-      max: Number.isFinite(max) ? max : 0,
-      mean: Number.isFinite(mean) ? mean : 0,
-      sampleValues,
-      shape: [imageData.height, imageData.width],
-    });
-  }
+
   
   const tensorShape = [1, imageData.height, imageData.width, 1];
   const tensor = new ort.Tensor('float32', grayscaleData, tensorShape);
@@ -104,10 +86,6 @@ export async function classifySpectrogram(
   }
   
   const logits = outputTensor.data as Float32Array | Float64Array | number[];
-
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('[classifySpectrogram] output sample', Array.from(logits).slice(0, 8));
-  }
   
   const sigmoidProbs = sigmoid(Array.from(logits).map(v => Number(v)));
   

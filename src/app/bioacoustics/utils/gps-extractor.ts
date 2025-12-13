@@ -22,17 +22,13 @@ export async function extractGPSFromAudio(file: File): Promise<GPSCoordinates | 
     // Parse audio metadata using music-metadata library
     const metadata = await parseBlob(file);
     
-    console.log('[GPS Extract] Parsing file:', file.name);
-    console.log('[GPS Extract] Available metadata formats:', metadata.native ? Object.keys(metadata.native) : 'none');
-    
     // Check for GPS coordinates in native tags
     const native = metadata.native;
     if (native) {
       // Try to find GPS data in various tag formats
-      for (const [format, tags] of Object.entries(native)) {
-        console.log(`[GPS Extract] Checking ${format} tags:`, tags.length);
+      for (const tags of Object.values(native)) {
         for (const tag of tags) {
-          // Log all tags to see what's available
+          // Check for GPS-related tags
           if (tag.id.toLowerCase().includes('gps') || 
               tag.id.toLowerCase().includes('location') ||
               tag.id.toLowerCase().includes('geo') ||
@@ -40,12 +36,9 @@ export async function extractGPSFromAudio(file: File): Promise<GPSCoordinates | 
               tag.id.toLowerCase().includes('lat') ||
               tag.id.toLowerCase().includes('lon') ||
               tag.id.toLowerCase().includes('position')) {
-            console.log(`[GPS Extract] Found potential GPS tag: ${tag.id}`, tag.value);
-            
             // Try to parse the value
             const coords = parseGPSValue(tag.value);
             if (coords) {
-              console.log('[GPS Extract] Successfully extracted GPS:', coords);
               return coords;
             }
           }
@@ -56,12 +49,6 @@ export async function extractGPSFromAudio(file: File): Promise<GPSCoordinates | 
     // Check common metadata fields
     const common = metadata.common;
     if (common) {
-      console.log('[GPS Extract] Common metadata:', {
-        comment: common.comment,
-        description: common.description,
-        title: common.title,
-      });
-      
       // Some formats store location in comment or description
       const textFields = [common.comment, common.description, common.title].filter(Boolean);
       for (const text of textFields) {
@@ -69,14 +56,12 @@ export async function extractGPSFromAudio(file: File): Promise<GPSCoordinates | 
           for (const item of text) {
             const coords = parseGPSFromText(String(item));
             if (coords) {
-              console.log('[GPS Extract] Successfully extracted GPS from text field:', coords);
               return coords;
             }
           }
         } else if (typeof text === 'string') {
           const coords = parseGPSFromText(text);
           if (coords) {
-            console.log('[GPS Extract] Successfully extracted GPS from text field:', coords);
             return coords;
           }
         }
@@ -87,11 +72,9 @@ export async function extractGPSFromAudio(file: File): Promise<GPSCoordinates | 
     // Some field recorders encode GPS in filename like: "recording_lat40.7128_lon-74.0060.wav"
     const filenameCoords = parseGPSFromText(file.name);
     if (filenameCoords) {
-      console.log('[GPS Extract] Extracted GPS from filename:', filenameCoords);
       return filenameCoords;
     }
     
-    console.log('[GPS Extract] No GPS data found in file');
     return null;
   } catch (error) {
     console.warn('[GPS Extract] Extraction failed:', error);
