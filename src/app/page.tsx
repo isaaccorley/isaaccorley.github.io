@@ -1,16 +1,16 @@
 import { EducationEntry } from "@/components/education-entry";
-import { educationData } from "@/data/education";
-import { PublicationEntry } from "@/components/publication-entry";
-import { publicationData } from "@/data/publication";
-import { ProfileSection } from "@/components/profile-section";
-import { aboutMe } from "@/data/aboutme";
-import { NewsEntry } from "@/components/news-entry";
-import { newsData } from "@/data/news";
 import { ExperienceEntry } from "@/components/experience-entry";
-import { experienceData } from "@/data/experience";
+import { NewsEntry } from "@/components/news-entry";
 import { PortfolioEntry } from "@/components/portfolio-entry";
+import { ProfileSection } from "@/components/profile-section";
+import { PublicationEntry } from "@/components/publication-entry";
+import { aboutMe } from "@/data/aboutme";
+import { educationData } from "@/data/education";
+import { experienceData } from "@/data/experience";
+import { newsData } from "@/data/news";
 import { portfolioData } from "@/data/portfolio";
-import { sectionOrder, Section } from "@/data/section-order";
+import { publicationData } from "@/data/publication";
+import { Section, sectionOrder } from "@/data/section-order";
 
 export default function Home() {
   return (
@@ -38,6 +38,33 @@ export default function Home() {
                 />
               </section>
             )}
+
+            {/* Latest Experiment card */}
+            <section>
+              <div className="rounded-xl border border-zinc-200 bg-white shadow-sm p-6 md:p-8">
+                <div className="flex flex-col gap-4">
+                  <span className="text-xs tracking-wide uppercase text-zinc-500">Latest Experiment</span>
+                  <h3 className="font-serif text-lg text-zinc-900">Bioacoustic Bird Detection Live Demo</h3>
+                  <p className="text-sm leading-relaxed text-zinc-700">
+                    Real-time client-side ML inference for avian classification. Runs entirely in your browser using ONNX Runtime.
+                  </p>
+                  <div className="flex flex-wrap gap-3 pt-2">
+                    <a
+                      href="/bioacoustics"
+                      className="inline-flex items-center gap-2 rounded-md bg-zinc-900 text-white px-4 py-2 text-sm hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                    >
+                      Try the Demo →
+                    </a>
+                    <a
+                      href="/ftw"
+                      className="inline-flex items-center gap-2 rounded-md border border-zinc-300 px-4 py-2 text-sm text-zinc-900 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-300"
+                    >
+                      FTW Experiment
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
 
             {/* Map through sectionOrder to render sections in correct order */}
             {sectionOrder.map((sectionName) => {
@@ -118,7 +145,7 @@ export default function Home() {
                     portfolioData.length > 0 && (
                       <section key={sectionName}>
                         <h2 className="font-serif text-md mb-12 tracking-wide uppercase">
-                          Projects
+                          Open-Source Libraries
                         </h2>
                         <div className="space-y-12">
                           {portfolioData.map((portfolio, index) => (

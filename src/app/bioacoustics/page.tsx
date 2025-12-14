@@ -85,9 +85,23 @@ export default function BioacousticsDetectionAnalysisPage() {
   
   // Load theme preference from localStorage on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('bioacoustics-theme');
-    if (savedTheme !== null) {
-      setIsDarkMode(savedTheme === 'dark');
+    try {
+      const savedTheme = localStorage.getItem('bioacoustics-theme');
+      if (savedTheme === 'dark') {
+        setIsDarkMode(true);
+        return;
+      }
+      if (savedTheme === 'light') {
+        setIsDarkMode(false);
+        return;
+      }
+      // No saved preference: default to OS preference via prefers-color-scheme
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(prefersDark);
+    } catch {
+      // Fallback: if localStorage or matchMedia is unavailable, assume OS dark preference
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(prefersDark);
     }
   }, []);
   
