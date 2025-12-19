@@ -30,7 +30,7 @@ export const portfolioData: Portfolio[] = [
     description:
       "A library for advancing machine learning models for instance segmentation of agricultural field boundaries in multispectral satellite imagery.",
     technologies: ["Python", "PyTorch", "Field Boundary Segmentation"],
-    imageUrl: "https://raw.githubusercontent.com/isaaccorley/isaaccorley.github.io/refs/heads/main/public/images/ftw_logo.png",
+    imageUrl: "https://raw.githubusercontent.com/isaaccorley/isaaccorley.github.io/refs/heads/main/public/images/ftw_logo.jpg",
     codeUrl: "https://github.com/fieldsoftheworld/ftw-baselines",
   },
 ];
