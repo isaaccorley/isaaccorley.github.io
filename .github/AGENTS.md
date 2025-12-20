@@ -22,3 +22,12 @@
 - Prioritize resource bounds, latency tradeoffs, failure cases, scaling laws, bottlenecks, and data regime assumptions over abstractions or heuristics.
 - List any unresolved questions at the end, if any.
 - Sacrifice grammar for the sake of concision.
+
+# Bun usage
+
+- Install dependencies with `bun install`.
+- Local dev: `bun dev`.
+- Lint: `bun lint`.
+- Prod build: `bun run build`.
+- Serve: `bun start`.
+- GitHub Actions uses Bun (`oven-sh/setup-bun@v1`) for install/build.

@@ -1,23 +1,14 @@
-# Planetary Computer MCP Site
-
-Static Next.js site showcasing the Planetary Computer MCP server with a Globe.gl hero. This repo now uses [Bun](https://bun.sh/) for dependency management and scripts.
+# My Personal Website
 
 ## Prerequisites
 
 - [Bun 1.1+](https://bun.sh/docs/installation)
 - Node 20+ is recommended for local Next.js builds (Bun will install it automatically in CI).
 
-## Install
-
-```bash
-bun install
-```
-
-This creates `bun.lockb` the first time you run it.
-
 ## Development
 
 ```bash
+bun install      # install dependencies
 bun dev        # start Next.js locally on http://localhost:3000
 bun lint       # run eslint
 bun run build  # production build
