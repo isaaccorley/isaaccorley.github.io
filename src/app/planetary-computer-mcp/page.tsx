@@ -4,9 +4,9 @@ import { McpJsonCard } from "@/components/mcp-json-card";
 import { SpinningGlobe } from "@/components/spinning-globe";
 
 const heroStats = [
-  { label: "Collections", value: "100+", detail: "Optical, SAR, DEM, Land Cover" },
-  { label: "Zero install", value: "npx", detail: "runs where the data lives" },
-  { label: "Outputs", value: "GeoTIFF / JPG / PNG", detail: "Allow agents to see EO data" },
+  { label: "STAC Collections", value: "100+", detail: "Optical, SAR, DEM, Land Cover" },
+  { label: "Zero install", value: "npx", detail: "No docker or python dependencies" },
+  { label: "Outputs", value: "geotiff, zarr, jpg, png", detail: "Allow agents to see EO data" },
 ];
 
 const installationCards = [
@@ -17,8 +17,8 @@ const installationCards = [
       <Image
         src="/planetary-computer-mcp/icons/vscode-logo.png"
         alt="VS Code logo"
-        width={30}
-        height={30}
+        width={34}
+        height={34}
         className="object-contain"
       />
     ),
@@ -30,8 +30,8 @@ const installationCards = [
       <Image
         src="/planetary-computer-mcp/icons/npm-logo.png"
         alt="npm logo"
-        width={32}
-        height={32}
+        width={34}
+        height={34}
         className="object-contain"
       />
     ),
@@ -103,7 +103,7 @@ export default function PlanetaryComputerMCPPage() {
           <div className="space-y-8">
             <p className="text-emerald-300 uppercase tracking-[0.35em] text-xs">Planetary computer · mcp server</p>
             <h1 className="text-4xl md:text-5xl text-white font-serif">
-              Enabling Agents with Tools to See Earth Observation Data
+              Enabling Agents with Tools to Observe the Earth
             </h1>
             <p className="text-base text-slate-200/80 max-w-2xl">
               Plug Microsoft Planetary Computer’s STAC catalog into VS Code, Cursor, Claude, or any MCP-aware agent.
@@ -113,7 +113,7 @@ export default function PlanetaryComputerMCPPage() {
             <div className="bg-black/25 backdrop-blur border border-emerald-400/40 rounded-2xl p-5 space-y-4">
               <div className="flex flex-wrap gap-4 text-sm text-emerald-200/90 font-mono">
                 <code className="text-lg text-emerald-200">npx planetary-computer-mcp</code>
-                <span className="text-xs uppercase tracking-[0.2em] text-emerald-300/70">zero install · no API keys</span>
+                <span className="text-xs uppercase tracking-[0.2em] text-emerald-300/70">zero install · no API keys · no docker / python</span>
               </div>
               <div className="grid gap-4 sm:grid-cols-3 text-sm">
                 {heroStats.map((stat) => (
@@ -154,9 +154,8 @@ export default function PlanetaryComputerMCPPage() {
             <div className="relative h-full rounded-3xl border border-white/20 bg-black/25 backdrop-blur p-4 flex flex-col gap-4">
               <div className="text-center space-y-1">
                 <p className="text-xs uppercase tracking-[0.4em] text-cyan-200">sample scenes</p>
-                <h2 className="text-2xl font-serif text-white">What the MCP renders</h2>
                 <p className="text-xs text-slate-300/80">
-                  Optical, SAR, DEM, land cover, and fire products transformed into RGB for assistants to inspect.
+                  Render MSI, SAR, DEM, LULC, and more to RGB images for agentic analysis.
                 </p>
               </div>
               <div className="grid gap-3 grid-cols-2">
