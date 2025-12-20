@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config) => {
     // Enable WASM support
     config.experiments = {
       ...config.experiments,
