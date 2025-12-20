@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { McpJsonCard } from "@/components/mcp-json-card";
+import { SpinningGlobe } from "@/components/spinning-globe";
 
 const heroStats = [
   { label: "Collections", value: "100+", detail: "Optical, SAR, DEM, Land Cover" },
@@ -90,33 +91,10 @@ export const metadata: Metadata = {
 export default function PlanetaryComputerMCPPage() {
   return (
     <div className="relative min-h-screen bg-[#040312] text-slate-100 overflow-hidden">
-      <div className="absolute inset-0" aria-hidden>
-        <div className="w-full h-full opacity-80">
-          <div
-            className="absolute inset-auto left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vmin] h-[120vmin] rounded-full blur-3xl opacity-70 border border-purple-500/20"
-            style={{
-              background:
-                "radial-gradient(circle at 30% 30%, rgba(192,132,252,0.25), rgba(79,70,229,0.08) 45%, rgba(8,18,33,0.4) 75%), radial-gradient(circle at 70% 70%, rgba(34,197,94,0.2), rgba(8,18,33,0.1) 65%)",
-            }}
-          />
-          <div
-            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[70vmin] h-[70vmin] rounded-full border border-indigo-200/40 bg-gradient-to-br from-[#0f1c2e] via-[#1a1133] to-[#04020b] shadow-[0_0_120px_rgba(34,197,94,0.2)] animate-[spin_55s_linear_infinite]"
-            style={{
-              backgroundImage: `radial-gradient(circle at 30% 30%, rgba(216,180,254,0.35), transparent 40%),
-                radial-gradient(circle at 70% 70%, rgba(14,165,233,0.25), transparent 50%),
-                repeating-conic-gradient(rgba(14,165,233,0.12) 0deg, rgba(14,165,233,0.12) 6deg, transparent 6deg, transparent 18deg)`,
-              maskImage:
-                "radial-gradient(circle at center, rgba(255,255,255,0.9) 60%, rgba(255,255,255,0.4) 80%, transparent 90%)",
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `radial-gradient(circle at 10% 20%, rgba(56,189,248,0.2), transparent 40%),
-                radial-gradient(circle at 80% 10%, rgba(34,197,94,0.18), transparent 45%),
-                radial-gradient(circle at 10% 80%, rgba(99,102,241,0.12), transparent 55%)`,
-            }}
-          />
+      <div className="globe-background" aria-hidden>
+        <div className="globe-inner">
+          <SpinningGlobe />
+          <div className="globe-gradient" />
         </div>
       </div>
 
