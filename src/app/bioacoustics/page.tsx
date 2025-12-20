@@ -3,7 +3,7 @@
 import type { Chart as ChartJS } from 'chart.js';
 import Chart from 'chart.js/auto';
 import { ChevronDown, ChevronUp, Download, Info, Paperclip, Search, Volume2 } from 'lucide-react';
-
+import Image from 'next/image';
 
 import { LocationMap } from '@/components/location-map';
 import type { InferenceSession } from 'onnxruntime-web';
@@ -1805,9 +1805,11 @@ export default function BioacousticsDetectionAnalysisPage() {
                       className={`group relative flex flex-col items-center gap-1.5 rounded-lg border p-2 shadow-md transition-all hover:border-emerald-500/50 hover:shadow-xl hover:z-10 ${isDarkMode ? 'border-slate-800/80 bg-slate-900/60 hover:bg-slate-900/80' : 'border-slate-200 bg-slate-50 hover:bg-slate-100'}`}
                     >
                       {species.thumbnail ? (
-                        <img
+                        <Image
                           src={species.thumbnail}
                           alt={species.commonName}
+                          width={96}
+                          height={96}
                           className="h-16 w-16 rounded-md object-cover shadow-sm transition-all duration-200 group-hover:h-24 group-hover:w-24 group-hover:shadow-lg"
                         />
                       ) : (
@@ -2749,4 +2751,3 @@ export default function BioacousticsDetectionAnalysisPage() {
       </div>
   );
 }
-
