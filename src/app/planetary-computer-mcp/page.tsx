@@ -1,41 +1,13 @@
-import type { Metadata } from "next";
 import Image from "next/image";
-import { McpJsonCard } from "@/components/mcp-json-card";
+import type { Metadata } from "next";
+import { InstallationGrid } from "@/components/installation-grid";
+import type { InstallationCard } from "@/components/installation-grid";
 import { SpinningGlobe } from "@/components/spinning-globe";
 
 const heroStats = [
   { label: "STAC Collections", value: "100+", detail: "Optical, SAR, DEM, Land Cover" },
   { label: "Zero install", value: "npx", detail: "No docker or python dependencies" },
   { label: "Outputs", value: "geotiff, zarr, jpg, png", detail: "Allow agents to see EO data" },
-];
-
-const installationCards = [
-  {
-    label: "VSCode Extension",
-    href: "https://marketplace.visualstudio.com/items?itemName=isaaccorley.vscode-planetary-computer-mcp-server",
-    icon: (
-      <Image
-        src="/planetary-computer-mcp/icons/vscode-logo.png"
-        alt="VS Code logo"
-        width={34}
-        height={34}
-        className="object-contain"
-      />
-    ),
-  },
-  {
-    label: "npm package",
-    href: "https://www.npmjs.com/package/planetary-computer-mcp",
-    icon: (
-      <Image
-        src="/planetary-computer-mcp/icons/npm-logo.png"
-        alt="npm logo"
-        width={34}
-        height={34}
-        className="object-contain"
-      />
-    ),
-  },
 ];
 
 const mcpConfigSnippet = `{
@@ -46,6 +18,75 @@ const mcpConfigSnippet = `{
     }
   }
 }`;
+
+const installationCards: InstallationCard[] = [
+  {
+    label: "VSCode Extension",
+    href: "https://marketplace.visualstudio.com/items?itemName=isaaccorley.vscode-planetary-computer-mcp-server",
+    description: "MCP server packaged as a VS Code extension.",
+    iconSrc: "/planetary-computer-mcp/icons/vscode-logo.png",
+    iconAlt: "VS Code logo",
+  },
+  {
+    label: "npm package",
+    href: "https://www.npmjs.com/package/planetary-computer-mcp",
+    description: "Install globally or run instantly via npx.",
+    iconSrc: "/planetary-computer-mcp/icons/npm-logo.png",
+    iconAlt: "npm logo",
+  },
+  {
+    label: "MCP JSON",
+    description: "Copy a ready-to-use Model Context Protocol config.",
+    iconSrc: "/planetary-computer-mcp/icons/mcp-logo.png",
+    iconAlt: "MCP logo",
+    copyText: mcpConfigSnippet,
+  },
+];
+
+const builtWithCards = [
+  {
+    label: "zarrita.js",
+    description: "Browser-ready Zarr toolkit for reading STAC assets.",
+    href: "https://zarrita.dev",
+    icon: (
+      <Image
+        src="/planetary-computer-mcp/icons/zarrita-logo.svg"
+        alt="zarrita.js logo"
+        width={40}
+        height={40}
+        className="object-contain"
+      />
+    ),
+  },
+  {
+    label: "gdal3.js",
+    description: "GDAL 3 bindings compiled to WebAssembly for reprojection.",
+    href: "https://gdal3.js.org/docs/",
+    icon: (
+      <Image
+        src="/planetary-computer-mcp/icons/gdal-logo.png"
+        alt="GDAL logo"
+        width={40}
+        height={40}
+        className="object-contain"
+      />
+    ),
+  },
+  {
+    label: "duckdb-wasm",
+    description: "Embedded DuckDB in WebAssembly for fast SQL over STAC metadata.",
+    href: "https://duckdb.org/docs/stable/clients/wasm/overview",
+    icon: (
+      <Image
+        src="/planetary-computer-mcp/icons/duckdb-logo.png"
+        alt="DuckDB logo"
+        width={40}
+        height={40}
+        className="object-contain"
+      />
+    ),
+  },
+];
 
 const sampleShots = [
   {
@@ -86,6 +127,9 @@ export const metadata: Metadata = {
   title: "Planetary Computer MCP",
   description:
     "Zero-install Model Context Protocol server for hacking on the Planetary Computer from any MCP client.",
+  icons: {
+    icon: "/planetary-computer-mcp/icons/logo.png",
+  },
 };
 
 export default function PlanetaryComputerMCPPage() {
@@ -128,23 +172,29 @@ export default function PlanetaryComputerMCPPage() {
 
             <div className="space-y-3">
               <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">installation</p>
+              <InstallationGrid cards={installationCards} />
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">built with</p>
               <div className="grid gap-3 md:grid-cols-3">
-                {installationCards.map((link) => (
+                {builtWithCards.map((item) => (
                   <a
-                    key={link.label}
-                    href={link.href}
+                    key={item.label}
+                    className="border border-white/10 rounded-2xl p-4 bg-black/20 backdrop-blur flex flex-col items-center gap-3 text-center"
+                    href={item.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="border border-white/10 rounded-2xl p-4 bg-black/20 backdrop-blur hover:border-emerald-400/60 transition flex items-center gap-3"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                      {link.icon}
+                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+                      {item.icon}
                     </div>
-                    <p className="text-[0.65rem] uppercase tracking-[0.35em] text-emerald-300">{link.label}</p>
+                    <div className="space-y-1 text-center">
+                      <p className="text-sm text-white font-serif">{item.label}</p>
+                      <p className="text-xs text-slate-300/80">{item.description}</p>
+                    </div>
                   </a>
                 ))}
-
-                <McpJsonCard text={mcpConfigSnippet} />
               </div>
             </div>
           </div>

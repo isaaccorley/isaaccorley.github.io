@@ -29,7 +29,7 @@ export const aboutMe: AboutMe = {
   linkedinUsername: "isaaccorley",
   twitterUsername: "isaaccorley_",
   //blogUrl: "https://isaacc.dev",
-  cvUrl: "https://github.com/isaaccorley/isaaccorley.github.io/blob/main/public/Isaac_Corley_Resume.pdf",
+  //cvUrl: "https://github.com/isaaccorley/isaaccorley.github.io/blob/main/public/Isaac_Corley_Resume.pdf",
   //institutionUrl: "https://www.stanford.edu",
   // altName: "",
   // secretDescription: "I like dogs.",
