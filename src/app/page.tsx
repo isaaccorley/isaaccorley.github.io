@@ -47,9 +47,7 @@ export default function Home() {
                   return (
                     newsData.length > 0 && (
                       <section key={sectionName}>
-                        <h2 className="font-serif text-l mb-12 tracking-wide uppercase">
-                          News
-                        </h2>
+                        <h2 className="font-serif text-l mb-12 tracking-wide uppercase">News</h2>
                         <div className="space-y-12">
                           {newsData.map((news, index) => (
                             <div key={index}>
@@ -104,10 +102,7 @@ export default function Home() {
                         </h2>
                         <div className="space-y-12">
                           {experienceData.map((experience, index) => (
-                            <ExperienceEntry
-                              key={index}
-                              experience={experience}
-                            />
+                            <ExperienceEntry key={index} experience={experience} />
                           ))}
                         </div>
                       </section>

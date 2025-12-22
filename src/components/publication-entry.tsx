@@ -2,11 +2,7 @@ import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 import { Publication } from "@/data/publication";
 
-export function PublicationEntry({
-  publication,
-}: {
-  publication: Publication;
-}) {
+export function PublicationEntry({ publication }: { publication: Publication }) {
   return (
     <div className="flex flex-row gap-6">
       {publication.imageUrl && (
@@ -28,9 +24,7 @@ export function PublicationEntry({
           {publication.award && (
             <div className="group flex px-2 py-1 bg-gradient-to-r from-amber-50 to-rose-50 rounded-md items-center shadow-md border border-amber-100/50 relative overflow-hidden hover:rotate-1 transition-all duration-300">
               <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/90 to-transparent" />
-              <p className="text-xs text-amber-700 font-medium relative">
-                {publication.award}
-              </p>
+              <p className="text-xs text-amber-700 font-medium relative">{publication.award}</p>
             </div>
           )}
         </div>
@@ -75,9 +69,7 @@ export function PublicationEntry({
           )}
         </div>
         {publication.tldr && (
-          <p className="text-sm italic text-zinc-600 mt-4">
-            {publication.tldr}
-          </p>
+          <p className="text-sm italic text-zinc-600 mt-4">{publication.tldr}</p>
         )}
       </div>
     </div>

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 export interface ClassMetadata {
   v4_Code: string;
@@ -24,22 +24,22 @@ async function loadClassMappings(): Promise<Record<string, ClassMetadata>> {
   }
 
   try {
-    const response = await fetch('/bioacoustics/assets/target_classes.csv');
+    const response = await fetch("/bioacoustics/assets/target_classes.csv");
     const csvText = await response.text();
-    const lines = csvText.split('\n');
-    
+    const lines = csvText.split("\n");
+
     const mappings: Record<string, ClassMetadata> = {};
-    
+
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
-      
-      const values = line.split(',');
+
+      const values = line.split(",");
       if (values.length < 11) continue;
-      
+
       const v5_Code = values[1].trim();
-      if (!v5_Code || v5_Code === 'NA') continue;
-      
+      if (!v5_Code || v5_Code === "NA") continue;
+
       mappings[v5_Code] = {
         v4_Code: values[0].trim(),
         v5_Code: v5_Code,
@@ -54,11 +54,11 @@ async function loadClassMappings(): Promise<Record<string, ClassMetadata>> {
         scientificName: values[10].trim(),
       };
     }
-    
+
     CLASS_MAPPINGS = mappings;
     return mappings;
   } catch (error) {
-    console.error('Failed to load class mappings:', error);
+    console.error("Failed to load class mappings:", error);
     return {};
   }
 }
@@ -75,7 +75,7 @@ export async function getHumanReadableName(v5Code: string): Promise<string> {
 
 export function getClassThumbnail(v5Code: string): string | null {
   // All thumbnails now follow the <v5_Code>.jpg naming convention
-  if (v5Code && v5Code !== '' && v5Code !== 'NA') {
+  if (v5Code && v5Code !== "" && v5Code !== "NA") {
     return `/bioacoustics/assets/thumbnails/${v5Code}.jpg`;
   }
   return null;

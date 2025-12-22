@@ -16,8 +16,7 @@ body {
 /* Elements marked with serif class or font-serif will use Source Serif */
 .font-serif,
 .serif {
-  font-family: ui-serif, var(--font-pt-serif), var(--font-noto-serif), Georgia,
-    serif;
+  font-family: ui-serif, var(--font-pt-serif), var(--font-noto-serif), Georgia, serif;
 }
 
 /* Elements marked with sans or font-sans will use Geist */

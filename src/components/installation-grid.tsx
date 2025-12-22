@@ -37,15 +37,21 @@ export function InstallationGrid({ cards }: InstallationGridProps) {
         const content = (
           <>
             <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-              <Image src={card.iconSrc} alt={card.iconAlt} width={40} height={40} className="object-contain" />
+              <Image
+                src={card.iconSrc}
+                alt={card.iconAlt}
+                width={40}
+                height={40}
+                className="object-contain"
+              />
             </div>
             <div className="space-y-1 text-center">
-              <p className="text-sm text-white font-serif">{card.label}</p>
-              <p className="text-xs text-slate-300/80">{card.description}</p>
+              <p className="text-sm text-white font-serif font-semibold">{card.label}</p>
+              <p className="text-xs text-slate-300/80 font-medium">{card.description}</p>
             </div>
-            {card.copyText && (
+            {card.copyText && copiedLabel === card.label && (
               <p className="text-[0.6rem] uppercase tracking-[0.35em] text-emerald-300/80 text-center">
-                {copiedLabel === card.label ? "copied" : "click to copy"}
+                copied
               </p>
             )}
           </>

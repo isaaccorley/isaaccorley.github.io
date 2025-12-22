@@ -1,12 +1,5 @@
 import Image from "next/image";
-import {
-  Github,
-  Linkedin,
-  Mail,
-  Twitter,
-  ArrowUpRight,
-  GraduationCap,
-} from "lucide-react";
+import { Github, Linkedin, Mail, Twitter, ArrowUpRight, GraduationCap } from "lucide-react";
 import { AboutMe } from "@/data/aboutme";
 
 interface ProfileSectionProps {
@@ -34,9 +27,7 @@ export function ProfileSection({ aboutMe }: ProfileSectionProps) {
         </div>
       )}
       <div className="w-2/3 md:w-full">
-        <h1 className="font-serif text-3xl font-light tracking-wide mb-3">
-          {aboutMe.name}
-        </h1>
+        <h1 className="font-serif text-3xl font-light tracking-wide mb-3">{aboutMe.name}</h1>
         {aboutMe.altName && (
           <p className="text-zinc-600 text-md leading-relaxed tracking-wide mb-6">
             {aboutMe.altName}

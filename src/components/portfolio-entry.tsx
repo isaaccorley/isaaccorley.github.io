@@ -73,9 +73,7 @@ export function PortfolioEntry({ portfolio }: { portfolio: Portfolio }) {
             </a>
           )}
         </div>
-        <p className="text-sm text-zinc-600 mb-4 mt-4 italic">
-          {portfolio.description}
-        </p>
+        <p className="text-sm text-zinc-600 mb-4 mt-4 italic">{portfolio.description}</p>
       </div>
     </div>
   );

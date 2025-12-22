@@ -21,22 +21,22 @@ const mcpConfigSnippet = `{
 
 const installationCards: InstallationCard[] = [
   {
-    label: "VSCode Extension",
+    label: "vscode extension",
     href: "https://marketplace.visualstudio.com/items?itemName=isaaccorley.vscode-planetary-computer-mcp-server",
-    description: "MCP server packaged as a VS Code extension.",
+    description: "Install into any VS Code-based IDE",
     iconSrc: "/planetary-computer-mcp/icons/vscode-logo.png",
     iconAlt: "VS Code logo",
   },
   {
     label: "npm package",
     href: "https://www.npmjs.com/package/planetary-computer-mcp",
-    description: "Install globally or run instantly via npx.",
+    description: "Run instantly via npx",
     iconSrc: "/planetary-computer-mcp/icons/npm-logo.png",
     iconAlt: "npm logo",
   },
   {
-    label: "MCP JSON",
-    description: "Copy a ready-to-use Model Context Protocol config.",
+    label: "mcp.json",
+    description: "Click to copy and paste to your mcp.json config file",
     iconSrc: "/planetary-computer-mcp/icons/mcp-logo.png",
     iconAlt: "MCP logo",
     copyText: mcpConfigSnippet,
@@ -45,22 +45,8 @@ const installationCards: InstallationCard[] = [
 
 const builtWithCards = [
   {
-    label: "zarrita.js",
-    description: "Browser-ready Zarr toolkit for reading STAC assets.",
-    href: "https://zarrita.dev",
-    icon: (
-      <Image
-        src="/planetary-computer-mcp/icons/zarrita-logo.svg"
-        alt="zarrita.js logo"
-        width={40}
-        height={40}
-        className="object-contain"
-      />
-    ),
-  },
-  {
     label: "gdal3.js",
-    description: "GDAL 3 bindings compiled to WebAssembly for reprojection.",
+    description: "GDAL 3 WebAssembly bindings for raster processing",
     href: "https://gdal3.js.org/docs/",
     icon: (
       <Image
@@ -73,8 +59,22 @@ const builtWithCards = [
     ),
   },
   {
+    label: "zarrita.js",
+    description: "Toolkit for reading/writing Zarr climate datasets",
+    href: "https://zarrita.dev",
+    icon: (
+      <Image
+        src="/planetary-computer-mcp/icons/zarrita-logo.svg"
+        alt="zarrita.js logo"
+        width={40}
+        height={40}
+        className="object-contain"
+      />
+    ),
+  },
+  {
     label: "duckdb-wasm",
-    description: "Embedded DuckDB in WebAssembly for fast SQL over STAC metadata.",
+    description: "WebAssembly-based DuckDB for processing geometry collections",
     href: "https://duckdb.org/docs/stable/clients/wasm/overview",
     icon: (
       <Image
@@ -119,6 +119,16 @@ const sampleShots = [
     location: "Coastal Miami · Elevation",
     src: "/planetary-computer-mcp/samples/cop_dem_glo_30_coastal-miami.jpg",
   },
+  {
+    title: "Daymet Max Temp",
+    location: "Texas · Tmax",
+    src: "/planetary-computer-mcp/samples/daymet_tmax-tx.png",
+  },
+  {
+    title: "TerraClimate PET",
+    location: "California · Reference Evapotranspiration",
+    src: "/planetary-computer-mcp/samples/terraclimate_pet-ca.png",
+  },
 ];
 
 const heroGallery = sampleShots;
@@ -145,24 +155,34 @@ export default function PlanetaryComputerMCPPage() {
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-16 space-y-24">
         <section className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-8">
-            <p className="text-emerald-300 uppercase tracking-[0.35em] text-xs">Planetary computer · mcp server</p>
+            <p className="text-emerald-300 uppercase tracking-[0.35em] text-xs">
+              Planetary computer · mcp server
+            </p>
             <h1 className="text-4xl md:text-5xl text-white font-serif">
               Enabling Agents with Tools to Observe the Earth
             </h1>
             <p className="text-base text-slate-200/80 max-w-2xl">
-              Plug Microsoft Planetary Computer’s STAC catalog into VS Code, Cursor, Claude, or any MCP-aware agent.
-              Let agents pull EO modalities they need: optical, SAR, DEM, land cover, and render it in RGB to observe and reason about satellite scenes.
+              Plug Microsoft Planetary Computer’s STAC catalog into VS Code, Cursor, Claude, or any
+              MCP-aware agent. Let agents pull EO modalities they need: optical, SAR, DEM, land
+              cover, and render it in RGB to observe and reason about satellite scenes.
             </p>
 
             <div className="bg-black/25 backdrop-blur border border-emerald-400/40 rounded-2xl p-5 space-y-4">
               <div className="flex flex-wrap gap-4 text-sm text-emerald-200/90 font-mono">
                 <code className="text-lg text-emerald-200">npx planetary-computer-mcp</code>
-                <span className="text-xs uppercase tracking-[0.2em] text-emerald-300/70">zero install · no API keys · no docker / python</span>
+                <span className="text-xs uppercase tracking-[0.2em] text-emerald-300/70">
+                  zero install · no API keys · no docker / python
+                </span>
               </div>
               <div className="grid gap-4 sm:grid-cols-3 text-sm">
                 {heroStats.map((stat) => (
-                  <div key={stat.label} className="border border-white/10 rounded-lg p-3 bg-white/5">
-                    <p className="text-xs uppercase tracking-widest text-emerald-200/80">{stat.label}</p>
+                  <div
+                    key={stat.label}
+                    className="border border-white/10 rounded-lg p-3 bg-white/5"
+                  >
+                    <p className="text-xs uppercase tracking-widest text-emerald-200/80">
+                      {stat.label}
+                    </p>
                     <p className="text-2xl text-white font-serif">{stat.value}</p>
                     <p className="text-xs text-slate-300/70">{stat.detail}</p>
                   </div>
@@ -171,12 +191,16 @@ export default function PlanetaryComputerMCPPage() {
             </div>
 
             <div className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">installation</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-emerald-300 font-semibold">
+                installation
+              </p>
               <InstallationGrid cards={installationCards} />
             </div>
 
             <div className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.3em] text-emerald-300">built with</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-emerald-300 font-semibold">
+                built with
+              </p>
               <div className="grid gap-3 md:grid-cols-3">
                 {builtWithCards.map((item) => (
                   <a
@@ -190,8 +214,8 @@ export default function PlanetaryComputerMCPPage() {
                       {item.icon}
                     </div>
                     <div className="space-y-1 text-center">
-                      <p className="text-sm text-white font-serif">{item.label}</p>
-                      <p className="text-xs text-slate-300/80">{item.description}</p>
+                      <p className="text-sm text-white font-serif font-semibold">{item.label}</p>
+                      <p className="text-xs text-slate-300/80 font-medium">{item.description}</p>
                     </div>
                   </a>
                 ))}
@@ -200,17 +224,25 @@ export default function PlanetaryComputerMCPPage() {
           </div>
 
           <div className="relative">
-            <div className="absolute -inset-4 bg-gradient-to-b from-cyan-500/20 to-emerald-500/10 blur-3xl" aria-hidden />
+            <div
+              className="absolute -inset-4 bg-gradient-to-b from-cyan-500/20 to-emerald-500/10 blur-3xl"
+              aria-hidden
+            />
             <div className="relative h-full rounded-3xl border border-white/20 bg-black/25 backdrop-blur p-4 flex flex-col gap-4">
               <div className="text-center space-y-1">
-                <p className="text-xs uppercase tracking-[0.4em] text-cyan-200">sample scenes</p>
-                <p className="text-xs text-slate-300/80">
+                <p className="text-xs uppercase tracking-[0.4em] text-cyan-200 font-semibold">
+                  sample scenes
+                </p>
+                <p className="text-xs text-slate-300/80 font-medium">
                   Render MSI, SAR, DEM, LULC, and more to RGB images for agentic analysis.
                 </p>
               </div>
               <div className="grid gap-3 grid-cols-2">
                 {heroGallery.map((shot) => (
-                  <div key={shot.title} className="relative rounded-2xl overflow-hidden border border-white/10 aspect-square">
+                  <div
+                    key={shot.title}
+                    className="relative rounded-2xl overflow-hidden border border-white/10 aspect-square"
+                  >
                     <Image
                       src={shot.src}
                       alt={`${shot.title} sample scene`}
@@ -218,8 +250,10 @@ export default function PlanetaryComputerMCPPage() {
                       className="object-cover transition duration-500 hover:scale-105"
                     />
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                      <p className="text-[0.65rem] uppercase tracking-widest text-emerald-200">{shot.title}</p>
-                      <p className="text-sm text-white font-serif">{shot.location}</p>
+                      <p className="text-[0.65rem] uppercase tracking-widest text-white font-semibold">
+                        {shot.title}
+                      </p>
+                      <p className="text-sm text-white font-serif font-semibold">{shot.location}</p>
                     </div>
                   </div>
                 ))}
@@ -227,7 +261,6 @@ export default function PlanetaryComputerMCPPage() {
             </div>
           </div>
         </section>
-
       </div>
     </div>
   );

@@ -17,7 +17,7 @@
 .globe-sphere {
   width: 100%;
   height: 100%;
-  background-image: url('/planetary-computer-mcp/icons/globe-texture.png');
+  background-image: url("/planetary-computer-mcp/icons/globe-texture.png");
   background-size: cover;
   border-radius: 50%;
   box-shadow: 0 0 80px rgba(59, 130, 246, 0.2);

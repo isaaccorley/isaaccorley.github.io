@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface LocationMapProps {
   lat: number;
@@ -11,11 +11,11 @@ interface LocationMapProps {
 /**
  * LocationMap component displays a Google Maps satellite view
  * of the provided GPS coordinates.
- * 
+ *
  * Note: This component uses Google Maps iframe embed (no API key required)
  * For production use with high traffic, consider using the Maps JavaScript API.
  */
-export function LocationMap({ lat, lon, className = '' }: LocationMapProps) {
+export function LocationMap({ lat, lon, className = "" }: LocationMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,20 +23,20 @@ export function LocationMap({ lat, lon, className = '' }: LocationMapProps) {
     if (!container) return;
 
     // Clear any existing content
-    container.innerHTML = '';
+    container.innerHTML = "";
 
     // Create iframe for Google Maps
-    const iframe = document.createElement('iframe');
-    iframe.width = '100%';
-    iframe.height = '100%';
-    iframe.style.border = '0';
-    iframe.loading = 'lazy';
-    iframe.referrerPolicy = 'no-referrer-when-downgrade';
-    
+    const iframe = document.createElement("iframe");
+    iframe.width = "100%";
+    iframe.height = "100%";
+    iframe.style.border = "0";
+    iframe.loading = "lazy";
+    iframe.referrerPolicy = "no-referrer-when-downgrade";
+
     // Use Google Maps embed with satellite view
     // Direct link format (doesn't require API key)
     const fallbackUrl = `https://maps.google.com/maps?q=${lat},${lon}&t=k&z=14&output=embed`;
-    
+
     iframe.src = fallbackUrl;
     iframe.title = `Map showing location at ${lat.toFixed(6)}, ${lon.toFixed(6)}`;
 
@@ -44,7 +44,7 @@ export function LocationMap({ lat, lon, className = '' }: LocationMapProps) {
 
     return () => {
       if (container) {
-        container.innerHTML = '';
+        container.innerHTML = "";
       }
     };
   }, [lat, lon]);
