@@ -1,23 +1,19 @@
-'use client';
+"use client";
 
-import type { GraphModel } from '@tensorflow/tfjs';
-import * as tf from '@tensorflow/tfjs';
-import Image from 'next/image';
-import type { InferenceSession } from 'onnxruntime-web';
-import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import bannerImage from './banner3.webp';
-import type { GeoImage, Patch } from './utils/common';
-import * as delineateUtils from './utils/delineate';
-import { Detection, extractPatches, nonMaxSuppressionTf, runModelOnPatch } from './utils/delineate';
-import { runPatchInferenceClient } from './utils/ftw';
-import {
-  MODEL_OPTIONS,
-  type ModelOption,
-  loadModelFromOption,
-} from './utils/model-loader';
+import type { GraphModel } from "@tensorflow/tfjs";
+import * as tf from "@tensorflow/tfjs";
+import Image from "next/image";
+import type { InferenceSession } from "onnxruntime-web";
+import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import bannerImage from "./banner3.webp";
+import type { GeoImage, Patch } from "./utils/common";
+import * as delineateUtils from "./utils/delineate";
+import { Detection, extractPatches, nonMaxSuppressionTf, runModelOnPatch } from "./utils/delineate";
+import { runPatchInferenceClient } from "./utils/ftw";
+import { MODEL_OPTIONS, type ModelOption, loadModelFromOption } from "./utils/model-loader";
 
 const RANDOM_URLS_TXT =
-  'https://raw.githubusercontent.com/isaaccorley/isaaccorley.github.io/refs/heads/main/src/app/ftw/utils/ftw_urls.txt';
+  "https://raw.githubusercontent.com/isaaccorley/isaaccorley.github.io/refs/heads/main/src/app/ftw/utils/ftw_urls.txt";
 
 async function configureTfBackendOnce(): Promise<{ backend: string; error: string | null }> {
   try {
@@ -34,16 +30,16 @@ async function configureTfBackendOnce(): Promise<{ backend: string; error: strin
       console.info = originalInfo;
       console.log = originalLog;
     }
-    
+
     // For ONNX models, we don't need to configure TensorFlow.js backends
     // They run server-side via the ONNX runtime
     const backend = tf.getBackend();
     return { backend, error: null };
   } catch (error) {
-    console.error('Failed to initialize TensorFlow.js backend:', error);
-    return { 
-      backend: 'cpu', 
-      error: error instanceof Error ? error.message : 'Unknown backend error' 
+    console.error("Failed to initialize TensorFlow.js backend:", error);
+    return {
+      backend: "cpu",
+      error: error instanceof Error ? error.message : "Unknown backend error",
     };
   }
 }
@@ -65,8 +61,7 @@ type ImageInfo = {
   fileName: string;
 };
 
-const clampColor = (value: number): number =>
-  Math.max(0, Math.min(255, Math.round(value)));
+const clampColor = (value: number): number => Math.max(0, Math.min(255, Math.round(value)));
 
 const clampUnit = (value: number) => Math.max(0, Math.min(1, value));
 
@@ -74,10 +69,7 @@ const clampNormalization = (value: number) =>
   Math.max(NORMALIZATION_MIN, Math.min(NORMALIZATION_MAX, value));
 
 const clampPatchSize = (value: number) =>
-  Math.max(
-    PATCH_MIN,
-    Math.min(PATCH_MAX, Math.round(value / PATCH_STEP) * PATCH_STEP)
-  );
+  Math.max(PATCH_MIN, Math.min(PATCH_MAX, Math.round(value / PATCH_STEP) * PATCH_STEP));
 
 function buildImageData(image: GeoImage, normalization: number): ImageData {
   const { width, height, data } = image;
@@ -98,8 +90,8 @@ function buildImageData(image: GeoImage, normalization: number): ImageData {
 
 export default function DelineatePage() {
   const [model, setModel] = useState<GraphModel | InferenceSession | null>(null);
-  const [modelStatus, setModelStatus] = useState('Loading model…');
-  const [processingStatus, setProcessingStatus] = useState('');
+  const [modelStatus, setModelStatus] = useState("Loading model…");
+  const [processingStatus, setProcessingStatus] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [detections, setDetections] = useState<Detection[]>([]);
   const [rawDetections, setRawDetections] = useState<Detection[]>([]);
@@ -108,21 +100,19 @@ export default function DelineatePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [scoreThreshold, setScoreThreshold] = useState(DEFAULT_SCORE_THRESHOLD);
   const [iouThreshold, setIouThreshold] = useState(DEFAULT_IOU_THRESHOLD);
-  const [normalizationFactor, setNormalizationFactor] =
-    useState<number>(DEFAULT_NORMALIZATION);
-  const [selectedModelId, setSelectedModelId] = useState<string>(
-    'ftw-unet-fp16'
-  );
+  const [normalizationFactor, setNormalizationFactor] = useState<number>(DEFAULT_NORMALIZATION);
+  const [selectedModelId, setSelectedModelId] = useState<string>("ftw-unet-fp16");
   const [patchSize, setPatchSize] = useState<number>(256);
-  const [backendName, setBackendName] = useState<string>('initializing');
+  const [backendName, setBackendName] = useState<string>("initializing");
   const [backendError, setBackendError] = useState<string | null>(null);
   const [maskOpacity, setMaskOpacity] = useState<number>(0.4);
   const [, setSegmentationCounts] = useState<number[] | null>(null);
   const [, setSegmentationClasses] = useState<string[]>([]);
   const [segmentationProbs, setSegmentationProbs] = useState<Float32Array | null>(null);
-  const [segmentationDimensions, setSegmentationDimensions] = useState<
-    { width: number; height: number } | null
-  >(null);
+  const [segmentationDimensions, setSegmentationDimensions] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
   const [positiveClassIndex, setPositiveClassIndex] = useState<number>(1);
   const [imageLabel, setImageLabel] = useState<string | null>(null);
 
@@ -134,7 +124,7 @@ export default function DelineatePage() {
   const lastNormalizationUsedRef = useRef<number>(DEFAULT_NORMALIZATION);
   const pendingPatchSizeRef = useRef<number | null>(null);
   const lastPatchSizeUsedRef = useRef<number>(patchSize);
-  const fileNameRef = useRef<string>('Uploaded image');
+  const fileNameRef = useRef<string>("Uploaded image");
   const paintRequestIdRef = useRef(0);
   const semanticMaskCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -142,27 +132,28 @@ export default function DelineatePage() {
 
   const selectedModel = useMemo<ModelOption | undefined>(
     () => MODEL_OPTIONS.find((candidate) => candidate.id === selectedModelId),
-    [selectedModelId]
+    [selectedModelId],
   );
-  const isSegmentation = selectedModel?.engine === 'onnx';
+  const isSegmentation = selectedModel?.engine === "onnx";
   const numSegmentationPixels = segmentationDimensions
     ? segmentationDimensions.width * segmentationDimensions.height
     : 0;
-  const segmentationChannelCount = segmentationProbs && numSegmentationPixels > 0
-    ? Math.round(segmentationProbs.length / numSegmentationPixels)
-    : 0;
+  const segmentationChannelCount =
+    segmentationProbs && numSegmentationPixels > 0
+      ? Math.round(segmentationProbs.length / numSegmentationPixels)
+      : 0;
 
   const hexToRgb = (hex: string): [number, number, number] => {
-    const sanitized = hex.replace('#', '');
-    const value = sanitized.length === 3
-      ? sanitized.split('').map((ch) => ch + ch).join('')
-      : sanitized.padEnd(6, '0');
+    const sanitized = hex.replace("#", "");
+    const value =
+      sanitized.length === 3
+        ? sanitized
+            .split("")
+            .map((ch) => ch + ch)
+            .join("")
+        : sanitized.padEnd(6, "0");
     const num = Number.parseInt(value, 16);
-    return [
-      (num >> 16) & 0xff,
-      (num >> 8) & 0xff,
-      num & 0xff,
-    ];
+    return [(num >> 16) & 0xff, (num >> 8) & 0xff, num & 0xff];
   };
 
   const waitForOnnxSession = useCallback(async (): Promise<InferenceSession> => {
@@ -170,24 +161,25 @@ export default function DelineatePage() {
     const delayMs = 200;
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
       const current = model as InferenceSession | null;
-      if (current && typeof (current as InferenceSession).run === 'function') {
+      if (current && typeof (current as InferenceSession).run === "function") {
         return current;
       }
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
-    throw new Error('ONNX session is not ready. Please wait for the model to finish loading.');
+    throw new Error("ONNX session is not ready. Please wait for the model to finish loading.");
   }, [model]);
 
   const parseFtwLabelFromUrl = useCallback((url: string): string | null => {
     try {
       const u = new URL(url);
-      const parts = u.pathname.split('/').filter(Boolean);
-      const countryIdx = parts.findIndex((p) => p === 'fields-of-the-world');
+      const parts = u.pathname.split("/").filter(Boolean);
+      const countryIdx = parts.findIndex((p) => p === "fields-of-the-world");
       if (countryIdx < 0 || countryIdx + 3 >= parts.length) return null;
-      const countryRaw = parts[countryIdx + 1] ?? '';
-      const windowRaw = parts[countryIdx + 3] ?? '';
-      const file = parts[parts.length - 1] ?? '';
-      const season = windowRaw === 'window_a' ? 'Planting' : windowRaw === 'window_b' ? 'Harvest' : windowRaw;
+      const countryRaw = parts[countryIdx + 1] ?? "";
+      const windowRaw = parts[countryIdx + 3] ?? "";
+      const file = parts[parts.length - 1] ?? "";
+      const season =
+        windowRaw === "window_a" ? "Planting" : windowRaw === "window_b" ? "Harvest" : windowRaw;
       const country = countryRaw.charAt(0).toUpperCase() + countryRaw.slice(1);
       return `${country} · ${season} · ${file}`;
     } catch {
@@ -196,21 +188,21 @@ export default function DelineatePage() {
   }, []);
 
   const sampleRandomUrl = useCallback(async (): Promise<string> => {
-    const head = await fetch(RANDOM_URLS_TXT, { method: 'HEAD', cache: 'no-store' });
-    const lenStr = head.headers.get('content-length');
+    const head = await fetch(RANDOM_URLS_TXT, { method: "HEAD", cache: "no-store" });
+    const lenStr = head.headers.get("content-length");
     const total = lenStr ? Number(lenStr) : NaN;
     if (!Number.isFinite(total) || total <= 0) {
-      throw new Error('Unable to determine list size');
+      throw new Error("Unable to determine list size");
     }
     const windowBytes = 64 * 1024;
     const start = Math.floor(Math.random() * Math.max(1, total - 1));
     const end = Math.min(total - 1, start + windowBytes - 1);
     const res = await fetch(RANDOM_URLS_TXT, {
       headers: { Range: `bytes=${start}-${end}` },
-      cache: 'no-store',
+      cache: "no-store",
     });
     if (res.status !== 206) {
-      throw new Error('Server must support HTTP Range');
+      throw new Error("Server must support HTTP Range");
     }
     const chunk = await res.text();
     const lines = chunk.split(/\n/);
@@ -225,7 +217,7 @@ export default function DelineatePage() {
     if (backEnd > backStart) {
       const backRes = await fetch(RANDOM_URLS_TXT, {
         headers: { Range: `bytes=${backStart}-${backEnd}` },
-        cache: 'no-store',
+        cache: "no-store",
       });
       if (backRes.status === 206) {
         const backChunk = await backRes.text();
@@ -235,7 +227,7 @@ export default function DelineatePage() {
         }
       }
     }
-    throw new Error('Could not sample a line');
+    throw new Error("Could not sample a line");
   }, []);
 
   // handleRandomClick declared later after processGeoTiffFile
@@ -256,17 +248,17 @@ export default function DelineatePage() {
     }
 
     const targetClass = Math.min(Math.max(positiveClassIndex, 0), segmentationChannelCount - 1);
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) {
       return null;
     }
 
     const imageData = ctx.createImageData(width, height);
-    const palette = selectedModel?.palette ?? ['#4caf50'];
-    const [r, g, b] = hexToRgb(palette[targetClass] ?? '#4caf50');
+    const palette = selectedModel?.palette ?? ["#4caf50"];
+    const [r, g, b] = hexToRgb(palette[targetClass] ?? "#4caf50");
 
     const counts = new Array(segmentationChannelCount).fill(0);
     for (let channel = 0; channel < segmentationChannelCount; channel += 1) {
@@ -316,10 +308,10 @@ export default function DelineatePage() {
           setBackendError(error);
         }
       } catch (error) {
-        console.warn('Failed to configure TensorFlow.js backend', error);
+        console.warn("Failed to configure TensorFlow.js backend", error);
         if (!cancelled) {
           setBackendName(tf.getBackend());
-          setBackendError('Failed to initialise TensorFlow.js backend.');
+          setBackendError("Failed to initialise TensorFlow.js backend.");
         }
       }
     };
@@ -344,7 +336,7 @@ export default function DelineatePage() {
       }
 
       const canvas = canvasRef.current;
-      const ctx = canvas?.getContext('2d');
+      const ctx = canvas?.getContext("2d");
       if (!canvas || !ctx) {
         return;
       }
@@ -368,37 +360,32 @@ export default function DelineatePage() {
       }
 
       ctx.lineWidth = 1;
-      ctx.font = '8px sans-serif';
-      ctx.textBaseline = 'top';
+      ctx.font = "8px sans-serif";
+      ctx.textBaseline = "top";
 
       boxes.forEach((det) => {
         const [x1, y1, x2, y2] = det.bbox;
         const w = x2 - x1;
         const h = y2 - y1;
 
-        ctx.strokeStyle = '#ff4d4f';
+        ctx.strokeStyle = "#ff4d4f";
         ctx.strokeRect(x1, y1, w, h);
 
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = "#ffffff";
         ctx.fillText(`${det.className} ${(det.score * 100).toFixed(1)}%`, x1 + 2, y1 + 1);
       });
     },
-    [imageInfo, maskOpacity]
+    [imageInfo, maskOpacity],
   );
 
   const runPatchesInference = useCallback(
-    async (
-      patches: Patch[],
-      geoImg: GeoImage,
-      normalizationValue: number,
-      label: string
-    ) => {
+    async (patches: Patch[], geoImg: GeoImage, normalizationValue: number, label: string) => {
       if (!model) {
-        throw new Error('Model is not ready yet.');
+        throw new Error("Model is not ready yet.");
       }
-      
+
       // Check if this is a TensorFlow.js model
-      if ('executeAsync' in model) {
+      if ("executeAsync" in model) {
         const aggregated: Detection[] = [];
         for (let i = 0; i < patches.length; i += 1) {
           setProcessingStatus(`${label}: patch ${i + 1} of ${patches.length}…`);
@@ -409,17 +396,19 @@ export default function DelineatePage() {
             geoImg.height,
             scoreThreshold,
             normalizationValue,
-            'auto'
+            "auto",
           );
           aggregated.push(...patchDetections);
         }
         return aggregated;
       } else {
         // This is an ONNX model - use segmentation processing instead
-        throw new Error('ONNX models should use segmentation processing, not detection processing.');
+        throw new Error(
+          "ONNX models should use segmentation processing, not detection processing.",
+        );
       }
     },
-    [model, scoreThreshold]
+    [model, scoreThreshold],
   );
 
   const runDetectionsWithNormalization = useCallback(
@@ -432,12 +421,12 @@ export default function DelineatePage() {
 
       setIsProcessing(true);
       try {
-        setProcessingStatus('Running Inference');
+        setProcessingStatus("Running Inference");
         const aggregatedDetections = await runPatchesInference(
           patches,
           geoImage,
           normalizationValue,
-          label
+          label,
         );
         lastNormalizationUsedRef.current = normalizationValue;
         setRawDetectionCount(aggregatedDetections.length);
@@ -445,22 +434,22 @@ export default function DelineatePage() {
         const nmsDetections = await nonMaxSuppressionTf(
           aggregatedDetections,
           iouThreshold,
-          scoreThreshold
+          scoreThreshold,
         );
         setDetections(nmsDetections);
-        setProcessingStatus('Done');
+        setProcessingStatus("Done");
       } catch (error) {
         console.error(error);
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : 'Failed to run inference with the selected normalization.'
+            : "Failed to run inference with the selected normalization.",
         );
       } finally {
         setIsProcessing(false);
       }
     },
-    [runPatchesInference, iouThreshold, scoreThreshold, model]
+    [runPatchesInference, iouThreshold, scoreThreshold, model],
   );
 
   const runDetectionsWithPatchSize = useCallback(
@@ -472,7 +461,7 @@ export default function DelineatePage() {
 
       setIsProcessing(true);
       try {
-        setProcessingStatus('Running Inference');
+        setProcessingStatus("Running Inference");
         const patches = extractPatches(geoImage, newPatchSize, geoImage.channels);
         patchesRef.current = patches;
         lastPatchSizeUsedRef.current = newPatchSize;
@@ -495,23 +484,23 @@ export default function DelineatePage() {
           patches,
           geoImage,
           normalizationFactor,
-          label
+          label,
         );
         setRawDetectionCount(aggregatedDetections.length);
         setRawDetections(aggregatedDetections);
         const nmsDetections = await nonMaxSuppressionTf(
           aggregatedDetections,
           iouThreshold,
-          scoreThreshold
+          scoreThreshold,
         );
         setDetections(nmsDetections);
-        setProcessingStatus('Done');
+        setProcessingStatus("Done");
       } catch (error) {
         console.error(error);
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : 'Failed to run inference with the selected patch size.'
+            : "Failed to run inference with the selected patch size.",
         );
       } finally {
         setIsProcessing(false);
@@ -525,7 +514,7 @@ export default function DelineatePage() {
       runPatchesInference,
       scoreThreshold,
       updateBaseImageData,
-    ]
+    ],
   );
 
   const runSegmentation = useCallback(
@@ -533,7 +522,7 @@ export default function DelineatePage() {
       const option = selectedModel;
       const geoImage = geoImageRef.current;
       const info = imageInfo;
-      if (!option || option.engine !== 'onnx' || !geoImage) {
+      if (!option || option.engine !== "onnx" || !geoImage) {
         return;
       }
 
@@ -541,7 +530,7 @@ export default function DelineatePage() {
       try {
         // Ensure ONNX session is ready before proceeding
         await waitForOnnxSession();
-        setProcessingStatus('Running Inference');
+        setProcessingStatus("Running Inference");
         updateBaseImageData(geoImage, normalization);
         if (info) {
           paintCanvas([], info);
@@ -549,7 +538,7 @@ export default function DelineatePage() {
 
         // Extract patches using the same logic as TensorFlow.js models
         const patches = extractPatches(geoImage, patchSize, geoImage.channels);
-        
+
         // Create output mask array for the full image
         const fullMask = new Uint8Array(geoImage.width * geoImage.height);
         const classCounts = new Array(option.classes?.length ?? 3).fill(0);
@@ -557,31 +546,28 @@ export default function DelineatePage() {
         // Process each patch
         for (let i = 0; i < patches.length; i += 1) {
           setProcessingStatus(`${label}: patch ${i + 1} of ${patches.length}…`);
-          
+
           const patch = patches[i];
           const patchData = patch.data.buffer.slice(
-            patch.data.byteOffset, 
-            patch.data.byteOffset + patch.data.byteLength
+            patch.data.byteOffset,
+            patch.data.byteOffset + patch.data.byteLength,
           ) as ArrayBuffer;
 
-          const response = await runPatchInferenceClient(
-            model as InferenceSession,
-            {
-              modelId: option.id,
-              patchData,
-              patchWidth: patch.width,
-              patchHeight: patch.height,
-              normalization,
-              scoreThreshold,
-            }
-          );
+          const response = await runPatchInferenceClient(model as InferenceSession, {
+            modelId: option.id,
+            patchData,
+            patchWidth: patch.width,
+            patchHeight: patch.height,
+            normalization,
+            scoreThreshold,
+          });
 
           // Write patch results to full mask
           // Note: The model output is at 2x resolution due to upsampling
           const patchMask = response.mask;
           const modelOutputWidth = response.width;
           const modelOutputHeight = response.height;
-          
+
           // Scale factor from model output back to patch size (should be 2x due to upsampling)
           const scaleX = modelOutputWidth / patch.width;
           const scaleY = modelOutputHeight / patch.height;
@@ -592,12 +578,12 @@ export default function DelineatePage() {
               const maskX = Math.floor(px * scaleX);
               const maskY = Math.floor(py * scaleY);
               const maskIdx = maskY * modelOutputWidth + maskX;
-              
+
               if (maskIdx < patchMask.length) {
                 const classId = patchMask[maskIdx];
                 const fullX = patch.x + px;
                 const fullY = patch.y + py;
-                
+
                 if (fullX < geoImage.width && fullY < geoImage.height) {
                   const fullIdx = fullY * geoImage.width + fullX;
                   fullMask[fullIdx] = classId;
@@ -613,32 +599,32 @@ export default function DelineatePage() {
         lastNormalizationUsedRef.current = normalization;
 
         // Create mask canvas
-        const maskCanvas = document.createElement('canvas');
+        const maskCanvas = document.createElement("canvas");
         maskCanvas.width = geoImage.width;
         maskCanvas.height = geoImage.height;
-        const maskCtx = maskCanvas.getContext('2d');
+        const maskCtx = maskCanvas.getContext("2d");
         if (!maskCtx) {
-          throw new Error('Unable to create mask canvas context.');
+          throw new Error("Unable to create mask canvas context.");
         }
 
         const maskImageData = maskCtx.createImageData(geoImage.width, geoImage.height);
-        const palette = option.palette ?? ['#000000', '#66bb6a', '#ffb74d'];
+        const palette = option.palette ?? ["#000000", "#66bb6a", "#ffb74d"];
         const toRgb = (hex: string): [number, number, number] => {
-          const sanitized = hex.replace('#', '');
-          const value = sanitized.length === 3
-            ? sanitized.split('').map((ch) => ch + ch).join('')
-            : sanitized.padEnd(6, '0');
+          const sanitized = hex.replace("#", "");
+          const value =
+            sanitized.length === 3
+              ? sanitized
+                  .split("")
+                  .map((ch) => ch + ch)
+                  .join("")
+              : sanitized.padEnd(6, "0");
           const num = Number.parseInt(value, 16);
-          return [
-            (num >> 16) & 0xff,
-            (num >> 8) & 0xff,
-            num & 0xff,
-          ];
+          return [(num >> 16) & 0xff, (num >> 8) & 0xff, num & 0xff];
         };
 
         for (let i = 0; i < fullMask.length; i += 1) {
           const classId = fullMask[i];
-          const [r, g, b] = toRgb(palette[classId] ?? '#ffffff');
+          const [r, g, b] = toRgb(palette[classId] ?? "#ffffff");
           const offset = i * 4;
           maskImageData.data[offset] = r;
           maskImageData.data[offset + 1] = g;
@@ -660,19 +646,26 @@ export default function DelineatePage() {
         setRawDetectionCount(0);
         setDetections([]);
         setRawDetections([]);
-        setProcessingStatus('Done');
+        setProcessingStatus("Done");
       } catch (error) {
         console.error(error);
         setErrorMessage(
-          error instanceof Error
-            ? error.message
-            : 'Failed to run ONNX segmentation inference.'
+          error instanceof Error ? error.message : "Failed to run ONNX segmentation inference.",
         );
       } finally {
         setIsProcessing(false);
       }
     },
-    [imageInfo, paintCanvas, scoreThreshold, selectedModel, updateBaseImageData, patchSize, model, waitForOnnxSession]
+    [
+      imageInfo,
+      paintCanvas,
+      scoreThreshold,
+      selectedModel,
+      updateBaseImageData,
+      patchSize,
+      model,
+      waitForOnnxSession,
+    ],
   );
 
   const processPendingWork = useCallback(() => {
@@ -690,13 +683,13 @@ export default function DelineatePage() {
       return;
     }
 
-    if (option.engine === 'onnx') {
+    if (option.engine === "onnx") {
       // Handle patch size changes for ONNX models
       if (pendingPatchSizeRef.current != null) {
         const nextPatchSize = pendingPatchSizeRef.current;
         pendingPatchSizeRef.current = null;
         if (nextPatchSize != null) {
-          void runSegmentation(normalizationFactor, 'Re-running segmentation with new patch size');
+          void runSegmentation(normalizationFactor, "Re-running segmentation with new patch size");
         }
       }
 
@@ -705,7 +698,7 @@ export default function DelineatePage() {
         const next = pendingNormalizationRef.current;
         pendingNormalizationRef.current = null;
         if (next != null) {
-          void runSegmentation(next, 'Re-running segmentation');
+          void runSegmentation(next, "Re-running segmentation");
         }
       }
       return;
@@ -728,7 +721,7 @@ export default function DelineatePage() {
     ) {
       const nextSize = pendingPatchSizeRef.current;
       pendingPatchSizeRef.current = null;
-      void runDetectionsWithPatchSize(nextSize, 'Re-running inference');
+      void runDetectionsWithPatchSize(nextSize, "Re-running inference");
       return;
     }
 
@@ -738,7 +731,7 @@ export default function DelineatePage() {
     ) {
       const nextNorm = pendingNormalizationRef.current;
       pendingNormalizationRef.current = null;
-      void runDetectionsWithNormalization(nextNorm, 'Re-running inference');
+      void runDetectionsWithNormalization(nextNorm, "Re-running inference");
       return;
     }
 
@@ -787,14 +780,14 @@ export default function DelineatePage() {
           return;
         }
         if (isSegmentation) {
-          void runSegmentation(next, 'Re-running segmentation');
+          void runSegmentation(next, "Re-running segmentation");
           return;
         }
         const patches = patchesRef.current;
         if (!geoImage || !patches || patches.length === 0 || !model) {
           return;
         }
-        void runDetectionsWithNormalization(next, 'Re-running inference');
+        void runDetectionsWithNormalization(next, "Re-running inference");
       }, 250);
     },
     [
@@ -807,7 +800,7 @@ export default function DelineatePage() {
       runDetectionsWithNormalization,
       runSegmentation,
       updateBaseImageData,
-    ]
+    ],
   );
 
   const handlePatchSizeChange = useCallback(
@@ -830,13 +823,19 @@ export default function DelineatePage() {
       pendingPatchSizeRef.current = null;
       if (next != null) {
         if (isSegmentation) {
-          void runSegmentation(normalizationFactor, 'Re-running segmentation');
+          void runSegmentation(normalizationFactor, "Re-running segmentation");
         } else {
-          void runDetectionsWithPatchSize(next, 'Re-running inference');
+          void runDetectionsWithPatchSize(next, "Re-running inference");
         }
       }
     },
-    [isProcessing, isSegmentation, normalizationFactor, runDetectionsWithPatchSize, runSegmentation]
+    [
+      isProcessing,
+      isSegmentation,
+      normalizationFactor,
+      runDetectionsWithPatchSize,
+      runSegmentation,
+    ],
   );
 
   useEffect(() => {
@@ -870,22 +869,22 @@ export default function DelineatePage() {
     void paintCanvas(detections);
   }, [maskOpacity, detections, paintCanvas]);
   useEffect(() => {
-    if (backendName === 'initializing') {
+    if (backendName === "initializing") {
       return;
     }
 
     const option = selectedModel;
 
     if (!option) {
-      setErrorMessage('Unknown model selected.');
-      setModelStatus('Model selection error');
+      setErrorMessage("Unknown model selected.");
+      setModelStatus("Model selection error");
       return;
     }
 
     let isCancelled = false;
 
     setModel((previous) => {
-      if (previous && 'dispose' in previous) {
+      if (previous && "dispose" in previous) {
         (previous as GraphModel).dispose();
       }
       return null;
@@ -893,7 +892,7 @@ export default function DelineatePage() {
     setDetections([]);
     setRawDetections([]);
     setRawDetectionCount(0);
-    setProcessingStatus('');
+    setProcessingStatus("");
     setImageInfo(null);
     setErrorMessage(null);
     geoImageRef.current = null;
@@ -906,7 +905,7 @@ export default function DelineatePage() {
     setSegmentationDimensions(null);
     setPositiveClassIndex(option.classes && option.classes.length > 1 ? 1 : 0);
     semanticMaskCanvasRef.current = null;
-    if (option.engine === 'onnx') {
+    if (option.engine === "onnx") {
       setMaskOpacity(0.25);
     }
 
@@ -915,16 +914,16 @@ export default function DelineatePage() {
         setModelStatus(`Loading ${option.name}…`);
         const loadedModel = await loadModelFromOption(option);
         if (isCancelled) {
-          if (option.engine === 'tfjs' && 'dispose' in loadedModel) {
+          if (option.engine === "tfjs" && "dispose" in loadedModel) {
             (loadedModel as GraphModel).dispose();
           }
           return;
         }
         setModel(loadedModel);
         setModelStatus(`Model ready: ${option.name}`);
-        
-        if (option.engine === 'onnx') {
-          setBackendName('onnx-web');
+
+        if (option.engine === "onnx") {
+          setBackendName("onnx-web");
         } else {
           setBackendName(tf.getBackend());
         }
@@ -933,12 +932,12 @@ export default function DelineatePage() {
         if (isCancelled) {
           return;
         }
-        console.error('Model loading error:', err);
-        console.error('Model option:', option);
+        console.error("Model loading error:", err);
+        console.error("Model option:", option);
         setErrorMessage(
           err instanceof Error
             ? `Failed to load model "${option.name}": ${err.message}`
-            : `Failed to load model "${option.name}".`
+            : `Failed to load model "${option.name}".`,
         );
         setModelStatus(`Model failed to load: ${option.name}`);
       }
@@ -963,11 +962,7 @@ export default function DelineatePage() {
 
     let cancelled = false;
     (async () => {
-      const updated = await nonMaxSuppressionTf(
-        rawDetections,
-        iouThreshold,
-        scoreThreshold
-      );
+      const updated = await nonMaxSuppressionTf(rawDetections, iouThreshold, scoreThreshold);
       if (!cancelled) {
         setDetections(updated);
       }
@@ -982,28 +977,18 @@ export default function DelineatePage() {
   }, [detections, paintCanvas]);
 
   useEffect(() => {
-    if (
-      isProcessing ||
-      rawDetections.length === 0 ||
-      Number.isNaN(detections.length)
-    ) {
+    if (isProcessing || rawDetections.length === 0 || Number.isNaN(detections.length)) {
       return;
     }
 
-    setProcessingStatus('Done');
-  }, [
-    detections.length,
-    iouThreshold,
-    isProcessing,
-    rawDetections.length,
-    scoreThreshold,
-  ]);
+    setProcessingStatus("Done");
+  }, [detections.length, iouThreshold, isProcessing, rawDetections.length, scoreThreshold]);
 
   const processGeoTiffFile = useCallback(
     async (file: File) => {
       const option = selectedModel;
       if (!option) {
-        setErrorMessage('No model selected.');
+        setErrorMessage("No model selected.");
         return;
       }
 
@@ -1011,10 +996,10 @@ export default function DelineatePage() {
       setDetections([]);
       setRawDetections([]);
       setRawDetectionCount(0);
-      setProcessingStatus('Reading GeoTIFF…');
+      setProcessingStatus("Reading GeoTIFF…");
       pendingNormalizationRef.current = null;
 
-      if (option.engine === 'onnx') {
+      if (option.engine === "onnx") {
         try {
           setSegmentationProbs(null);
           setSegmentationDimensions(null);
@@ -1036,18 +1021,18 @@ export default function DelineatePage() {
 
           // Ensure ONNX session is ready before running segmentation
           await waitForOnnxSession();
-          await runSegmentation(normalizationFactor, 'Running segmentation');
+          await runSegmentation(normalizationFactor, "Running segmentation");
         } catch (err) {
           console.error(err);
           setErrorMessage(
-            err instanceof Error ? err.message : 'Failed to process the provided GeoTIFF image.'
+            err instanceof Error ? err.message : "Failed to process the provided GeoTIFF image.",
           );
         }
         return;
       }
 
       if (!model) {
-        setErrorMessage('Model is not ready yet. Please wait and try again.');
+        setErrorMessage("Model is not ready yet. Please wait and try again.");
         return;
       }
 
@@ -1058,37 +1043,49 @@ export default function DelineatePage() {
         fileNameRef.current = file.name;
 
         pendingPatchSizeRef.current = patchSize;
-        await runDetectionsWithPatchSize(patchSize, 'Running inference');
+        await runDetectionsWithPatchSize(patchSize, "Running inference");
         pendingPatchSizeRef.current = null;
       } catch (err) {
         console.error(err);
         setErrorMessage(
-          err instanceof Error ? err.message : 'Failed to process the provided GeoTIFF image.'
+          err instanceof Error ? err.message : "Failed to process the provided GeoTIFF image.",
         );
       } finally {
         setIsProcessing(false);
       }
     },
-    [model, normalizationFactor, patchSize, runDetectionsWithPatchSize, runSegmentation, selectedModel, paintCanvas, updateBaseImageData, waitForOnnxSession]
+    [
+      model,
+      normalizationFactor,
+      patchSize,
+      runDetectionsWithPatchSize,
+      runSegmentation,
+      selectedModel,
+      paintCanvas,
+      updateBaseImageData,
+      waitForOnnxSession,
+    ],
   );
 
   const handleRandomClick = useCallback(async () => {
     try {
-      setProcessingStatus('Sampling random URL…');
+      setProcessingStatus("Sampling random URL…");
       const url = await sampleRandomUrl();
-      setProcessingStatus('Fetching sample GeoTIFF…');
-      const resp = await fetch(url, { cache: 'no-store' });
+      setProcessingStatus("Fetching sample GeoTIFF…");
+      const resp = await fetch(url, { cache: "no-store" });
       if (!resp.ok) {
         throw new Error(`Failed to fetch sample: ${resp.status}`);
       }
       const blob = await resp.blob();
-      const file = new File([blob], url.split('/').pop() ?? 'sample.tif', { type: blob.type || 'image/tiff' });
+      const file = new File([blob], url.split("/").pop() ?? "sample.tif", {
+        type: blob.type || "image/tiff",
+      });
       const label = parseFtwLabelFromUrl(url);
       setImageLabel(label ?? file.name);
       await processGeoTiffFile(file);
     } catch (err) {
       console.error(err);
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to load random sample.');
+      setErrorMessage(err instanceof Error ? err.message : "Failed to load random sample.");
     }
   }, [processGeoTiffFile, sampleRandomUrl, parseFtwLabelFromUrl]);
 
@@ -1098,13 +1095,13 @@ export default function DelineatePage() {
       return;
     }
 
-    event.target.value = '';
+    event.target.value = "";
     const lowerName = file.name.toLowerCase();
-    const looksLikeTiff = lowerName.endsWith('.tif') || lowerName.endsWith('.tiff');
+    const looksLikeTiff = lowerName.endsWith(".tif") || lowerName.endsWith(".tiff");
     const mime = file.type.toLowerCase();
-    const mimeLooksLikeTiff = mime.includes('tif');
+    const mimeLooksLikeTiff = mime.includes("tif");
     if (!looksLikeTiff && !mimeLooksLikeTiff) {
-      setErrorMessage('Please select a GeoTIFF file (.tif or .tiff).');
+      setErrorMessage("Please select a GeoTIFF file (.tif or .tiff).");
       return;
     }
     setImageLabel(file.name);
@@ -1122,7 +1119,9 @@ export default function DelineatePage() {
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="relative flex flex-col gap-3 bg-gradient-to-r from-black/70 via-black/40 to-black/10 px-6 py-12 text-white sm:px-10 text-center">
-            <h1 className="text-left text-3xl font-semibold md:text-4xl">Fields of the World (FTW) Demo</h1>
+            <h1 className="text-left text-3xl font-semibold md:text-4xl">
+              Fields of the World (FTW) Demo
+            </h1>
             <p className="max-w-2xl text-sm md:text-base">
               Upload a GeoTIFF from your own imagery to preview it instantly and let the browser
               highlight field boundaries for you. Pick a model, adjust the confidence sliders, and
@@ -1135,11 +1134,7 @@ export default function DelineatePage() {
           <div className="space-y-6">
             <section className="space-y-4 rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
               <div className="max-h-[70vh] overflow-auto rounded border border-neutral-200 bg-neutral-900/5 p-2">
-                <canvas
-                  ref={canvasRef}
-                  className="h-auto max-w-full"
-                  style={{ width: '100%' }}
-                />
+                <canvas ref={canvasRef} className="h-auto max-w-full" style={{ width: "100%" }} />
               </div>
             </section>
           </div>
@@ -1162,20 +1157,22 @@ export default function DelineatePage() {
                 {MODEL_OPTIONS.map((option) => (
                   <option key={option.id} value={option.id}>
                     {option.name}
-                    {option.precision ? ` · ${option.precision.toUpperCase()}` : ''}
-                    {option.sizeHintMb ? ` · ~${option.sizeHintMb}MB` : ''}
+                    {option.precision ? ` · ${option.precision.toUpperCase()}` : ""}
+                    {option.sizeHintMb ? ` · ~${option.sizeHintMb}MB` : ""}
                   </option>
                 ))}
               </select>
               <p className="text-xs text-neutral-500">
                 {MODEL_OPTIONS.find((m) => m.id === selectedModelId)?.description ??
-                  'Select a model to download it from Hugging Face and cache it locally.'}
+                  "Select a model to download it from Hugging Face and cache it locally."}
               </p>
             </div>
             <div className="flex flex-row flex-wrap items-center justify-center gap-2">
               <button
                 type="button"
-                onClick={() => { void handleRandomClick(); }}
+                onClick={() => {
+                  void handleRandomClick();
+                }}
                 disabled={isProcessing || !model}
                 className="whitespace-nowrap rounded-md border border-neutral-300 bg-neutral-900 px-3 py-1 text-xs text-white shadow-sm hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -1183,7 +1180,9 @@ export default function DelineatePage() {
               </button>
               <button
                 type="button"
-                onClick={() => { fileInputRef.current?.click(); }}
+                onClick={() => {
+                  fileInputRef.current?.click();
+                }}
                 disabled={(!model && !isSegmentation) || isProcessing}
                 className="whitespace-nowrap rounded-md border border-neutral-300 bg-neutral-900 px-3 py-1 text-xs text-white shadow-sm hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -1254,9 +1253,7 @@ export default function DelineatePage() {
               <label className="flex flex-col gap-1 text-sm text-neutral-600">
                 <span className="flex items-center justify-between font-medium text-neutral-700">
                   Patch Size
-                  <span className="text-xs font-normal text-neutral-500">
-                    {patchSize}px
-                  </span>
+                  <span className="text-xs font-normal text-neutral-500">{patchSize}px</span>
                 </span>
                 <div className="flex items-center gap-3">
                   <input
@@ -1339,22 +1336,25 @@ export default function DelineatePage() {
                 <span className="font-medium text-neutral-700">Model Status:</span> {modelStatus}
               </span>
               <span>
-                <span className="font-medium text-neutral-700">Inference Backend:</span> {backendName}
-                {backendError ? ` (${backendError})` : ''}
+                <span className="font-medium text-neutral-700">Inference Backend:</span>{" "}
+                {backendName}
+                {backendError ? ` (${backendError})` : ""}
               </span>
               {processingStatus && (
                 <span>
-                  <span className="font-medium text-neutral-700">Processing:</span> {processingStatus}
+                  <span className="font-medium text-neutral-700">Processing:</span>{" "}
+                  {processingStatus}
                 </span>
               )}
               {imageInfo && (
                 <>
                   <span>
-                    <span className="font-medium text-neutral-700">Image:</span> {imageLabel ?? imageInfo.fileName}
+                    <span className="font-medium text-neutral-700">Image:</span>{" "}
+                    {imageLabel ?? imageInfo.fileName}
                   </span>
                   <span>
-                    <span className="font-medium text-neutral-700">Size:</span> {imageInfo.width} &times; {imageInfo.height}px &middot;{' '}
-                    {imageInfo.patchCount} full patches
+                    <span className="font-medium text-neutral-700">Size:</span> {imageInfo.width}{" "}
+                    &times; {imageInfo.height}px &middot; {imageInfo.patchCount} full patches
                   </span>
                 </>
               )}

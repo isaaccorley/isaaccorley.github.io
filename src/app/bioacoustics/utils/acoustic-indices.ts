@@ -1,6 +1,6 @@
 /**
  * Calculate acoustic indices from spectrogram ImageData
- * 
+ *
  * Spectrogram format:
  * - width: 1000 time bins (12 seconds)
  * - height: 257 frequency bins (0-4 kHz @ 8 kHz sample rate)
@@ -9,10 +9,10 @@
  */
 
 export interface AcousticIndices {
-  aci: number;      // Acoustic Complexity Index
-  adi: number;      // Acoustic Diversity Index
-  ndsi: number;     // Normalized Difference Soundscape Index
-  bi: number;       // Bioacoustic Index
+  aci: number; // Acoustic Complexity Index
+  adi: number; // Acoustic Diversity Index
+  ndsi: number; // Normalized Difference Soundscape Index
+  bi: number; // Bioacoustic Index
 }
 
 /**
@@ -21,7 +21,7 @@ export interface AcousticIndices {
 function extractMagnitudes(imageData: ImageData): number[][] {
   const { width, height, data } = imageData;
   const magnitudes: number[][] = [];
-  
+
   for (let y = 0; y < height; y++) {
     const row: number[] = [];
     for (let x = 0; x < width; x++) {
@@ -31,7 +31,7 @@ function extractMagnitudes(imageData: ImageData): number[][] {
     }
     magnitudes.push(row);
   }
-  
+
   return magnitudes;
 }
 
@@ -50,13 +50,13 @@ function getRowForFrequency(freq: number, height: number, maxFreq: number = 4000
 function calculateACI(magnitudes: number[][]): number {
   const height = magnitudes.length;
   const width = magnitudes[0].length;
-  
+
   let totalDifference = 0;
-  
+
   for (let y = 0; y < height; y++) {
     let rowDifference = 0;
     let rowIntensity = 0;
-    
+
     for (let x = 0; x < width - 1; x++) {
       const current = magnitudes[y][x];
       const next = magnitudes[y][x + 1];
@@ -64,12 +64,12 @@ function calculateACI(magnitudes: number[][]): number {
       rowIntensity += current;
     }
     rowIntensity += magnitudes[y][width - 1];
-    
+
     if (rowIntensity > 0) {
       totalDifference += rowDifference / rowIntensity;
     }
   }
-  
+
   return totalDifference;
 }
 
@@ -81,30 +81,30 @@ function calculateACI(magnitudes: number[][]): number {
 function calculateADI(magnitudes: number[][], numBins: number = 10): number {
   const height = magnitudes.length;
   const width = magnitudes[0].length;
-  
+
   // Divide frequency range into bins
   const binSize = Math.floor(height / numBins);
   const binEnergies: number[] = new Array(numBins).fill(0);
-  
+
   // Sum energy in each frequency bin
   for (let bin = 0; bin < numBins; bin++) {
     const startRow = bin * binSize;
     const endRow = bin === numBins - 1 ? height : (bin + 1) * binSize;
-    
+
     for (let y = startRow; y < endRow; y++) {
       for (let x = 0; x < width; x++) {
         binEnergies[bin] += magnitudes[y][x];
       }
     }
   }
-  
+
   // Calculate total energy
   const totalEnergy = binEnergies.reduce((sum, e) => sum + e, 0);
-  
+
   if (totalEnergy === 0) {
     return 0;
   }
-  
+
   // Calculate Shannon entropy
   let entropy = 0;
   for (let bin = 0; bin < numBins; bin++) {
@@ -113,7 +113,7 @@ function calculateADI(magnitudes: number[][], numBins: number = 10): number {
       entropy -= proportion * Math.log(proportion);
     }
   }
-  
+
   // Normalize by maximum possible entropy (log of number of bins)
   const maxEntropy = Math.log(numBins);
   return maxEntropy > 0 ? entropy / maxEntropy : 0;
@@ -126,35 +126,35 @@ function calculateADI(magnitudes: number[][], numBins: number = 10): number {
  */
 function calculateNDSI(magnitudes: number[][], height: number, maxFreq: number = 4000): number {
   const width = magnitudes[0].length;
-  
+
   // Define frequency ranges
-  const anthroStart = getRowForFrequency(1000, height, maxFreq);  // 1 kHz
-  const anthroEnd = getRowForFrequency(2000, height, maxFreq);    // 2 kHz
-  const bioStart = getRowForFrequency(2000, height, maxFreq);     // 2 kHz
-  const bioEnd = getRowForFrequency(4000, height, maxFreq);       // 4 kHz (max available)
-  
+  const anthroStart = getRowForFrequency(1000, height, maxFreq); // 1 kHz
+  const anthroEnd = getRowForFrequency(2000, height, maxFreq); // 2 kHz
+  const bioStart = getRowForFrequency(2000, height, maxFreq); // 2 kHz
+  const bioEnd = getRowForFrequency(4000, height, maxFreq); // 4 kHz (max available)
+
   let anthrophonyEnergy = 0;
   let biophonyEnergy = 0;
-  
+
   // Sum anthrophony energy (1-2 kHz)
   for (let y = anthroStart; y <= anthroEnd && y < height; y++) {
     for (let x = 0; x < width; x++) {
       anthrophonyEnergy += magnitudes[y][x];
     }
   }
-  
+
   // Sum biophony energy (2-4 kHz, limited by sample rate)
   for (let y = bioStart; y <= bioEnd && y < height; y++) {
     for (let x = 0; x < width; x++) {
       biophonyEnergy += magnitudes[y][x];
     }
   }
-  
+
   const total = anthrophonyEnergy + biophonyEnergy;
   if (total === 0) {
     return 0;
   }
-  
+
   return (biophonyEnergy - anthrophonyEnergy) / total;
 }
 
@@ -166,19 +166,19 @@ function calculateNDSI(magnitudes: number[][], height: number, maxFreq: number =
  */
 function calculateBI(magnitudes: number[][], height: number, maxFreq: number = 4000): number {
   const width = magnitudes[0].length;
-  
+
   // Bird frequency range: 2-4 kHz (limited by sample rate)
   const bioStart = getRowForFrequency(2000, height, maxFreq);
   const bioEnd = getRowForFrequency(4000, height, maxFreq);
-  
+
   let totalEnergy = 0;
-  
+
   for (let y = bioStart; y <= bioEnd && y < height; y++) {
     for (let x = 0; x < width; x++) {
       totalEnergy += magnitudes[y][x];
     }
   }
-  
+
   // Normalize by the number of bins
   const numBins = (bioEnd - bioStart + 1) * width;
   return numBins > 0 ? totalEnergy / numBins : 0;
@@ -189,11 +189,11 @@ function calculateBI(magnitudes: number[][], height: number, maxFreq: number = 4
  */
 export function calculateAcousticIndices(
   imageData: ImageData,
-  maxFrequency: number = 4000
+  maxFrequency: number = 4000,
 ): AcousticIndices {
   const magnitudes = extractMagnitudes(imageData);
   const height = imageData.height;
-  
+
   return {
     aci: calculateACI(magnitudes),
     adi: calculateADI(magnitudes, 10),

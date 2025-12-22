@@ -1,0 +1,5 @@
+.next
+.mypy_cache
+node_modules
+out
+public

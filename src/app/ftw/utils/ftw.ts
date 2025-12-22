@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
 /**
  * Client-side utilities for running ONNX models in the browser.
  * Uses onnxruntime-web for browser-based inference.
  */
 
-import type { InferenceSession, Tensor } from 'onnxruntime-web';
-import { upsamplePatch } from './common';
-import type { ModelOption } from './model-loader';
-import { MODEL_OPTIONS } from './model-loader';
+import type { InferenceSession, Tensor } from "onnxruntime-web";
+import { upsamplePatch } from "./common";
+import type { ModelOption } from "./model-loader";
+import { MODEL_OPTIONS } from "./model-loader";
 
 // Try to suppress ONNX Runtime warnings early
 try {
   // Set environment variables before importing ONNX Runtime
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     // This might help suppress warnings in the browser
     (window as unknown as Record<string, unknown>).ORT_LOG_LEVEL = 3; // Error level only
   }
@@ -21,36 +21,36 @@ try {
   // Ignore if not available
 }
 
-type OrtModule = typeof import('onnxruntime-web');
+type OrtModule = typeof import("onnxruntime-web");
 
 let ortModulePromise: Promise<OrtModule> | null = null;
 
 const getOrtModule = (): Promise<OrtModule> => {
   if (!ortModulePromise) {
     ortModulePromise = (async () => {
-      const ort = await import('onnxruntime-web');
-      
+      const ort = await import("onnxruntime-web");
+
       // Try multiple approaches to suppress warnings
       try {
         // Method 1: Set log level
-        if (ort.env && typeof ort.env.logLevel !== 'undefined') {
-          ort.env.logLevel = 'error';
+        if (ort.env && typeof ort.env.logLevel !== "undefined") {
+          ort.env.logLevel = "error";
         }
-        
+
         // Method 2: Set log severity level
-        if (ort.env && typeof ort.env.logSeverityLevel !== 'undefined') {
+        if (ort.env && typeof ort.env.logSeverityLevel !== "undefined") {
           ort.env.logSeverityLevel = 3; // Error level only
         }
-        
+
         // Method 3: Try to set verbose level
-        if (ort.env && typeof ort.env.verbose !== 'undefined') {
+        if (ort.env && typeof ort.env.verbose !== "undefined") {
           ort.env.verbose = false;
         }
       } catch (e) {
         // Ignore if log level settings are not available
-        console.warn('Could not set ONNX Runtime log level:', e);
+        console.warn("Could not set ONNX Runtime log level:", e);
       }
-      
+
       return ort;
     })();
   }
@@ -104,13 +104,11 @@ export interface FieldOnnxModelResult {
 
 // Try WebGPU first, then WebGL, then WASM as fallback
 // Some operations will always run on CPU for performance reasons
-const DEFAULT_EXECUTION_PROVIDERS = ['webgpu', 'webgl', 'wasm'];
+const DEFAULT_EXECUTION_PROVIDERS = ["webgpu", "webgl", "wasm"];
 
-const loadModelSession = async (
-  options: FieldOnnxModelOptions
-): Promise<InferenceSession> => {
+const loadModelSession = async (options: FieldOnnxModelOptions): Promise<InferenceSession> => {
   const ort = await getOrtModule();
-  
+
   const sessionOptions = {
     executionProviders: options.executionProviders ?? DEFAULT_EXECUTION_PROVIDERS,
     logSeverityLevel: (options.logSeverityLevel ?? 3) as 0 | 1 | 2 | 3 | 4,
@@ -118,17 +116,17 @@ const loadModelSession = async (
     enableCpuMemArena: true,
     enableMemPattern: true,
   };
-  
+
   // Handle both string URLs and ArrayBuffer model data
   let session: InferenceSession;
-  if (typeof options.modelPath === 'string') {
-    console.log('Creating ONNX session from URL:', options.modelPath);
+  if (typeof options.modelPath === "string") {
+    console.log("Creating ONNX session from URL:", options.modelPath);
     session = await ort.InferenceSession.create(options.modelPath, sessionOptions);
   } else {
-    console.log('Creating ONNX session from ArrayBuffer, size:', options.modelPath.byteLength);
+    console.log("Creating ONNX session from ArrayBuffer, size:", options.modelPath.byteLength);
     session = await ort.InferenceSession.create(new Uint8Array(options.modelPath), sessionOptions);
   }
-  
+
   return session;
 };
 
@@ -136,7 +134,7 @@ const normalisePixelData = (
   input: Float32Array,
   width: number,
   height: number,
-  normalization: number
+  normalization: number,
 ): Float32Array => {
   const inv = normalization > 0 ? 1 / normalization : 1 / 4000;
   const length = width * height * 4;
@@ -152,7 +150,7 @@ const nhwcToNchw = (
   input: Float32Array,
   width: number,
   height: number,
-  channels = 4
+  channels = 4,
 ): Float32Array => {
   const output = new Float32Array(channels * height * width);
   let dstIndex = 0;
@@ -172,54 +170,47 @@ export const createFieldOnnxSession = loadModelSession;
 
 export const runFieldOnnxInference = async (
   session: InferenceSession,
-  input: FieldOnnxInferenceInput
+  input: FieldOnnxInferenceInput,
 ): Promise<FieldOnnxModelResult> => {
   const ort = await getOrtModule();
 
   // Validate session
   if (!session) {
-    throw new Error('ONNX session is null or undefined. Session creation may have failed.');
+    throw new Error("ONNX session is null or undefined. Session creation may have failed.");
   }
 
   if (input.data.length !== input.width * input.height * 4) {
     throw new Error(
-      `Expected RGBN data length ${
-        input.width * input.height * 4
-      }, received ${input.data.length}`
+      `Expected RGBN data length ${input.width * input.height * 4}, received ${input.data.length}`,
     );
   }
 
   const normalizationDivisor =
-    input.normalization && input.normalization > 0
-      ? input.normalization
-      : 4000;
+    input.normalization && input.normalization > 0 ? input.normalization : 4000;
 
   const normalised = normalisePixelData(
     input.data,
     input.width,
     input.height,
-    normalizationDivisor
+    normalizationDivisor,
   );
 
-  const tensorData = input.nchw === false
-    ? normalised
-    : nhwcToNchw(normalised, input.width, input.height);
+  const tensorData =
+    input.nchw === false ? normalised : nhwcToNchw(normalised, input.width, input.height);
 
   const tensorShape =
-    input.nchw === false
-      ? [1, input.height, input.width, 4]
-      : [1, 4, input.height, input.width];
+    input.nchw === false ? [1, input.height, input.width, 4] : [1, 4, input.height, input.width];
 
   if (!session.inputNames || session.inputNames.length === 0) {
-    throw new Error('ONNX session has no input names. Session may not be properly initialized.');
+    throw new Error("ONNX session has no input names. Session may not be properly initialized.");
   }
-  
+
   const feeds: Record<string, Tensor> = {};
   const inputName = session.inputNames[0];
-  
+
   // For now, use float32 for all models to avoid data type conversion issues
   // Many ONNX models can accept float32 input even if they're FP16 models
-  const dataType = 'float32';
+  const dataType = "float32";
   feeds[inputName] = new ort.Tensor(dataType, tensorData, tensorShape);
 
   const outputs = await session.run(feeds);
@@ -242,7 +233,7 @@ export const runSegmentationInference = async (
   session: InferenceSession,
   input: FieldOnnxInferenceInput,
   classes: string[],
-  scoreThreshold: number = 0.5
+  scoreThreshold: number = 0.5,
 ): Promise<OnnxSegmentationResult> => {
   const result = await runFieldOnnxInference(session, input);
 
@@ -251,7 +242,7 @@ export const runSegmentationInference = async (
   const tensor = result.outputs[firstOutputName];
 
   if (!tensor) {
-    throw new Error('ONNX model inference returned no outputs.');
+    throw new Error("ONNX model inference returned no outputs.");
   }
 
   if (!tensor.dims || tensor.dims.length < 3) {
@@ -259,9 +250,7 @@ export const runSegmentationInference = async (
   }
 
   const [batch, channels, outHeight, outWidth] =
-    tensor.dims.length === 4
-      ? tensor.dims
-      : [1, tensor.dims[0], tensor.dims[1], tensor.dims[2]];
+    tensor.dims.length === 4 ? tensor.dims : [1, tensor.dims[0], tensor.dims[1], tensor.dims[2]];
 
   if (batch !== 1) {
     throw new Error(`Expected batch size 1, received ${batch}`);
@@ -352,7 +341,7 @@ const getModelOption = (modelId: string): ModelOption => {
   if (!option) {
     throw new Error(`Unknown model id "${modelId}"`);
   }
-  if (option.engine !== 'onnx') {
+  if (option.engine !== "onnx") {
     throw new Error(`Model "${option.name}" is not an ONNX segmentation model.`);
   }
   return option;
@@ -360,11 +349,11 @@ const getModelOption = (modelId: string): ModelOption => {
 
 export const runSegmentationInferenceClient = async (
   session: InferenceSession,
-  payload: OnnxSegmentationRequest
+  payload: OnnxSegmentationRequest,
 ): Promise<OnnxSegmentationResponse> => {
   const option = getModelOption(payload.modelId);
   const floatData = new Float32Array(payload.data);
-  
+
   const result = await runSegmentationInference(
     session,
     {
@@ -374,28 +363,26 @@ export const runSegmentationInferenceClient = async (
       normalization: payload.normalization,
     },
     option.classes ?? [],
-    payload.scoreThreshold
+    payload.scoreThreshold,
   );
 
   return result;
 };
 
-
 export const runPatchInferenceClient = async (
   session: InferenceSession,
-  payload: OnnxPatchRequest
+  payload: OnnxPatchRequest,
 ): Promise<OnnxPatchResponse> => {
   const option = getModelOption(payload.modelId);
   const floatData = new Float32Array(payload.patchData);
-  
+
   // For FTW UNet models, upsample the patch by scale factor of 2
-  const { data: upsampledData, width: upsampledWidth, height: upsampledHeight } = upsamplePatch(
-    floatData,
-    payload.patchWidth,
-    payload.patchHeight,
-    2
-  );
-  
+  const {
+    data: upsampledData,
+    width: upsampledWidth,
+    height: upsampledHeight,
+  } = upsamplePatch(floatData, payload.patchWidth, payload.patchHeight, 2);
+
   const result = await runSegmentationInference(
     session,
     {
@@ -405,7 +392,7 @@ export const runPatchInferenceClient = async (
       normalization: payload.normalization,
     },
     option.classes ?? [],
-    payload.scoreThreshold
+    payload.scoreThreshold,
   );
 
   return {

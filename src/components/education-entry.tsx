@@ -9,9 +9,7 @@ export function EducationEntry({ education }: { education: Education }) {
           <h3 className="text-base mb-1 font-serif">{education.institution}</h3>
           <p className="text-sm text-zinc-600">{education.degree}</p>
           {education.advisor && (
-            <p className="text-sm text-zinc-500 mt-2 italic">
-              Advisor: {education.advisor}
-            </p>
+            <p className="text-sm text-zinc-500 mt-2 italic">Advisor: {education.advisor}</p>
           )}
           {education.thesis && (
             <p className="text-sm text-zinc-500 mt-2 italic">

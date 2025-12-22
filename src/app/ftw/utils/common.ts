@@ -17,11 +17,7 @@ export interface Patch {
   channels: number;
 }
 
-export function extractPatches(
-  image: GeoImage,
-  patchSize: number,
-  channels: number
-): Patch[] {
+export function extractPatches(image: GeoImage, patchSize: number, channels: number): Patch[] {
   const patches: Patch[] = [];
   let patchIndex = 0;
 
@@ -68,21 +64,15 @@ export function upsamplePatch(
   data: Float32Array,
   width: number,
   height: number,
-  scaleFactor: number = 2
+  scaleFactor: number = 2,
 ): { data: Float32Array; width: number; height: number } {
   const channels = 4;
   const newWidth = Math.round(width * scaleFactor);
   const newHeight = Math.round(height * scaleFactor);
   const tensor = tf.tensor(data, [height, width, channels], "float32");
-  const resized = tf.image.resizeBilinear(
-    tensor as tf.Tensor3D,
-    [newHeight, newWidth],
-    true
-  );
+  const resized = tf.image.resizeBilinear(tensor as tf.Tensor3D, [newHeight, newWidth], true);
   const upsampledData = resized.dataSync() as Float32Array;
   tensor.dispose();
   resized.dispose();
   return { data: upsampledData, width: newWidth, height: newHeight };
 }
-
-

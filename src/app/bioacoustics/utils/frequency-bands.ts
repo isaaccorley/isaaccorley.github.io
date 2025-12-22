@@ -1,6 +1,6 @@
 /**
  * Calculate frequency band energies from spectrogram ImageData
- * 
+ *
  * Three frequency ranges of ecological interest:
  * - Geophony (< 1 kHz): Wind, rain, flowing water
  * - Anthrophony (1-2 kHz): Human machinery, cars, airplanes
@@ -8,9 +8,9 @@
  */
 
 export interface FrequencyBandEnergies {
-  geophony: number;      // < 1 kHz
-  anthrophony: number;   // 1-2 kHz
-  biophony: number;      // 2-4 kHz (capped by sample rate)
+  geophony: number; // < 1 kHz
+  anthrophony: number; // 1-2 kHz
+  biophony: number; // 2-4 kHz (capped by sample rate)
 }
 
 /**
@@ -27,16 +27,16 @@ function calculateBandEnergy(
   imageData: ImageData,
   startFreq: number,
   endFreq: number,
-  maxFreq: number = 4000
+  maxFreq: number = 4000,
 ): number {
   const { width, height, data } = imageData;
-  
+
   const startRow = getRowForFrequency(startFreq, height, maxFreq);
   const endRow = getRowForFrequency(endFreq, height, maxFreq);
-  
+
   let totalEnergy = 0;
   let count = 0;
-  
+
   for (let y = startRow; y <= endRow && y < height; y++) {
     for (let x = 0; x < width; x++) {
       const idx = (y * width + x) * 4;
@@ -45,7 +45,7 @@ function calculateBandEnergy(
       count++;
     }
   }
-  
+
   // Return average energy (normalized by bin count)
   return count > 0 ? totalEnergy / count : 0;
 }
@@ -55,7 +55,7 @@ function calculateBandEnergy(
  */
 export function calculateFrequencyBands(
   imageData: ImageData,
-  maxFrequency: number = 4000
+  maxFrequency: number = 4000,
 ): FrequencyBandEnergies {
   return {
     geophony: calculateBandEnergy(imageData, 0, 1000, maxFrequency),

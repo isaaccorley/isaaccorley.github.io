@@ -22,7 +22,8 @@ export const portfolioData: Portfolio[] = [
     description:
       "A library containing a suite of PyTorch-based semantic segmentation decoders along with pretrained timm encoder support.",
     technologies: ["Python", "PyTorch", "Semantic Segmentation"],
-    imageUrl: "https://raw.githubusercontent.com/qubvel-org/segmentation_models.pytorch/refs/heads/main/docs/logo.png",
+    imageUrl:
+      "https://raw.githubusercontent.com/qubvel-org/segmentation_models.pytorch/refs/heads/main/docs/logo.png",
     codeUrl: "https://github.com/qubvel-org/segmentation_models.pytorch",
   },
   {
@@ -30,7 +31,8 @@ export const portfolioData: Portfolio[] = [
     description:
       "A library for advancing machine learning models for instance segmentation of agricultural field boundaries in multispectral satellite imagery.",
     technologies: ["Python", "PyTorch", "Field Boundary Segmentation"],
-    imageUrl: "https://raw.githubusercontent.com/fieldsoftheworld/fieldsoftheworld.github.io/refs/heads/main/static/images/ftw_logo.png",
+    imageUrl:
+      "https://raw.githubusercontent.com/fieldsoftheworld/fieldsoftheworld.github.io/refs/heads/main/static/images/ftw_logo.png",
     codeUrl: "https://github.com/fieldsoftheworld/ftw-baselines",
   },
 ];

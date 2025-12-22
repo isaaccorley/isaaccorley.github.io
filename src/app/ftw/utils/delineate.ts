@@ -21,11 +21,9 @@ export interface InferenceResult {
 
 const CLASS_NAMES = ["field"];
 
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(Math.max(value, min), max);
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
-const sigmoid = (value: number): number =>
-  1 / (1 + Math.exp(-Math.max(-60, Math.min(60, value))));
+const sigmoid = (value: number): number => 1 / (1 + Math.exp(-Math.max(-60, Math.min(60, value))));
 
 const softmax = (logits: number[]): number[] => {
   if (logits.length === 0) return logits;
@@ -47,9 +45,7 @@ async function loadGeoTiffBands(file: File, bandCount: number): Promise<GeoImage
   const samplesPerPixel = image.getSamplesPerPixel();
 
   if (samplesPerPixel < bandCount) {
-    throw new Error(
-      `Expected at least ${bandCount} bands in GeoTIFF, found ${samplesPerPixel}`
-    );
+    throw new Error(`Expected at least ${bandCount} bands in GeoTIFF, found ${samplesPerPixel}`);
   }
 
   const raster = (await image.readRasters({
@@ -67,7 +63,7 @@ export const loadGeoTiffRgbn = (file: File) => loadGeoTiffBands(file, 4);
 export const extractPatches = (
   image: GeoImage,
   patchSize: number = PATCH_SIZE,
-  channels = 3
+  channels = 3,
 ): Patch[] => extractPatchesShared(image, patchSize, channels) as Patch[];
 
 function decodeDetectionsForPatch(
@@ -76,7 +72,7 @@ function decodeDetectionsForPatch(
   imageWidth: number,
   imageHeight: number,
   scoreThreshold: number,
-  bboxFormat: 'xywh' | 'xyxy' | 'auto' = 'xywh'
+  bboxFormat: "xywh" | "xyxy" | "auto" = "xywh",
 ): Detection[] {
   const detections: Detection[] = [];
 
@@ -143,17 +139,19 @@ function decodeDetectionsForPatch(
       return [bx1, by1, bx2, by2];
     };
 
-    if (bboxFormat === 'auto') {
+    if (bboxFormat === "auto") {
       const boxA = makeBoxFromXyxy();
       const boxB = makeBoxFromXywh();
-      const area = (bx: [number, number, number, number]) => Math.max(0, bx[2] - bx[0]) * Math.max(0, bx[3] - bx[1]);
+      const area = (bx: [number, number, number, number]) =>
+        Math.max(0, bx[2] - bx[0]) * Math.max(0, bx[3] - bx[1]);
       const areaA = area(boxA);
       const areaB = area(boxB);
       const patchArea = patch.width * patch.height;
       const valid = (ar: number) => ar > 1 && ar <= patchArea;
-      const chooseA = valid(areaA) && (!valid(areaB) || areaA <= patchArea && areaA >= areaB * 0.25);
+      const chooseA =
+        valid(areaA) && (!valid(areaB) || (areaA <= patchArea && areaA >= areaB * 0.25));
       [x1, y1, x2, y2] = chooseA ? boxA : boxB;
-    } else if (bboxFormat === 'xyxy') {
+    } else if (bboxFormat === "xyxy") {
       [x1, y1, x2, y2] = makeBoxFromXyxy();
     } else {
       [x1, y1, x2, y2] = makeBoxFromXywh();
@@ -165,15 +163,13 @@ function decodeDetectionsForPatch(
       continue;
     }
 
-    const maskCoefficients =
-      maskCoeffLength > 0 ? raw.slice(5 + numClasses) : [];
+    const maskCoefficients = maskCoeffLength > 0 ? raw.slice(5 + numClasses) : [];
 
     detections.push({
       bbox: [x1, y1, x2, y2],
       score,
       classId: classId >= 0 ? classId : 0,
-      className:
-        CLASS_NAMES[classId] ?? `class_${classId >= 0 ? classId : 0}`,
+      className: CLASS_NAMES[classId] ?? `class_${classId >= 0 ? classId : 0}`,
       patchIndex: patch.index,
       maskCoefficients,
     });
@@ -189,13 +185,11 @@ export async function runModelOnPatch(
   imageHeight: number,
   scoreThreshold: number,
   normalizationDivisor: number,
-  bboxFormat: 'xywh' | 'xyxy' | 'auto' = 'xywh'
+  bboxFormat: "xywh" | "xyxy" | "auto" = "xywh",
 ): Promise<Detection[]> {
   const batchedInput = tf.tidy(() => {
     if (patch.channels !== 3) {
-      throw new Error(
-        `Expected patch with 3 channels for TFJS model, received ${patch.channels}`
-      );
+      throw new Error(`Expected patch with 3 channels for TFJS model, received ${patch.channels}`);
     }
     const tensor = tf.tensor(patch.data, [patch.height, patch.width, patch.channels], "float32");
     const safeDivisor = normalizationDivisor > 0 ? normalizationDivisor : 1;
@@ -203,17 +197,14 @@ export async function runModelOnPatch(
     const resized = tf.image.resizeBilinear(
       normalized as tf.Tensor3D,
       [MODEL_INPUT_SIZE, MODEL_INPUT_SIZE],
-      true
+      true,
     );
     const batched = resized.expandDims(0);
     return batched;
   });
 
   try {
-    const outputs = await model.executeAsync(batchedInput, [
-      "Identity:0",
-      "Identity_1:0",
-    ]);
+    const outputs = await model.executeAsync(batchedInput, ["Identity:0", "Identity_1:0"]);
 
     if (!Array.isArray(outputs) || outputs.length < 1) {
       throw new Error("Unexpected model output structure.");
@@ -237,7 +228,7 @@ export async function runModelOnPatch(
       imageWidth,
       imageHeight,
       scoreThreshold,
-      bboxFormat
+      bboxFormat,
     );
   } catch (error) {
     batchedInput.dispose();
@@ -248,11 +239,9 @@ export async function runModelOnPatch(
 export async function nonMaxSuppressionTf(
   detections: Detection[],
   iouThreshold = 0.3,
-  scoreThreshold = 0.05
+  scoreThreshold = 0.05,
 ): Promise<Detection[]> {
-  const filtered = detections.filter(
-    (d) => Number.isFinite(d.score) && d.score >= scoreThreshold
-  );
+  const filtered = detections.filter((d) => Number.isFinite(d.score) && d.score >= scoreThreshold);
   if (filtered.length === 0) return [];
 
   const boxesData = new Float32Array(filtered.length * 4);
@@ -265,15 +254,15 @@ export async function nonMaxSuppressionTf(
     boxesData[i * 4 + 3] = x2;
     scoresData[i] = filtered[i].score;
   }
-  const boxes = tf.tensor2d(boxesData, [filtered.length, 4], 'float32');
-  const scores = tf.tensor1d(scoresData, 'float32');
+  const boxes = tf.tensor2d(boxesData, [filtered.length, 4], "float32");
+  const scores = tf.tensor1d(scoresData, "float32");
   const maxOutput = filtered.length;
   const idx = await tf.image.nonMaxSuppressionAsync(
     boxes,
     scores,
     maxOutput,
     iouThreshold,
-    scoreThreshold
+    scoreThreshold,
   );
   const indices = Array.from(await idx.data());
   boxes.dispose();

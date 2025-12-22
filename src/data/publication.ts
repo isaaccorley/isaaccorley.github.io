@@ -16,12 +16,13 @@ export const publicationData: Publication[] = [
     year: "2025",
     conference: "ACM SIGSPATIAL",
     title: "HydroChronos: Forecasting Decades of Surface Water Change",
-    authors: "Daniele Rege Cambrin, Eleonora Poeta, Eliana Pastor, Isaac Corley, Tania Cerquitelli, Elena Baralis, Paolo Garza",
+    authors:
+      "Daniele Rege Cambrin, Eleonora Poeta, Eliana Pastor, Isaac Corley, Tania Cerquitelli, Elena Baralis, Paolo Garza",
     paperUrl: "https://arxiv.org/abs/2506.14362",
     codeUrl: "https://github.com/DarthReca/hydro-chronos",
     tldr: "We introduce HydroChronos, a large-scale multi-modal dataset of over three decades of satellite imagery & climate data for forecasting long-term surface water dynamics.",
     imageUrl: "/images/hydrochronos.jpg",
-    award: "🏆 Best Research Paper Candidate"
+    award: "🏆 Best Research Paper Candidate",
   },
   {
     year: "2025",
@@ -54,8 +55,10 @@ export const publicationData: Publication[] = [
   {
     year: "2024",
     conference: "WACV CV4EO",
-    title: "FLAVARS: A Multimodal Foundational Language and Vision Alignment Model for Remote Sensing",
-    authors: "Isaac Corley, Simone Fobi Nsutezo, Anthony Ortiz, Caleb Robinson, Rahul Dodhia, Juan M. Lavista Ferres, Peyman Najafirad",
+    title:
+      "FLAVARS: A Multimodal Foundational Language and Vision Alignment Model for Remote Sensing",
+    authors:
+      "Isaac Corley, Simone Fobi Nsutezo, Anthony Ortiz, Caleb Robinson, Rahul Dodhia, Juan M. Lavista Ferres, Peyman Najafirad",
     paperUrl: "https://arxiv.org/abs/2501.08490",
     codeUrl: "https://huggingface.co/datasets/isaaccorley/FLAVARS",
     tldr: "We find that pretraining using CLIP+MAE+MLM+SatCLIP objectives provides better balance for dense vision tasks over pure CLIP and FLAVA pretraining.",
@@ -79,7 +82,7 @@ export const publicationData: Publication[] = [
     paperUrl: "https://arxiv.org/abs/2407.07186",
     tldr: "We present a novel dataset and pipeline for detecting barely-visible surface cracks on wind turbine blades.",
     imageUrl: "/images/turbine-cracks.jpg",
-    award: "🏆 Best Application Paper Runner-Up"
+    award: "🏆 Best Application Paper Runner-Up",
   },
   {
     year: "2024",
@@ -104,8 +107,10 @@ export const publicationData: Publication[] = [
   {
     year: "2024",
     conference: "IGARSS",
-    title: "Seeing the roads through the trees: A benchmark for modeling spatial dependencies with aerial imagery",
-    authors: "Caleb Robinson, Isaac Corley, Anthony Ortiz, Rahul Dodhia, Juan M. Lavista Ferres, Peyman Najafirad",
+    title:
+      "Seeing the roads through the trees: A benchmark for modeling spatial dependencies with aerial imagery",
+    authors:
+      "Caleb Robinson, Isaac Corley, Anthony Ortiz, Rahul Dodhia, Juan M. Lavista Ferres, Peyman Najafirad",
     paperUrl: "https://arxiv.org/abs/2401.06762",
     codeUrl: "https://github.com/isaaccorley/ChesapeakeRSC",
     tldr: "We introduce a novel dataset for evaluating a model's ability to use long-range spatial context by performing road extraction in aerial imagery with high amounts of occlusion by tree canopy.",
@@ -114,7 +119,8 @@ export const publicationData: Publication[] = [
   {
     year: "2024",
     conference: "CVPR PBVS",
-    title: "Revisiting Pre-trained Remote Sensing Model Benchmarks: Resizing and Normalization Matters",
+    title:
+      "Revisiting Pre-trained Remote Sensing Model Benchmarks: Resizing and Normalization Matters",
     authors: "Isaac Corley, Caleb Robinson, Rahul Dodhia, Juan M. Lavista Ferres, Peyman Najafirad",
     paperUrl: "https://arxiv.org/abs/2305.13456",
     codeUrl: "https://github.com/isaaccorley/resize-is-all-you-need",
@@ -125,7 +131,8 @@ export const publicationData: Publication[] = [
     year: "2023",
     conference: "NeurIPS",
     title: "SSL4EO-L: Datasets and Foundation Models for Landsat Imagery",
-    authors: "Adam J. Stewart, Nils Lehmann, Isaac A. Corley, Yi Wang, Yi-Chia Chang, Nassim Ait Ali Braham, Shradha Sehgal, Caleb Robinson, Arindam Banerjee",
+    authors:
+      "Adam J. Stewart, Nils Lehmann, Isaac A. Corley, Yi Wang, Yi-Chia Chang, Nassim Ait Ali Braham, Shradha Sehgal, Caleb Robinson, Arindam Banerjee",
     paperUrl: "https://arxiv.org/abs/2306.09424",
     codeUrl: "https://torchgeo.readthedocs.io/en/stable/",
     tldr: "We introduce SSL4EO-L, the first ever dataset designed for self-supervised learning for Earth Observation for the Landsat family of satellites.",
@@ -135,12 +142,13 @@ export const publicationData: Publication[] = [
     year: "2022",
     conference: "ACM SIGSPATIAL",
     title: "TorchGeo: Deep Learning with Geospatial Data",
-    authors: "Adam J. Stewart, Caleb Robinson, Isaac A. Corley, Anthony Ortiz, Juan M. Lavista Ferres, Arindam Banerjee",
+    authors:
+      "Adam J. Stewart, Caleb Robinson, Isaac A. Corley, Anthony Ortiz, Juan M. Lavista Ferres, Arindam Banerjee",
     paperUrl: "https://arxiv.org/abs/2111.08872",
     codeUrl: "https://torchgeo.readthedocs.io/en/stable/",
     tldr: "We introduce TorchGeo, a Python library for integrating geospatial data into the PyTorch deep learning ecosystem.",
     imageUrl: "/images/torchgeo.jpg",
-    award: "🏆 Best Paper Runner-Up"
+    award: "🏆 Best Paper Runner-Up",
   },
   {
     year: "2022",
