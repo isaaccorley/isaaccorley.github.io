@@ -23,7 +23,7 @@ const installationCards: InstallationCard[] = [
   {
     label: "vscode extension",
     href: "https://marketplace.visualstudio.com/items?itemName=isaaccorley.vscode-planetary-computer-mcp-server",
-    description: "Install into any VS Code-based IDE",
+    description: "Install in VSCode, Cursor, Antigrain, etc.",
     iconSrc: "/planetary-computer-mcp/icons/vscode-logo.png",
     iconAlt: "VS Code logo",
   },
@@ -45,13 +45,13 @@ const installationCards: InstallationCard[] = [
 
 const builtWithCards = [
   {
-    label: "gdal3.js",
-    description: "GDAL 3 WebAssembly bindings for raster processing",
-    href: "https://gdal3.js.org/docs/",
+    label: "geotiff.js",
+    description: "Pure JS library for geotiff processing",
+    href: "https://geotiffjs.github.io",
     icon: (
       <Image
-        src="/planetary-computer-mcp/icons/gdal-logo.png"
-        alt="GDAL logo"
+        src="/planetary-computer-mcp/icons/geotiffjs-logo.png"
+        alt="geotiff.js logo"
         width={40}
         height={40}
         className="object-contain"
