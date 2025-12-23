@@ -29,14 +29,18 @@ export function SpinningGlobe() {
 
       if (!globeRef.current || !mounted) return;
 
+      const GLOBE_SIZE = 950;
+
       const world = new Globe(globeRef.current, { animateIn: false })
+        .width(GLOBE_SIZE)
+        .height(GLOBE_SIZE)
         .backgroundColor("rgba(0,0,0,0)")
         .globeImageUrl(EARTH_TEXTURE)
         .bumpImageUrl(EARTH_BUMP)
         .showAtmosphere(false);
 
       world.controls().enableZoom = false;
-      world.controls().autoRotate = true;
+      world.controls().autoRotate = false;
       world.controls().autoRotateSpeed = 0.25;
 
       const landTopo = await fetch(LAND_TOPO_URL).then((res) => res.json());
@@ -79,6 +83,7 @@ export function SpinningGlobe() {
         };
 
         setReady(true);
+        world.controls().autoRotate = true;
       });
 
       disposeWorld = () => {
@@ -95,15 +100,13 @@ export function SpinningGlobe() {
   }, []);
 
   return (
-    <div className="relative w-full h-full">
+    <div className="globe-container">
       <div
-        className={`absolute inset-0 transition-opacity duration-700 ${ready ? "opacity-0" : "opacity-100"}`}
-      >
-        <div className="w-full h-full rounded-full bg-gradient-to-br from-cyan-900/50 via-indigo-900/30 to-transparent blur-3xl" />
-      </div>
+        className={`globe-placeholder transition-opacity duration-700 ${ready ? "opacity-0" : "opacity-100"}`}
+      />
       <div
         ref={globeRef}
-        className={`w-full h-full transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`}
+        className={`globe-canvas transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`}
       />
     </div>
   );
