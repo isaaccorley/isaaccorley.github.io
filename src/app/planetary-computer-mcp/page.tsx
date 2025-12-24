@@ -22,7 +22,7 @@ const mcpConfigSnippet = `{
 const installationCards: InstallationCard[] = [
   {
     label: "vscode extension",
-    href: "https://marketplace.visualstudio.com/items?itemName=isaaccorley.planetary-computer-mcp-vscode",
+    href: "https://marketplace.visualstudio.com/items?itemName=isaaccorley.planetary-computer-mcp",
     description: "Install in VSCode, Cursor, Antigrain, etc.",
     iconSrc: "/planetary-computer-mcp/icons/vscode-logo.png",
     iconAlt: "VS Code logo",
