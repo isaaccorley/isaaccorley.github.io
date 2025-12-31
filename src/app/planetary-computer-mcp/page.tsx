@@ -6,14 +6,14 @@ import { SpinningGlobe } from "@/components/spinning-globe";
 
 const heroStats = [
   { label: "STAC Collections", value: "100+", detail: "Optical, SAR, DEM, Land Cover" },
-  { label: "Zero install", value: "npx", detail: "No docker or python dependencies" },
+  { label: "Zero install", value: "uvx", detail: "No docker containers" },
   { label: "Outputs", value: "geotiff, zarr, jpg, png", detail: "Allow agents to see EO data" },
 ];
 
 const mcpConfigSnippet = `{
   "mcpServers": {
     "planetary-computer": {
-      "command": "npx",
+      "command": "uvx",
       "args": ["planetary-computer-mcp"]
     }
   }
@@ -28,11 +28,11 @@ const installationCards: InstallationCard[] = [
     iconAlt: "VS Code logo",
   },
   {
-    label: "npm package",
-    href: "https://www.npmjs.com/package/planetary-computer-mcp",
-    description: "Run instantly via npx",
-    iconSrc: "/planetary-computer-mcp/icons/npm-logo.png",
-    iconAlt: "npm logo",
+    label: "pypi package",
+    href: "https://pypi.org/project/planetary-computer-mcp/",
+    description: "Run instantly via uvx",
+    iconSrc: "/planetary-computer-mcp/icons/pypi-logo.png",
+    iconAlt: "PyPI logo",
   },
   {
     label: "mcp.json",
@@ -45,13 +45,13 @@ const installationCards: InstallationCard[] = [
 
 const builtWithCards = [
   {
-    label: "geotiff.js",
-    description: "Pure JS library for geotiff processing",
-    href: "https://geotiffjs.github.io",
+    label: "xarray",
+    description: "N-Dim geotiff processing",
+    href: "https://xarray.pydata.org/en/stable/",
     icon: (
       <Image
-        src="/planetary-computer-mcp/icons/geotiffjs-logo.png"
-        alt="geotiff.js logo"
+        src="/planetary-computer-mcp/icons/xarray.png"
+        alt="xarray logo"
         width={40}
         height={40}
         className="object-contain"
@@ -59,13 +59,13 @@ const builtWithCards = [
     ),
   },
   {
-    label: "zarrita.js",
+    label: "zarr",
     description: "Toolkit for reading/writing Zarr climate datasets",
-    href: "https://zarrita.dev",
+    href: "https://zarr.readthedocs.io/en/stable/",
     icon: (
       <Image
-        src="/planetary-computer-mcp/icons/zarrita-logo.svg"
-        alt="zarrita.js logo"
+        src="/planetary-computer-mcp/icons/zarr.png"
+        alt="zarr logo"
         width={40}
         height={40}
         className="object-contain"
@@ -73,13 +73,13 @@ const builtWithCards = [
     ),
   },
   {
-    label: "duckdb-wasm",
-    description: "WebAssembly-based DuckDB for processing geometry collections",
-    href: "https://duckdb.org/docs/stable/clients/wasm/overview",
+    label: "geopandas",
+    description: "Library for processing geometry collections",
+    href: "https://geopandas.org/en/stable/",
     icon: (
       <Image
-        src="/planetary-computer-mcp/icons/duckdb-logo.png"
-        alt="DuckDB logo"
+        src="/planetary-computer-mcp/icons/geopandas.png"
+        alt="Geopandas logo"
         width={40}
         height={40}
         className="object-contain"
@@ -169,9 +169,9 @@ export default function PlanetaryComputerMCPPage() {
 
             <div className="bg-black/25 backdrop-blur border border-emerald-400/40 rounded-2xl p-5 space-y-4">
               <div className="flex flex-wrap gap-4 text-sm text-emerald-200/90 font-mono">
-                <code className="text-lg text-emerald-200">npx planetary-computer-mcp</code>
+                <code className="text-lg text-emerald-200">uvx planetary-computer-mcp</code>
                 <span className="text-xs uppercase tracking-[0.2em] text-emerald-300/70">
-                  zero install · no API keys · no docker / python
+                  zero install · no API keys · no docker containers
                 </span>
               </div>
               <div className="grid gap-4 sm:grid-cols-3 text-sm">
