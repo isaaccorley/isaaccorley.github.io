@@ -171,7 +171,7 @@ export default function PlanetaryComputerMCPPage() {
               <div className="flex flex-wrap gap-4 text-sm text-emerald-200/90 font-mono">
                 <code className="text-lg text-emerald-200">uvx planetary-computer-mcp</code>
                 <span className="text-xs uppercase tracking-[0.2em] text-emerald-300/70">
-                  zero install · no API keys · no docker / python
+                  zero install · no API keys · no docker containers
                 </span>
               </div>
               <div className="grid gap-4 sm:grid-cols-3 text-sm">
