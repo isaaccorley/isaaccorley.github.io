@@ -12,21 +12,22 @@ export function ProfileSection({ aboutMe }: ProfileSectionProps) {
   }
 
   return (
-    <div className="md:sticky top-12 flex flex-row-reverse md:flex-col gap-4 md:gap-6">
+    <div className="md:sticky top-14 flex flex-col md:flex-col gap-4 md:gap-6">
       {aboutMe.imageUrl && (
-        <div className="w-1/3 md:w-full flex-shrink-0">
+        <div className="w-2/5 md:w-full flex-shrink-0 order-first md:order-none">
           <div className="relative max-h-[45vh] md:w-[65%] aspect-[3/4]">
             <Image
               src={aboutMe.imageUrl}
               alt={aboutMe.name}
               fill
               priority
+              sizes="(max-width: 768px) 33vw, 65%"
               className="object-cover rounded-xl"
             />
           </div>
         </div>
       )}
-      <div className="w-2/3 md:w-full">
+      <div className="w-full md:w-full">
         <div className="flex gap-6 mb-6">
           {aboutMe.blogUrl && (
             <a

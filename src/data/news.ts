@@ -8,14 +8,14 @@ export interface News {
 export const newsData: News[] = [
   // If you don't want to show news, just make the array empty.
   {
-    date: "November 2025",
+    date: "Nov 2025",
     title: "Country-Scale Agricultural Field Boundary Predictions",
     description:
       "Through my collaboration with Wherobots & Taylor Geospatial Engine, we have open-sourced planting/harvest season mosaics and field boundary predictions for 5 countries for 2023 and 2024.",
     link: "https://source.coop/wherobots/fields-of-the-world",
   },
   {
-    date: "October 2025",
+    date: "Oct 2025",
     title:
       "Spatial Stack Podcast: Beyond the Hype: Embeddings, Foundation Models, and the Future of Earth Observation",
     description:
@@ -23,7 +23,7 @@ export const newsData: News[] = [
     link: "https://www.youtube.com/watch?v=EGj6AGTgjnk",
   },
   {
-    date: "August 2025",
+    date: "Aug 2025",
     title:
       "Satellite-Image-Deep-Learning Podcast: Chained Models for High-Res Aerial Solar Fault Detection",
     description:

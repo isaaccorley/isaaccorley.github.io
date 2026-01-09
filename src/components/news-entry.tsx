@@ -6,7 +6,7 @@ export function NewsEntry({ news }: { news: News }) {
     <div className="glass-card p-5 flex flex-row gap-6">
       <div className="flex flex-col flex-1">
         <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">{news.date}</p>
-        <h3 className="font-serif text-md mb-3">
+        <h3 className="font-serif text-base mb-3">
           {news.link ? (
             <a
               href={news.link}

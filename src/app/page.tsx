@@ -31,7 +31,7 @@ const sectionConfigs: Record<Section, SectionConfig> = {
     navLabel: "News",
     title: "News",
     data: newsData,
-    spacing: "space-y-8",
+    spacing: "space-y-6",
     renderItem: (item, index) => (
       <AnimateOnScroll key={index} delay={index * 100}>
         <NewsEntry news={item as (typeof newsData)[0]} />
@@ -43,7 +43,7 @@ const sectionConfigs: Record<Section, SectionConfig> = {
     navLabel: "Education",
     title: "Education",
     data: educationData,
-    spacing: "space-y-4",
+    spacing: "space-y-6",
     renderItem: (item, index) => (
       <AnimateOnScroll key={index} delay={index * 100}>
         <EducationEntry education={item as (typeof educationData)[0]} />
@@ -67,7 +67,7 @@ const sectionConfigs: Record<Section, SectionConfig> = {
     navLabel: "Experience",
     title: "Experience",
     data: experienceData,
-    spacing: "space-y-4",
+    spacing: "space-y-6",
     renderItem: (item, index) => (
       <AnimateOnScroll key={index} delay={index * 100}>
         <ExperienceEntry experience={item as (typeof experienceData)[0]} />
@@ -117,13 +117,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[var(--background)] transition-colors duration-300">
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-4 right-4 sm:right-6 md:right-8 z-50">
         <ThemeToggle />
       </div>
       <div className="max-w-screen-lg mx-auto px-4 md:px-8 py-12 md:py-24 pb-24 md:pb-24">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
           <div className="col-span-12 md:col-span-4 space-y-8 mb-8 md:mb-0">
-            <div className="md:sticky top-12 space-y-6">
+            <div className="md:sticky top-14 space-y-6">
               <ProfileSection aboutMe={aboutMe} />
               <SectionNav sections={navSections} />
             </div>
@@ -145,7 +145,7 @@ export default function Home() {
 
               return (
                 <section key={sectionName} id={config.id}>
-                  <h2 className="font-serif text-lg mb-8 tracking-wide uppercase">
+                  <h2 className="font-serif text-lg mb-4 md:mb-8 tracking-wide uppercase">
                     {config.title}
                   </h2>
                   <div className={config.spacing}>

@@ -12,12 +12,13 @@ export function PortfolioEntry({ portfolio }: { portfolio: Portfolio }) {
             alt={portfolio.title}
             width={160}
             height={200}
+            sizes="(max-width: 768px) 100vw, 25vw"
             className="rounded-lg w-full md:w-auto"
           />
         </div>
       )}
       <div className="flex flex-col flex-1 w-full">
-        <h3 className="font-serif text-md mb-3">{portfolio.title}</h3>
+        <h3 className="font-serif text-base mb-3">{portfolio.title}</h3>
 
         {portfolio.technologies && (
           <div className="flex gap-2 mb-4 flex-wrap">
@@ -58,7 +59,7 @@ export function PortfolioEntry({ portfolio }: { portfolio: Portfolio }) {
             </a>
           )}
         </div>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 mt-4 italic">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-4 italic">
           {portfolio.description}
         </p>
       </div>
