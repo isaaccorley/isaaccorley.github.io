@@ -45,7 +45,7 @@ export function SectionNav({ sections }: SectionNavProps) {
               onClick={() => scrollToSection(id)}
               className={`text-xs tracking-wider uppercase transition-all duration-300 ${
                 activeSection === id
-                  ? "text-zinc-900 dark:text-zinc-100 font-medium"
+                  ? "text-[var(--accent)] font-medium"
                   : "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
               }`}
             >

@@ -9,6 +9,8 @@
   --muted-foreground: #a1a1aa;
   --border: #e4e4e7;
   --card: #ffffff;
+  --accent: #0d9488;
+  --accent-light: #14b8a6;
 }
 
 html.dark {
@@ -18,6 +20,8 @@ html.dark {
   --muted-foreground: #71717a;
   --border: #27272a;
   --card: #18181b;
+  --accent: #14b8a6;
+  --accent-light: #2dd4bf;
 }
 
 body {
@@ -40,6 +44,7 @@ body {
 .sans {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
+
 /* Screen reader only utility class for accessibility */
 .sr-only {
   position: absolute;
@@ -51,4 +56,63 @@ body {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Glassmorphism card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 1rem;
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+html.dark .glass-card {
+  background: rgba(24, 24, 27, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+html.dark .glass-card:hover {
+  background: rgba(24, 24, 27, 0.8);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Scroll fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+.animate-on-scroll {
+  opacity: 0;
+}
+
+.animate-on-scroll.visible {
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* Accent link style */
+.accent-link {
+  color: var(--accent);
+  transition: color 0.3s ease;
+}
+
+.accent-link:hover {
+  color: var(--accent-light);
 }

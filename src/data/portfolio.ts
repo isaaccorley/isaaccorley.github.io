@@ -13,8 +13,8 @@ export const portfolioData: Portfolio[] = [
     description:
       "A PyTorch domain library, similar to torchvision, providing datasets, samplers, transforms, and pre-trained models specific to geospatial data.",
     technologies: ["PyTorch", "Geospatial", "Remote Sensing"],
-    projectUrl: "https://torchgeo.readthedocs.io/en/latest/",
     imageUrl: "https://raw.githubusercontent.com/microsoft/torchgeo/main/logo/logo-color.svg",
+    projectUrl: "https://torchgeo.readthedocs.io/en/stable/",
     codeUrl: "https://github.com/microsoft/torchgeo/",
   },
   {
@@ -24,6 +24,7 @@ export const portfolioData: Portfolio[] = [
     technologies: ["Python", "PyTorch", "Semantic Segmentation"],
     imageUrl:
       "https://raw.githubusercontent.com/qubvel-org/segmentation_models.pytorch/refs/heads/main/docs/logo.png",
+    projectUrl: "https://segmentation-modelspytorch.readthedocs.io/en/latest/",
     codeUrl: "https://github.com/qubvel-org/segmentation_models.pytorch",
   },
   {
@@ -33,6 +34,7 @@ export const portfolioData: Portfolio[] = [
     technologies: ["Python", "PyTorch", "Field Boundary Segmentation"],
     imageUrl:
       "https://raw.githubusercontent.com/fieldsoftheworld/fieldsoftheworld.github.io/refs/heads/main/static/images/ftw_logo.png",
+    projectUrl: "https://fieldsofthe.world/",
     codeUrl: "https://github.com/fieldsoftheworld/ftw-baselines",
   },
 ];

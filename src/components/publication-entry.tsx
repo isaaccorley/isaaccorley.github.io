@@ -4,7 +4,7 @@ import { Publication } from "@/data/publication";
 
 export function PublicationEntry({ publication }: { publication: Publication }) {
   return (
-    <div className="flex flex-row gap-6">
+    <div className="glass-card p-5 flex flex-row gap-6 items-center">
       {publication.imageUrl && (
         <div className="w-1/4 min-w-[160px] relative">
           <Image
@@ -36,7 +36,7 @@ export function PublicationEntry({ publication }: { publication: Publication }) 
           {publication.paperUrl && (
             <a
               href={publication.paperUrl}
-              className="group inline-flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 text-xs accent-link"
             >
               <ArrowUpRight
                 size={12}
@@ -48,7 +48,7 @@ export function PublicationEntry({ publication }: { publication: Publication }) 
           {publication.codeUrl && (
             <a
               href={publication.codeUrl}
-              className="group inline-flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 text-xs accent-link"
             >
               <ArrowUpRight
                 size={12}
@@ -60,7 +60,7 @@ export function PublicationEntry({ publication }: { publication: Publication }) 
           {publication.bibtex && (
             <a
               href={publication.bibtex}
-              className="group inline-flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 text-xs accent-link"
             >
               <ArrowUpRight
                 size={12}
@@ -70,9 +70,6 @@ export function PublicationEntry({ publication }: { publication: Publication }) 
             </a>
           )}
         </div>
-        {publication.tldr && (
-          <p className="text-sm italic text-zinc-600 dark:text-zinc-400 mt-4">{publication.tldr}</p>
-        )}
       </div>
     </div>
   );

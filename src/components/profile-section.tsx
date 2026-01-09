@@ -31,7 +31,7 @@ export function ProfileSection({ aboutMe }: ProfileSectionProps) {
           {aboutMe.blogUrl && (
             <a
               href={aboutMe.blogUrl}
-              className="group inline-flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 text-xs accent-link"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -45,7 +45,7 @@ export function ProfileSection({ aboutMe }: ProfileSectionProps) {
           {aboutMe.cvUrl && (
             <a
               href={aboutMe.cvUrl}
-              className="group inline-flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 text-xs accent-link"
               target="_blank"
               rel="noopener noreferrer"
             >

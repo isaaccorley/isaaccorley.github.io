@@ -13,6 +13,7 @@ import { portfolioData } from "@/data/portfolio";
 import { sectionOrder, Section } from "@/data/section-order";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SectionNav } from "@/components/section-nav";
+import { AnimateOnScroll } from "@/components/animate-on-scroll";
 
 const navSections = [
   { id: "about", label: "About" },
@@ -65,9 +66,9 @@ export default function Home() {
                         <h2 className="font-serif text-l mb-8 tracking-wide uppercase">News</h2>
                         <div className="space-y-8">
                           {newsData.map((news, index) => (
-                            <div key={index}>
+                            <AnimateOnScroll key={index} delay={index * 100}>
                               <NewsEntry news={news} />
-                            </div>
+                            </AnimateOnScroll>
                           ))}
                         </div>
                       </section>
@@ -82,7 +83,9 @@ export default function Home() {
                         </h2>
                         <div className="space-y-8">
                           {educationData.map((education, index) => (
-                            <EducationEntry key={index} education={education} />
+                            <AnimateOnScroll key={index} delay={index * 100}>
+                              <EducationEntry education={education} />
+                            </AnimateOnScroll>
                           ))}
                         </div>
                       </section>
@@ -95,14 +98,11 @@ export default function Home() {
                         <h2 className="font-serif text-l mb-8 tracking-wide uppercase">
                           Selected Publications
                         </h2>
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                           {publicationData.map((publication, index) => (
-                            <div key={index}>
+                            <AnimateOnScroll key={index} delay={index * 100}>
                               <PublicationEntry publication={publication} />
-                              {index < publicationData.length - 1 && (
-                                <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-6" />
-                              )}
-                            </div>
+                            </AnimateOnScroll>
                           ))}
                         </div>
                       </section>
@@ -117,7 +117,9 @@ export default function Home() {
                         </h2>
                         <div className="space-y-8">
                           {experienceData.map((experience, index) => (
-                            <ExperienceEntry key={index} experience={experience} />
+                            <AnimateOnScroll key={index} delay={index * 100}>
+                              <ExperienceEntry experience={experience} />
+                            </AnimateOnScroll>
                           ))}
                         </div>
                       </section>
@@ -128,9 +130,11 @@ export default function Home() {
                     portfolioData.length > 0 && (
                       <section key={sectionName} id="projects">
                         <h2 className="font-serif text-l mb-8 tracking-wide uppercase">Projects</h2>
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                           {portfolioData.map((portfolio, index) => (
-                            <PortfolioEntry key={index} portfolio={portfolio} />
+                            <AnimateOnScroll key={index} delay={index * 100}>
+                              <PortfolioEntry portfolio={portfolio} />
+                            </AnimateOnScroll>
                           ))}
                         </div>
                       </section>
