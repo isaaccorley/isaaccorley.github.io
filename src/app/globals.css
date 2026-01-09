@@ -9,8 +9,8 @@
   --muted-foreground: #a1a1aa;
   --border: #e4e4e7;
   --card: #ffffff;
-  --accent: #0d9488;
-  --accent-light: #14b8a6;
+  --accent: #0f766e;
+  --accent-light: #0d9488;
 }
 
 html.dark {
@@ -20,32 +20,29 @@ html.dark {
   --muted-foreground: #71717a;
   --border: #27272a;
   --card: #18181b;
-  --accent: #14b8a6;
-  --accent-light: #2dd4bf;
+  --accent: #2dd4bf;
+  --accent-light: #5eead4;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--source-serif-font), Georgia, serif;
+  font-family: ui-serif, var(--font-pt-serif), var(--font-noto-serif), Georgia, serif;
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
 }
 
-/* Elements marked with serif class or font-serif will use Source Serif */
 .font-serif,
 .serif {
   font-family: ui-serif, var(--font-pt-serif), var(--font-noto-serif), Georgia, serif;
 }
 
-/* Elements marked with sans or font-sans will use Geist */
 .font-sans,
 .sans {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-/* Screen reader only utility class for accessibility */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -58,32 +55,50 @@ body {
   border-width: 0;
 }
 
-/* Glassmorphism card */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 .glass-card {
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 1rem;
-  transition: all 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.8);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.85);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 }
 
 html.dark .glass-card {
-  background: rgba(24, 24, 27, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(39, 39, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 html.dark .glass-card:hover {
-  background: rgba(24, 24, 27, 0.8);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  background: rgba(39, 39, 42, 0.9);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-/* Scroll fade-in animation */
+@media (prefers-reduced-motion: reduce) {
+  .glass-card {
+    transition: none;
+  }
+
+  .glass-card:hover {
+    transform: none;
+  }
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -107,12 +122,32 @@ html.dark .glass-card:hover {
   animation: fadeInUp 0.6s ease forwards;
 }
 
-/* Accent link style */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-on-scroll.visible {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .animate-on-scroll {
+    opacity: 1;
+  }
+}
+
 .accent-link {
   color: var(--accent);
   transition: color 0.3s ease;
+  border-radius: 2px;
 }
 
 .accent-link:hover {
   color: var(--accent-light);
+}
+
+.accent-link:focus {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--background),
+    0 0 0 4px var(--accent);
 }

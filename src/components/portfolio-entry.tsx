@@ -4,19 +4,19 @@ import { Portfolio } from "@/data/portfolio";
 
 export function PortfolioEntry({ portfolio }: { portfolio: Portfolio }) {
   return (
-    <div className="glass-card p-5 flex flex-row gap-6 items-center">
+    <div className="glass-card p-5 flex flex-col md:flex-row gap-4 md:gap-6 items-start md:items-center">
       {portfolio.imageUrl && (
-        <div className="w-1/4 min-w-[160px] relative">
+        <div className="w-full md:w-1/4 md:min-w-[160px] relative">
           <Image
             src={portfolio.imageUrl}
             alt={portfolio.title}
             width={160}
             height={200}
-            className="rounded-lg"
+            className="rounded-lg w-full md:w-auto"
           />
         </div>
       )}
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 w-full">
         <h3 className="font-serif text-md mb-3">{portfolio.title}</h3>
 
         {portfolio.technologies && (

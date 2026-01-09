@@ -14,32 +14,114 @@ import { sectionOrder, Section } from "@/data/section-order";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SectionNav } from "@/components/section-nav";
 import { AnimateOnScroll } from "@/components/animate-on-scroll";
+import { ReactNode } from "react";
+
+interface SectionConfig {
+  id: string;
+  navLabel: string;
+  title: string;
+  data: unknown[];
+  spacing: string;
+  renderItem: (item: unknown, index: number) => ReactNode;
+}
+
+const sectionConfigs: Record<Section, SectionConfig> = {
+  [Section.News]: {
+    id: "news",
+    navLabel: "News",
+    title: "News",
+    data: newsData,
+    spacing: "space-y-8",
+    renderItem: (item, index) => (
+      <AnimateOnScroll key={index} delay={index * 100}>
+        <NewsEntry news={item as (typeof newsData)[0]} />
+      </AnimateOnScroll>
+    ),
+  },
+  [Section.Education]: {
+    id: "education",
+    navLabel: "Education",
+    title: "Education",
+    data: educationData,
+    spacing: "space-y-4",
+    renderItem: (item, index) => (
+      <AnimateOnScroll key={index} delay={index * 100}>
+        <EducationEntry education={item as (typeof educationData)[0]} />
+      </AnimateOnScroll>
+    ),
+  },
+  [Section.Publication]: {
+    id: "publications",
+    navLabel: "Publications",
+    title: "Selected Publications",
+    data: publicationData,
+    spacing: "space-y-6",
+    renderItem: (item, index) => (
+      <AnimateOnScroll key={index} delay={index * 100}>
+        <PublicationEntry publication={item as (typeof publicationData)[0]} />
+      </AnimateOnScroll>
+    ),
+  },
+  [Section.Experience]: {
+    id: "experience",
+    navLabel: "Experience",
+    title: "Experience",
+    data: experienceData,
+    spacing: "space-y-4",
+    renderItem: (item, index) => (
+      <AnimateOnScroll key={index} delay={index * 100}>
+        <ExperienceEntry experience={item as (typeof experienceData)[0]} />
+      </AnimateOnScroll>
+    ),
+  },
+  [Section.Portfolio]: {
+    id: "projects",
+    navLabel: "Projects",
+    title: "Projects",
+    data: portfolioData,
+    spacing: "space-y-6",
+    renderItem: (item, index) => (
+      <AnimateOnScroll key={index} delay={index * 100}>
+        <PortfolioEntry portfolio={item as (typeof portfolioData)[0]} />
+      </AnimateOnScroll>
+    ),
+  },
+};
 
 const navSections = [
   { id: "about", label: "About" },
-  { id: "news", label: "News" },
-  { id: "projects", label: "Projects" },
-  { id: "publications", label: "Publications" },
-  { id: "education", label: "Education" },
-  { id: "experience", label: "Experience" },
-].filter(({ id }) => {
-  if (id === "about") return !!aboutMe.description;
-  if (id === "news") return newsData.length > 0;
-  if (id === "publications") return publicationData.length > 0;
-  if (id === "experience") return experienceData.length > 0;
-  if (id === "education") return educationData.length > 0;
-  if (id === "projects") return portfolioData.length > 0;
-  return false;
-});
+  ...sectionOrder
+    .filter((section) => sectionConfigs[section].data.length > 0)
+    .map((section) => ({
+      id: sectionConfigs[section].id,
+      label: sectionConfigs[section].navLabel,
+    })),
+].filter(({ id }) => (id === "about" ? !!aboutMe.description : true));
+
+const hasAnyContent =
+  aboutMe.description || sectionOrder.some((section) => sectionConfigs[section].data.length > 0);
 
 export default function Home() {
+  if (!hasAnyContent) {
+    return (
+      <div className="min-h-screen bg-[var(--background)] flex items-center justify-center">
+        <div className="text-center px-4">
+          <h1 className="font-serif text-2xl mb-4">Coming Soon</h1>
+          <p className="text-zinc-500 dark:text-zinc-400">
+            This site is currently under construction.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--background)] transition-colors duration-300">
       <div className="fixed top-4 right-4 z-50">
         <ThemeToggle />
       </div>
-      <div className="max-w-screen-lg mx-auto px-8 py-24">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
+      <div className="max-w-screen-lg mx-auto px-4 md:px-8 py-12 md:py-24 pb-24 md:pb-24">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
           <div className="col-span-12 md:col-span-4 space-y-8 mb-8 md:mb-0">
             <div className="md:sticky top-12 space-y-6">
               <ProfileSection aboutMe={aboutMe} />
@@ -58,91 +140,19 @@ export default function Home() {
             )}
 
             {sectionOrder.map((sectionName) => {
-              switch (sectionName) {
-                case Section.News:
-                  return (
-                    newsData.length > 0 && (
-                      <section key={sectionName} id="news">
-                        <h2 className="font-serif text-l mb-8 tracking-wide uppercase">News</h2>
-                        <div className="space-y-8">
-                          {newsData.map((news, index) => (
-                            <AnimateOnScroll key={index} delay={index * 100}>
-                              <NewsEntry news={news} />
-                            </AnimateOnScroll>
-                          ))}
-                        </div>
-                      </section>
-                    )
-                  );
-                case Section.Education:
-                  return (
-                    educationData.length > 0 && (
-                      <section key={sectionName} id="education">
-                        <h2 className="font-serif text-l mb-8 tracking-wide uppercase">
-                          Education
-                        </h2>
-                        <div className="space-y-8">
-                          {educationData.map((education, index) => (
-                            <AnimateOnScroll key={index} delay={index * 100}>
-                              <EducationEntry education={education} />
-                            </AnimateOnScroll>
-                          ))}
-                        </div>
-                      </section>
-                    )
-                  );
-                case Section.Publication:
-                  return (
-                    publicationData.length > 0 && (
-                      <section key={sectionName} id="publications">
-                        <h2 className="font-serif text-l mb-8 tracking-wide uppercase">
-                          Selected Publications
-                        </h2>
-                        <div className="space-y-6">
-                          {publicationData.map((publication, index) => (
-                            <AnimateOnScroll key={index} delay={index * 100}>
-                              <PublicationEntry publication={publication} />
-                            </AnimateOnScroll>
-                          ))}
-                        </div>
-                      </section>
-                    )
-                  );
-                case Section.Experience:
-                  return (
-                    experienceData.length > 0 && (
-                      <section key={sectionName} id="experience">
-                        <h2 className="font-serif text-l mb-8 tracking-wide uppercase">
-                          Experience
-                        </h2>
-                        <div className="space-y-8">
-                          {experienceData.map((experience, index) => (
-                            <AnimateOnScroll key={index} delay={index * 100}>
-                              <ExperienceEntry experience={experience} />
-                            </AnimateOnScroll>
-                          ))}
-                        </div>
-                      </section>
-                    )
-                  );
-                case Section.Portfolio:
-                  return (
-                    portfolioData.length > 0 && (
-                      <section key={sectionName} id="projects">
-                        <h2 className="font-serif text-l mb-8 tracking-wide uppercase">Projects</h2>
-                        <div className="space-y-6">
-                          {portfolioData.map((portfolio, index) => (
-                            <AnimateOnScroll key={index} delay={index * 100}>
-                              <PortfolioEntry portfolio={portfolio} />
-                            </AnimateOnScroll>
-                          ))}
-                        </div>
-                      </section>
-                    )
-                  );
-                default:
-                  return null;
-              }
+              const config = sectionConfigs[sectionName];
+              if (config.data.length === 0) return null;
+
+              return (
+                <section key={sectionName} id={config.id}>
+                  <h2 className="font-serif text-lg mb-8 tracking-wide uppercase">
+                    {config.title}
+                  </h2>
+                  <div className={config.spacing}>
+                    {config.data.map((item, index) => config.renderItem(item, index))}
+                  </div>
+                </section>
+              );
             })}
           </div>
         </div>
