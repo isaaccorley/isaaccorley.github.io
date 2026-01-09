@@ -21,7 +21,7 @@ export function PortfolioEntry({ portfolio }: { portfolio: Portfolio }) {
           {portfolio.projectUrl ? (
             <a
               href={portfolio.projectUrl}
-              className="group inline-flex items-center gap-2 hover:text-zinc-600 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors duration-300"
             >
               {portfolio.title}
               <ArrowUpRight
@@ -39,7 +39,7 @@ export function PortfolioEntry({ portfolio }: { portfolio: Portfolio }) {
             {portfolio.technologies.map((tech, index) => (
               <span
                 key={index}
-                className="text-xs text-zinc-600 px-2 py-1 bg-zinc-100 rounded-full"
+                className="text-xs text-zinc-600 dark:text-zinc-400 px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-full"
               >
                 {tech}
               </span>
@@ -51,7 +51,7 @@ export function PortfolioEntry({ portfolio }: { portfolio: Portfolio }) {
           {portfolio.projectUrl && (
             <a
               href={portfolio.projectUrl}
-              className="group inline-flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-900 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-300"
             >
               <ArrowUpRight
                 size={12}
@@ -63,7 +63,7 @@ export function PortfolioEntry({ portfolio }: { portfolio: Portfolio }) {
           {portfolio.codeUrl && (
             <a
               href={portfolio.codeUrl}
-              className="group inline-flex items-center gap-2 text-xs text-zinc-500 hover:text-zinc-900 transition-colors duration-300"
+              className="group inline-flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors duration-300"
             >
               <ArrowUpRight
                 size={12}
@@ -73,7 +73,9 @@ export function PortfolioEntry({ portfolio }: { portfolio: Portfolio }) {
             </a>
           )}
         </div>
-        <p className="text-sm text-zinc-600 mb-4 mt-4 italic">{portfolio.description}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4 mt-4 italic">
+          {portfolio.description}
+        </p>
       </div>
     </div>
   );
