@@ -16,7 +16,6 @@
 - [x] **#28** `px-8` eats too much on mobile — Use `px-4 md:px-8`.
 - [x] **#32** Links missing focus states — `accent-link` class has hover but no focus ring.
 - [x] **#33** Theme toggle button focus — Has hover states but keyboard users see nothing.
-- [ ] **#34** `dangerouslySetInnerHTML` for About — Screen readers may struggle with injected HTML.
 - [x] **#35** Icon-only links in profile — ARIA labels would help.
 - [x] **#36** Glass-card hover transform — Should respect `prefers-reduced-motion`.
 - [x] **#37** Animation on scroll — `fadeInUp` should respect `prefers-reduced-motion: reduce`.
@@ -32,7 +31,6 @@
 - [x] **#4** No `font-display: swap` — Add `display: 'swap'` to font configs.
 - [x] **#6** Mixed text size units — `text-md` doesn't exist in Tailwind; fixed to `text-base`.
 - [x] **#7** Line-height inconsistency — `leading-relaxed` is standard; one outlier in bioacoustics page (separate context).
-- [x] **#8** All-caps nav + tracking-wider = readability hit on longer labels.
 - [x] **#9** Section headings missing semantic weight — Proper `h2` hierarchy in place.
 - [x] **#10** Award badge text too small — Added `sm:text-sm` breakpoint.
 - [x] **#11** BibTeX casing — Data source has no BibTeX content (only URLs).
@@ -86,12 +84,8 @@
 - [x] **#56** Dark mode glass card blur — Pointless on dark backgrounds.
 - [x] **#57** Hover lift inconsistency — Education/Experience have no hover effect.
 - [x] **#58** No empty state handling — Add fallback for blank page.
-- [x] **#59** Favicon path — Already optimized by Next.js (imported from app dir).
-- [x] **#60** No loading state — Deferred; low priority for static portfolio.
 
 ### Data/Content
 
 - [x] **#61** Date format inconsistency — Standardize formats.
 - [x] **#62** Author bolding — Bold your own name in publications.
-- [x] **#63** Missing `alt` diversity — Descriptions are descriptive; adequate.
-- [x] **#64** Conference abbreviations — Low ROI; tooltip mapping would require data maintenance.
