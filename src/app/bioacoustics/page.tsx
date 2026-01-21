@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, Download, Info, Paperclip, Search, Volume2 } fr
 import Image from "next/image";
 
 import { LocationMap } from "@/components/location-map";
+import { Footer } from "@/components/footer";
 import type { InferenceSession } from "onnxruntime-web";
 import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type WaveSurfer from "wavesurfer.js";
@@ -3375,6 +3376,7 @@ export default function BioacousticsDetectionAnalysisPage() {
                 <p>{errorMessage}</p>
               </div>
             )}
+            <Footer />
           </div>
         </div>
       </main>

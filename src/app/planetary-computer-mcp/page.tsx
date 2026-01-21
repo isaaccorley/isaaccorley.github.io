@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { InstallationGrid } from "@/components/installation-grid";
 import type { InstallationCard } from "@/components/installation-grid";
 import { SpinningGlobe } from "@/components/spinning-globe";
+import { Footer } from "@/components/footer";
 
 const heroStats = [
   { label: "STAC Collections", value: "100+", detail: "Optical, SAR, DEM, Land Cover" },
@@ -261,6 +262,7 @@ export default function PlanetaryComputerMCPPage() {
             </div>
           </div>
         </section>
+        <Footer />
       </div>
     </div>
   );

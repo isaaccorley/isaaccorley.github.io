@@ -21,6 +21,7 @@
     "music-metadata": "^11.10.3",
     "next": "^15.5.6",
     "onnxruntime-web": "^1.23.0",
+    "prism-react-renderer": "^2.4.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.169.0",

@@ -14,6 +14,7 @@ import { sectionOrder, Section } from "@/data/section-order";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SectionNav } from "@/components/section-nav";
 import { AnimateOnScroll } from "@/components/animate-on-scroll";
+import { Footer } from "@/components/footer";
 import { ReactNode } from "react";
 
 interface SectionConfig {
@@ -154,6 +155,7 @@ export default function Home() {
                 </section>
               );
             })}
+            <Footer />
           </div>
         </div>
       </div>

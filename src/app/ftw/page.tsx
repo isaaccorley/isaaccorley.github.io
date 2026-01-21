@@ -8,6 +8,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useRef, useState } from "
 import bannerImage from "./banner3.webp";
 import type { GeoImage, Patch } from "./utils/common";
 import * as delineateUtils from "./utils/delineate";
+import { Footer } from "@/components/footer";
 import { Detection, extractPatches, nonMaxSuppressionTf, runModelOnPatch } from "./utils/delineate";
 import { runPatchInferenceClient } from "./utils/ftw";
 import { MODEL_OPTIONS, type ModelOption, loadModelFromOption } from "./utils/model-loader";
@@ -1370,6 +1371,7 @@ export default function DelineatePage() {
             )}
           </div>
         </div>
+        <Footer />
       </div>
     </div>
   );
