@@ -445,21 +445,13 @@ export default function EarthEmbeddingProductsPage() {
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
                   Similarity search in 20 lines
                 </p>
-                <CodeBlock
-                  code={torchGeoSnippet}
-                  language="python"
-                  filename="similarity_search.py"
-                />
+                <CodeBlock code={torchGeoSnippet} language="python" />
               </div>
               <div className="space-y-2">
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
                   Land-cover mapping
                 </p>
-                <CodeBlock
-                  code={torchGeoMappingSnippet}
-                  language="python"
-                  filename="land_cover.py"
-                />
+                <CodeBlock code={torchGeoMappingSnippet} language="python" />
               </div>
             </div>
           </section>
