@@ -142,19 +142,22 @@ const torchGeoSnippet = `from torchgeo.datasets import EarthIndexEmbeddings, Sen
 from torchgeo.models import ViTSmall14_DINOv2_Weights, vit_small_patch14_dinov2
 from torch.nn import CosineSimilarity
 
+# Load pretrained foundation model
 model = vit_small_patch14_dinov2(
     ViTSmall14_DINOv2_Weights.SENTINEL2_ALL_SOFTCON
 )
 cos = CosineSimilarity()
 
+# Load embedding product + raw imagery
 eie = EarthIndexEmbeddings(root)
 s2 = Sentinel2(paths)
 
+# Embed a query region
 sample = s2[xmin:xmax, ymin:ymax]
 query = model(sample)
 
-best = None
-best_dist = 2**10
+# Find most similar location in Earth Index
+best, best_dist = None, 2**10
 for sample in eie:
     dist = cos(query, sample["embedding"])
     if dist < best_dist:
@@ -168,13 +171,15 @@ from torchgeo.samplers import GridGeoSampler
 gse = GoogleSatelliteEmbedding(paths)
 ec = EuroCrops(paths, download=True)
 
-dataset = gse & ec  # spatiotemporal intersection
+# Automatic spatiotemporal intersection
+dataset = gse & ec
 sampler = GridGeoSampler(dataset, size=256)
 loader = DataLoader(dataset, sampler=sampler)
 
 for batch in loader:
-    # k-NN or linear probing on embeddings
-    pass`;
+    # Embeddings ready for k-NN or linear probe
+    embeddings = batch["embedding"]
+    labels = batch["label"]`;
 
 export default function EarthEmbeddingProductsPage() {
   const fileSizeData = productRows.map((product) => ({
@@ -440,13 +445,21 @@ export default function EarthEmbeddingProductsPage() {
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
                   Similarity search in 20 lines
                 </p>
-                <CodeBlock code={torchGeoSnippet} language="python" />
+                <CodeBlock
+                  code={torchGeoSnippet}
+                  language="python"
+                  filename="similarity_search.py"
+                />
               </div>
               <div className="space-y-2">
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
                   Land-cover mapping
                 </p>
-                <CodeBlock code={torchGeoMappingSnippet} language="python" />
+                <CodeBlock
+                  code={torchGeoMappingSnippet}
+                  language="python"
+                  filename="land_cover.py"
+                />
               </div>
             </div>
           </section>
