@@ -4,9 +4,9 @@ import { CodeBlock } from "@/components/code-block";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "Earth Embeddings as Products",
+  title: "Earth Embeddings as Products | Isaac Corley",
   description:
-    "Seven Earth embedding products. Zero interoperability. A taxonomy, a critique, and a TorchGeo fix.",
+    "A deep dive into seven Earth embedding products, why they don't work together, and what we're doing about it.",
 };
 
 const taxonomyLayers = [
@@ -18,19 +18,19 @@ const taxonomyLayers = [
   },
   {
     title: "Tools",
-    subtitle: "Analysis frameworks",
+    subtitle: "Analysis",
     icon: Wrench,
     items: ["Benchmarks", "Intrinsic dimension", "Open challenges"],
   },
   {
     title: "Value",
-    subtitle: "Downstream use",
+    subtitle: "Applications",
     icon: Target,
-    items: ["Mapping", "Retrieval", "Time-series analytics"],
+    items: ["Mapping", "Retrieval", "Time-series"],
   },
 ];
 
-// Product data with file size metadata
+// Product data with CORRECTED file size metadata
 const productRows = [
   {
     name: "Clay",
@@ -40,18 +40,18 @@ const productRows = [
     dims: 768,
     dtype: "float32",
     bytesPerElement: 4,
-    patchKm2: 26.2, // 5.12 * 5.12
+    patchKm2: 26.21, // 5.12² km²
     license: "ODC-By-1.0",
   },
   {
     name: "Major TOM",
     kind: "Patch",
-    spatial: "2.14–3.56 km",
+    spatial: "~3 km",
     temporal: "Snapshot",
     dims: 2048,
     dtype: "float32",
     bytesPerElement: 4,
-    patchKm2: 9.0, // ~3km avg squared
+    patchKm2: 9.0,
     license: "CC-BY-SA-4.0",
   },
   {
@@ -62,7 +62,7 @@ const productRows = [
     dims: 384,
     dtype: "float32",
     bytesPerElement: 4,
-    patchKm2: 0.1024, // 0.32 * 0.32
+    patchKm2: 0.1024, // 0.32² km²
     license: "CC-BY-4.0",
   },
   {
@@ -73,7 +73,7 @@ const productRows = [
     dims: 768,
     dtype: "float32",
     bytesPerElement: 4,
-    patchKm2: 625, // ~25km * 25km at mid-latitudes
+    patchKm2: 625, // ~25km × 25km at mid-latitudes
     license: "CC-BY-4.0",
   },
   {
@@ -111,21 +111,18 @@ const productRows = [
   },
 ];
 
-// AOI scales for file size comparison
 const aoiScales = [
-  { name: "City", km2: 1_000, example: "San Francisco" },
+  { name: "City", km2: 1_000, example: "SF Bay Area" },
   { name: "Country", km2: 1_000_000, example: "Egypt" },
   { name: "Continent", km2: 30_000_000, example: "Africa" },
 ];
 
-// Compute file size for a product at a given AOI
 function computeFileSize(product: (typeof productRows)[0], aoiKm2: number): number {
   if (product.kind === "Patch") {
     const patchKm2 = product.patchKm2 ?? 1;
     const numPatches = aoiKm2 / patchKm2;
     return numPatches * product.dims * product.bytesPerElement;
   } else {
-    // Pixel: 10m resolution = 10,000 pixels per km²
     const pixelsPerKm2 = 1_000_000 / (product.pixelResM ?? 10) ** 2;
     const numPixels = aoiKm2 * pixelsPerKm2;
     return numPixels * product.dims * product.bytesPerElement;
@@ -138,22 +135,8 @@ function formatBytes(bytes: number): string {
   if (bytes >= 1e9) return `${(bytes / 1e9).toFixed(1)} GB`;
   if (bytes >= 1e6) return `${(bytes / 1e6).toFixed(1)} MB`;
   if (bytes >= 1e3) return `${(bytes / 1e3).toFixed(1)} KB`;
-  return `${bytes} B`;
+  return `${bytes.toFixed(0)} B`;
 }
-
-const brokenPoints = [
-  "Five platforms, five formats, zero interop. Source Cooperative, Hugging Face, Earth Engine, private servers, bespoke repos — pick your poison.",
-  "Metadata ranges from incomplete to actively wrong. Yes, upside-down rasters shipped to production.",
-  "Reproducibility is a joke: unmaintained repos, no tests, source data that drifts without notice.",
-  "Licensing is a minefield. Good luck comparing products without a lawyer on retainer.",
-];
-
-const futurePrinciples = [
-  "Stop over-indexing on Sentinel-1/2. The oceans, atmosphere, and hyperspectral exist too.",
-  "Cloud-native formats are table stakes: GeoParquet, COG, GeoZarr. Pick one and commit.",
-  "Benchmarks must ship with models. Private benchmarks are a tax on the entire field.",
-  "Embeddings need provenance and uncertainty quantification — not just vibes and vectors.",
-];
 
 const torchGeoSnippet = `from torchgeo.datasets import EarthIndexEmbeddings, Sentinel2
 from torchgeo.models import ViTSmall14_DINOv2_Weights, vit_small_patch14_dinov2
@@ -194,7 +177,6 @@ for batch in loader:
     pass`;
 
 export default function EarthEmbeddingProductsPage() {
-  // Compute file sizes for the chart
   const fileSizeData = productRows.map((product) => ({
     name: product.name,
     kind: product.kind,
@@ -204,328 +186,327 @@ export default function EarthEmbeddingProductsPage() {
     })),
   }));
 
-  // Find max for scaling bars
   const maxBytes = Math.max(...fileSizeData.flatMap((p) => p.sizes.map((s) => s.bytes)));
 
   return (
-    <div className="bg-[#040312] text-slate-100">
+    <div className="min-h-screen bg-[#0a0a0f]">
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <header className="relative overflow-hidden border-b border-white/5">
         <div
-          className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(45,212,191,0.2),_transparent_55%)]"
+          className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.15),_transparent_60%)]"
           aria-hidden
         />
-        <div className="relative mx-auto max-w-5xl px-6 py-16 sm:py-20">
-          <p className="text-xs uppercase tracking-[0.4em] text-emerald-200">
-            arXiv 2601.13134 · January 2026
+        <div className="relative mx-auto max-w-2xl px-6 py-20 text-center">
+          <p className="text-xs font-medium uppercase tracking-[0.3em] text-emerald-400">
+            January 2026 · arXiv:2601.13134
           </p>
-          <h1 className="mt-6 text-4xl sm:text-5xl font-serif text-white">
+          <h1 className="mt-6 text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Earth Embeddings as Products
           </h1>
-          <p className="mt-4 max-w-2xl text-base text-slate-200/80">
-            Geospatial foundation models promised to democratize Earth observation. What we got
-            instead: seven embedding products that cannot load in the same script. This paper maps
-            the chaos and ships a practical fix.
+          <p className="mt-4 text-lg leading-relaxed text-slate-400">
+            I co-authored a paper cataloging seven global Earth embedding products. Here&apos;s the
+            honest version: what we found, why it&apos;s broken, and what we&apos;re doing about it.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3 text-sm">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <a
-              className="rounded-full border border-emerald-300/40 px-4 py-2 text-emerald-200 hover:border-emerald-200 hover:text-white transition"
+              className="rounded-lg bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400 ring-1 ring-emerald-500/30 transition hover:bg-emerald-500/20"
               href="https://arxiv.org/abs/2601.13134"
               target="_blank"
               rel="noreferrer"
             >
-              Read on arXiv
+              Read the Paper
             </a>
             <a
-              className="rounded-full border border-white/20 px-4 py-2 text-slate-100 hover:border-white/40 transition"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-400 ring-1 ring-white/10 transition hover:bg-white/5 hover:text-white"
               href="https://arxiv.org/pdf/2601.13134"
               target="_blank"
               rel="noreferrer"
             >
               PDF
             </a>
-            <a
-              className="rounded-full border border-white/20 px-4 py-2 text-slate-100 hover:border-white/40 transition"
-              href="https://arxiv.org/html/2601.13134v1"
-              target="_blank"
-              rel="noreferrer"
-            >
-              HTML
-            </a>
           </div>
-          <p className="mt-6 text-xs uppercase tracking-[0.3em] text-emerald-300/70">
-            Heng Fang · Adam J. Stewart · Isaac Corley · Xiao Xiang Zhu · Hossein Azizpour
+          <p className="mt-8 text-xs text-slate-500">
+            with Heng Fang, Adam J. Stewart, Xiao Xiang Zhu, and Hossein Azizpour
           </p>
         </div>
-      </section>
+      </header>
 
-      {/* Content */}
-      <section className="bg-[#fffcf8] text-slate-900">
-        <div className="mx-auto max-w-5xl px-6 py-16 space-y-16">
-          {/* The Problem */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-serif">The Problem</h2>
-            <p className="text-base text-slate-700 leading-relaxed">
-              Earth embeddings are frozen, precomputed representations — the most accessible
-              artifact GFMs can produce. No GPU required. Just download and go. Except you
-              can&apos;t. They&apos;re scattered across Source Cooperative, Hugging Face, Earth
-              Engine, private servers, and one-off GitHub repos. Each with its own format,
-              resolution, and coordinate system. The result: an engineering tax that makes fair
-              comparison nearly impossible.
+      {/* Article */}
+      <article className="mx-auto max-w-2xl px-6 py-16">
+        <div className="prose-custom space-y-12">
+          {/* Intro */}
+          <section className="space-y-4">
+            <p className="text-lg leading-relaxed text-slate-300">
+              Geospatial foundation models were supposed to democratize Earth observation. Train
+              once, use anywhere. The reality?{" "}
+              <strong className="text-white">
+                Seven embedding products that can&apos;t load in the same script.
+              </strong>
             </p>
-            <div className="rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-sm">
-              <p className="text-sm text-slate-700">
-                <span className="font-semibold text-slate-900">Core thesis:</span> The bottleneck is
-                not the models. It&apos;s the lack of standardized access to their embedding
-                products. We built the hardest part and fumbled the handoff.
+            <p className="leading-relaxed text-slate-400">
+              We spent months cataloging every publicly available Earth embedding product. The paper
+              is dense — 12 pages of taxonomy, benchmarks, and TorchGeo integration. This post is
+              the distilled version: what actually matters, what&apos;s broken, and what you should
+              do about it.
+            </p>
+          </section>
+
+          {/* The Mess */}
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold text-white">The state of the ecosystem</h2>
+            <p className="leading-relaxed text-slate-400">
+              Here&apos;s the brutal summary: embeddings are scattered across Source Cooperative,
+              Hugging Face, Earth Engine, private servers, and one-off GitHub repos. Each uses
+              different formats, coordinate systems, and file layouts.
+            </p>
+            <p className="leading-relaxed text-slate-400">
+              We found <strong className="text-white">upside-down rasters</strong> shipped to
+              production. Repos that haven&apos;t been updated in 18 months. Licenses so
+              incompatible you&apos;d need a lawyer to combine two products.
+            </p>
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
+              <p className="text-sm font-medium text-rose-400">The problem:</p>
+              <p className="mt-1 text-sm text-slate-400">
+                We built the hard part (petabyte-scale processing) and fumbled the handoff
+                (standardized access). Every team reinvents the wheel.
               </p>
             </div>
-          </div>
+          </section>
 
-          {/* Credit where due */}
-          <div className="space-y-4">
-            <h2 className="text-2xl font-serif">Credit Where Due</h2>
-            <p className="text-base text-slate-700 leading-relaxed">
-              Let&apos;s be clear: producing global embedding products is <em>hard</em>. These teams
-              processed petabytes of imagery, fought cloud cover, handled projection nightmares, and
-              shipped something usable. Clay, Major TOM, Earth Index, Presto, Tessera, Google
-              Satellite Embeddings — each represents months of engineering effort. The critique that
-              follows is not about the work. It&apos;s about the ecosystem that forces every team to
-              reinvent the wheel.
+          {/* Credit */}
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold text-white">Credit where it&apos;s due</h2>
+            <p className="leading-relaxed text-slate-400">
+              Before the critique: producing global embeddings is <em>genuinely hard</em>. These
+              teams processed petabytes of imagery, fought cloud cover, handled projection
+              nightmares, and shipped something usable. Clay, Major TOM, Earth Index, Presto,
+              Tessera, Google Satellite Embeddings — each represents months of engineering.
             </p>
-          </div>
+            <p className="leading-relaxed text-slate-400">
+              The critique isn&apos;t about the work. It&apos;s about the ecosystem that forces
+              every team to solve the same distribution problems independently.
+            </p>
+          </section>
 
           {/* Taxonomy */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-serif">A Taxonomy That Makes the Mess Legible</h2>
-            <p className="text-base text-slate-700 leading-relaxed">
-              We formalize a three-layer taxonomy: the data assets themselves, the tools that probe
-              them, and the downstream value they unlock.
+          <section className="space-y-6">
+            <h2 className="text-xl font-semibold text-white">A taxonomy that makes sense</h2>
+            <p className="leading-relaxed text-slate-400">
+              We formalized a three-layer framework: the data assets (what you download), the tools
+              that probe them (how you evaluate), and the downstream value (why you care).
             </p>
-            <div className="flex flex-col md:flex-row md:items-stretch gap-4">
+            <div className="grid gap-3 sm:grid-cols-3">
               {taxonomyLayers.map((layer, idx) => {
                 const Icon = layer.icon;
                 return (
-                  <div key={layer.title} className="flex items-stretch gap-4">
-                    <div className="flex-1 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 rounded-lg bg-slate-100">
-                          <Icon className="h-5 w-5 text-slate-600" />
-                        </div>
-                        <div>
-                          <p className="text-xs uppercase tracking-[0.3em] text-slate-400">
-                            {layer.title}
-                          </p>
-                          <p className="text-lg font-serif text-slate-900">{layer.subtitle}</p>
-                        </div>
-                      </div>
-                      <ul className="text-sm text-slate-600 space-y-2">
-                        {layer.items.map((item) => (
-                          <li key={item} className="flex items-center gap-2">
-                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
+                  <div
+                    key={layer.title}
+                    className="rounded-xl border border-white/10 bg-white/[0.02] p-4"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-4 w-4 text-emerald-400" />
+                      <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                        {layer.title}
+                      </span>
                     </div>
+                    <p className="mt-2 font-medium text-white">{layer.subtitle}</p>
+                    <ul className="mt-2 space-y-1 text-sm text-slate-500">
+                      {layer.items.map((item) => (
+                        <li key={item}>· {item}</li>
+                      ))}
+                    </ul>
                     {idx < taxonomyLayers.length - 1 && (
-                      <div className="hidden md:flex items-center">
-                        <ArrowRight className="h-5 w-5 text-slate-300" />
-                      </div>
+                      <ArrowRight className="mt-3 h-4 w-4 text-slate-600 sm:hidden" />
                     )}
                   </div>
                 );
               })}
             </div>
-          </div>
+          </section>
 
           {/* Product Table */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-serif">The Product Landscape (December 2025)</h2>
-            <p className="text-base text-slate-700 leading-relaxed">
-              Seven embedding products exist today. Notice the drift: patch vs pixel granularity,
-              snapshot vs annual temporal coverage, and a licensing sprawl that makes combination
-              legally fraught.
+          <section className="space-y-6">
+            <h2 className="text-xl font-semibold text-white">
+              The seven products (as of December 2025)
+            </h2>
+            <p className="leading-relaxed text-slate-400">
+              Here&apos;s the full landscape. Notice the fragmentation: patch vs pixel granularity,
+              snapshot vs annual coverage, and a licensing maze that makes combination legally
+              fraught.
             </p>
-            <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-widest text-slate-500">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Product</th>
-                    <th className="px-4 py-3 text-left">Kind</th>
-                    <th className="px-4 py-3 text-left">Spatial</th>
-                    <th className="px-4 py-3 text-left">Temporal</th>
-                    <th className="px-4 py-3 text-left">Dims</th>
-                    <th className="px-4 py-3 text-left">Dtype</th>
-                    <th className="px-4 py-3 text-left">License</th>
+            <div className="-mx-6 overflow-x-auto px-6">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/10 text-left text-xs uppercase tracking-wider text-slate-500">
+                    <th className="pb-3 pr-4">Product</th>
+                    <th className="pb-3 pr-4">Kind</th>
+                    <th className="pb-3 pr-4">Spatial</th>
+                    <th className="pb-3 pr-4">Dims</th>
+                    <th className="pb-3 pr-4">Dtype</th>
+                    <th className="pb-3">License</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-slate-400">
                   {productRows.map((row) => (
-                    <tr key={row.name} className="border-t border-slate-100">
-                      <td className="px-4 py-3 font-medium text-slate-900">{row.name}</td>
-                      <td className="px-4 py-3 text-slate-600">{row.kind}</td>
-                      <td className="px-4 py-3 text-slate-600">{row.spatial}</td>
-                      <td className="px-4 py-3 text-slate-600">{row.temporal}</td>
-                      <td className="px-4 py-3 text-slate-600">{row.dims}</td>
-                      <td className="px-4 py-3 text-slate-600 font-mono text-xs">{row.dtype}</td>
-                      <td className="px-4 py-3 text-slate-600">{row.license}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* File Size Comparison */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-serif">The Storage Reality Check</h2>
-            <p className="text-base text-slate-700 leading-relaxed">
-              Embedding dimension and dtype choices compound fast at scale. Here&apos;s what each
-              product costs to store across city, country, and continent AOIs. Pixel products
-              dominate storage at scale; patch products stay manageable but sacrifice resolution.
-            </p>
-
-            {/* File Size Table */}
-            <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-widest text-slate-500">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Product</th>
-                    <th className="px-4 py-3 text-left">Kind</th>
-                    {aoiScales.map((aoi) => (
-                      <th key={aoi.name} className="px-4 py-3 text-left">
-                        {aoi.name}
-                        <span className="block text-[10px] font-normal normal-case text-slate-400">
-                          {aoi.km2.toLocaleString()} km²
+                    <tr key={row.name} className="border-b border-white/5 last:border-0">
+                      <td className="py-3 pr-4 font-medium text-white">{row.name}</td>
+                      <td className="py-3 pr-4">
+                        <span
+                          className={`inline-block rounded px-1.5 py-0.5 text-xs ${
+                            row.kind === "Patch"
+                              ? "bg-emerald-500/10 text-emerald-400"
+                              : "bg-slate-500/10 text-slate-400"
+                          }`}
+                        >
+                          {row.kind}
                         </span>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {fileSizeData.map((product) => (
-                    <tr key={product.name} className="border-t border-slate-100">
-                      <td className="px-4 py-3 font-medium text-slate-900">{product.name}</td>
-                      <td className="px-4 py-3 text-slate-600">{product.kind}</td>
-                      {product.sizes.map((size) => (
-                        <td key={size.aoi} className="px-4 py-3 text-slate-600 font-mono text-xs">
-                          {formatBytes(size.bytes)}
-                        </td>
-                      ))}
+                      </td>
+                      <td className="py-3 pr-4">{row.spatial}</td>
+                      <td className="py-3 pr-4 font-mono">{row.dims}</td>
+                      <td className="py-3 pr-4 font-mono text-xs">{row.dtype}</td>
+                      <td className="py-3 text-xs">{row.license}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+          </section>
 
-            {/* Visual Bar Chart */}
-            <div className="space-y-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                Continent-scale storage (30M km²)
+          {/* Storage Reality */}
+          <section className="space-y-6">
+            <h2 className="text-xl font-semibold text-white">The storage reality check</h2>
+            <p className="leading-relaxed text-slate-400">
+              Here&apos;s where it gets interesting. Embedding dimension × dtype × spatial
+              resolution compounds fast. A city-scale analysis is fine. Continent-scale? Pixel
+              embeddings explode.
+            </p>
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                Continent-scale storage (Africa, 30M km²)
               </p>
-              <div className="space-y-3">
+              <div className="mt-4 space-y-2">
                 {fileSizeData.map((product) => {
                   const continentSize =
                     product.sizes.find((s) => s.aoi === "Continent")?.bytes ?? 0;
-                  const widthPercent = (continentSize / maxBytes) * 100;
+                  const widthPercent = Math.max((continentSize / maxBytes) * 100, 0.5);
                   const isPatch = product.kind === "Patch";
                   return (
                     <div key={product.name} className="flex items-center gap-3">
-                      <div className="w-32 text-sm text-slate-700 truncate">{product.name}</div>
-                      <div className="flex-1 h-6 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="w-28 shrink-0 text-sm text-slate-400">{product.name}</div>
+                      <div className="relative h-5 flex-1 overflow-hidden rounded bg-white/5">
                         <div
-                          className={`h-full rounded-full ${
-                            isPatch ? "bg-emerald-400" : "bg-slate-600"
+                          className={`h-full rounded ${
+                            isPatch ? "bg-emerald-500" : "bg-slate-500"
                           }`}
-                          style={{ width: `${Math.max(widthPercent, 1)}%` }}
+                          style={{ width: `${widthPercent}%` }}
                         />
                       </div>
-                      <div className="w-20 text-xs text-slate-500 text-right font-mono">
+                      <div className="w-16 shrink-0 text-right font-mono text-xs text-slate-500">
                         {formatBytes(continentSize)}
                       </div>
                     </div>
                   );
                 })}
               </div>
-              <div className="flex gap-6 text-xs text-slate-500">
-                <span className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-emerald-400" />
-                  Patch embeddings
+              <div className="mt-4 flex gap-4 text-xs text-slate-500">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  Patch
                 </span>
-                <span className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-slate-600" />
-                  Pixel embeddings
+                <span className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-slate-500" />
+                  Pixel
                 </span>
               </div>
             </div>
-          </div>
-
-          {/* What's Broken */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-serif">What&apos;s Broken</h2>
-            <ul className="space-y-3 text-base text-slate-700">
-              {brokenPoints.map((point) => (
-                <li key={point} className="flex gap-3">
-                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-rose-400" />
-                  <span>{point}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
+            <p className="text-sm leading-relaxed text-slate-500">
+              Presto and Tessera at 10m resolution mean{" "}
+              <strong className="text-slate-300">300 billion embeddings</strong> for Africa alone.
+              That&apos;s 77 TB for Presto (uint16) and 38 TB for Tessera (int8). Patch products
+              like Clay and Copernicus-Embed stay under 4 GB — but sacrifice spatial resolution.
+            </p>
+          </section>
 
           {/* The Fix */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-serif">The Fix: TorchGeo Standardized Access</h2>
-            <p className="text-base text-slate-700 leading-relaxed">
-              We treat embeddings as first-class geospatial datasets. TorchGeo now ships unified
-              loaders and model access so comparison and downstream analysis no longer require
-              model-specific engineering. Same API, any product.
+          <section className="space-y-6">
+            <h2 className="text-xl font-semibold text-white">The fix: TorchGeo</h2>
+            <p className="leading-relaxed text-slate-400">
+              We&apos;re treating embeddings as first-class geospatial datasets. TorchGeo now ships
+              unified loaders so you can swap products without rewriting your pipeline. Same API,
+              any product.
             </p>
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
-                  Search & retrieval
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Similarity search in 20 lines
                 </p>
                 <CodeBlock code={torchGeoSnippet} language="python" />
               </div>
-              <div className="space-y-3">
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
                   Land-cover mapping
                 </p>
                 <CodeBlock code={torchGeoMappingSnippet} language="python" />
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Future Principles */}
-          <div className="space-y-6">
-            <h2 className="text-2xl font-serif">Design Principles We Need (Yes, Controversial)</h2>
-            <ul className="space-y-3 text-base text-slate-700">
-              {futurePrinciples.map((point) => (
-                <li key={point} className="flex gap-3">
-                  <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-                  <span>{point}</span>
-                </li>
-              ))}
+          {/* Hot takes */}
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold text-white">The controversial takes</h2>
+            <p className="leading-relaxed text-slate-400">
+              After cataloging all of this, here&apos;s what I actually believe:
+            </p>
+            <ul className="space-y-3 text-slate-400">
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                <span>
+                  <strong className="text-white">Stop over-indexing on Sentinel-1/2.</strong> The
+                  oceans, atmosphere, and hyperspectral exist. We need embeddings for those too.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                <span>
+                  <strong className="text-white">Cloud-native formats are table stakes.</strong>{" "}
+                  GeoParquet, COG, GeoZarr — pick one and commit. Bespoke formats are a tax on the
+                  entire field.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                <span>
+                  <strong className="text-white">Benchmarks must ship with models.</strong> Private
+                  benchmarks kill reproducibility. If I can&apos;t run your eval, your numbers
+                  don&apos;t exist.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                <span>
+                  <strong className="text-white">Embeddings need provenance.</strong> Not just
+                  vectors — uncertainty, source imagery hashes, model versions. The metadata
+                  matters.
+                </span>
+              </li>
             </ul>
-          </div>
+          </section>
 
           {/* Citation */}
-          <div className="rounded-2xl border border-slate-200 bg-white/70 p-6 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Citation</p>
-            <p className="mt-3 text-sm text-slate-700">
-              Fang, H., Stewart, A. J., Corley, I., Zhu, X. X., & Azizpour, H. (2026).{" "}
-              <span className="font-semibold text-slate-900">
-                Earth Embeddings as Products: Taxonomy, Ecosystem, and Standardized Access.
-              </span>{" "}
+          <section className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              Cite the paper
+            </p>
+            <p className="mt-3 font-mono text-xs leading-relaxed text-slate-400">
+              Fang, H., Stewart, A. J., Corley, I., Zhu, X. X., & Azizpour, H. (2026). Earth
+              Embeddings as Products: Taxonomy, Ecosystem, and Standardized Access.
               arXiv:2601.13134.
             </p>
-          </div>
-
-          <Footer />
+          </section>
         </div>
-      </section>
+
+        <Footer />
+      </article>
     </div>
   );
 }
