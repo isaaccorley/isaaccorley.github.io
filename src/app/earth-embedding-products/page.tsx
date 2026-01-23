@@ -834,8 +834,8 @@ export default function EarthEmbeddingProductsPage() {
           <section className="space-y-4">
             <h2 className="text-xl font-semibold text-white">What you can do</h2>
             <p className="leading-relaxed text-slate-400">
-              If you&apos;re producing embeddings: use GeoParquet for patch embeddings, Zarr for
-              pixel embeddings. Include CRS metadata. Document your tile scheme. Create a tile
+              If you&apos;re producing embeddings: use GeoParquet for patch embeddings, COG or Zarr
+              for pixel embeddings. Include CRS metadata. Document your tile scheme. Create a tile
               index. Make it boring.
             </p>
             <p className="leading-relaxed text-slate-400">
