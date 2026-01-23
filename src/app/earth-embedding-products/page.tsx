@@ -4,7 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
-  title: "Earth Embeddings as Products | Isaac Corley",
+  title: "The Technical Debt of Earth Embedding Products | Isaac Corley",
   description:
     "A deep dive into seven Earth embedding products, why they don't work together, and what we're doing about it.",
 };
@@ -99,7 +99,7 @@ const productRows = [
     license: "CC-BY-4.0",
   },
   {
-    name: "Google Satellite",
+    name: "AlphaEarth",
     kind: "Pixel",
     spatial: "10 m",
     temporal: "Annual",
@@ -165,10 +165,10 @@ for sample in eie:
         best = (sample["x"], sample["y"])`;
 
 const torchGeoMappingSnippet = `from torch.utils.data import DataLoader
-from torchgeo.datasets import GoogleSatelliteEmbedding, EuroCrops
+from torchgeo.datasets import GoogleSatelliteEmbeddings, EuroCrops
 from torchgeo.samplers import GridGeoSampler
 
-gse = GoogleSatelliteEmbedding(paths)
+gse = GoogleSatelliteEmbeddings(paths)
 ec = EuroCrops(paths, download=True)
 
 # Automatic spatiotemporal intersection
@@ -203,35 +203,15 @@ export default function EarthEmbeddingProductsPage() {
         />
         <div className="relative mx-auto max-w-2xl px-6 py-20 text-center">
           <p className="text-xs font-medium uppercase tracking-[0.3em] text-emerald-400">
-            January 2026 · arXiv:2601.13134
+            January 2026
           </p>
           <h1 className="mt-6 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Earth Embeddings as Products
+            The Technical Debt of Earth Embedding Products
           </h1>
           <p className="mt-4 text-lg leading-relaxed text-slate-400">
-            I co-authored a paper cataloging seven global Earth embedding products. Here&apos;s the
-            honest version: what we found, why it&apos;s broken, and what we&apos;re doing about it.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a
-              className="rounded-lg bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400 ring-1 ring-emerald-500/30 transition hover:bg-emerald-500/20"
-              href="https://arxiv.org/abs/2601.13134"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Read the Paper
-            </a>
-            <a
-              className="rounded-lg px-4 py-2 text-sm font-medium text-slate-400 ring-1 ring-white/10 transition hover:bg-white/5 hover:text-white"
-              href="https://arxiv.org/pdf/2601.13134"
-              target="_blank"
-              rel="noreferrer"
-            >
-              PDF
-            </a>
-          </div>
-          <p className="mt-8 text-xs text-slate-500">
-            with Heng Fang, Adam J. Stewart, Xiao Xiang Zhu, and Hossein Azizpour
+            This critique has nothing to do with the value or performance of these foundation
+            models. They&apos;re all impressive. The problem is what happens after the model is
+            trained: distribution, access, and interoperability.
           </p>
         </div>
       </header>
@@ -242,63 +222,259 @@ export default function EarthEmbeddingProductsPage() {
           {/* Intro */}
           <section className="space-y-4">
             <p className="text-lg leading-relaxed text-slate-300">
-              Geospatial foundation models were supposed to democratize Earth observation. Train
-              once, use anywhere. The reality?{" "}
-              <strong className="text-white">
-                Seven embedding products that can&apos;t load in the same script.
-              </strong>
+              Last month I spent three days debugging why AlphaEarth embeddings loaded upside-down.
+              The fix required patches to{" "}
+              <a
+                className="text-emerald-400 hover:text-emerald-300"
+                href="https://github.com/OSGeo/gdal/issues/13416"
+                target="_blank"
+                rel="noreferrer"
+              >
+                GDAL
+              </a>
+              ,{" "}
+              <a
+                className="text-emerald-400 hover:text-emerald-300"
+                href="https://github.com/rasterio/rasterio/issues/3094"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Rasterio
+              </a>
+              , and{" "}
+              <a
+                className="text-emerald-400 hover:text-emerald-300"
+                href="https://github.com/torchgeo/torchgeo/pull/3249"
+                target="_blank"
+                rel="noreferrer"
+              >
+                TorchGeo
+              </a>
+              . These aren&apos;t independent: TorchGeo depends on Rasterio depends on GDAL. All
+              three need updates, all three need version pins, and now your users can&apos;t run
+              older environments. One flipped coordinate killed backwards compatibility across the
+              stack.
             </p>
             <p className="leading-relaxed text-slate-400">
-              We spent months cataloging every publicly available Earth embedding product. The paper
-              is dense — 12 pages of taxonomy, benchmarks, and TorchGeo integration. This post is
-              the distilled version: what actually matters, what&apos;s broken, and what you should
-              do about it.
+              This is the pattern. Every new Earth embedding product ships like a snowflake. If you
+              want to compare them or stack them, you become the integrator for half a dozen
+              geospatial libraries. The{" "}
+              <a
+                className="text-emerald-400 hover:text-emerald-300"
+                href="https://arxiv.org/abs/2601.13134"
+                target="_blank"
+                rel="noreferrer"
+              >
+                paper
+              </a>{" "}
+              formalizes this with a taxonomy and TorchGeo integration. This post is about what
+              keeps breaking and why the ecosystem isn&apos;t usable yet.
             </p>
           </section>
 
           {/* The Mess */}
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold text-white">The state of the ecosystem</h2>
+            <h2 className="text-xl font-semibold text-white">Everything ships, nothing plugs in</h2>
             <p className="leading-relaxed text-slate-400">
-              Here&apos;s the brutal summary: embeddings are scattered across Source Cooperative,
-              Hugging Face, Earth Engine, private servers, and one-off GitHub repos. Each uses
-              different formats, coordinate systems, and file layouts.
+              Embeddings are scattered across Source Cooperative, Hugging Face, Earth Engine,
+              private servers, and one-off GitHub repos. Each has its own tile scheme, CRS
+              assumptions, file layout, and storage format. These teams did the hard part:
+              petabyte-scale processing, cloud cover filtering, projection nightmares. The
+              distribution layer is where it falls apart.
             </p>
             <p className="leading-relaxed text-slate-400">
-              We found <strong className="text-white">upside-down rasters</strong> shipped to
-              production. Repos that haven&apos;t been updated in 18 months. Licenses so
-              incompatible you&apos;d need a lawyer to combine two products.
+              Here&apos;s what I hit integrating each product into TorchGeo:
             </p>
+            <ul className="space-y-2 text-slate-400">
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span>
+                  <strong className="text-white">
+                    <a
+                      className="text-white hover:text-emerald-300"
+                      href="https://source.coop/clay/clay-model-v0-embeddings"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Clay
+                    </a>
+                    :
+                  </strong>{" "}
+                  Non-standard tile naming; had to reverse-engineer the grid layout from file paths.
+                  See the{" "}
+                  <a
+                    className="text-emerald-400 hover:text-emerald-300"
+                    href="https://clay-foundation.github.io/model/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Clay website
+                  </a>{" "}
+                  for model details.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span>
+                  <strong className="text-white">
+                    <a
+                      className="text-white hover:text-emerald-300"
+                      href="https://huggingface.co/Major-TOM"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Major TOM
+                    </a>
+                    :
+                  </strong>{" "}
+                  Parquet with nested geometry columns; required custom deserialization.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span>
+                  <strong className="text-white">
+                    <a
+                      className="text-white hover:text-emerald-300"
+                      href="https://source.coop/earthgenome/earthindexembeddings"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Earth Index
+                    </a>
+                    :
+                  </strong>{" "}
+                  Clean GeoParquet. This is what all of them should look like. Also check out the{" "}
+                  <a
+                    className="text-emerald-400 hover:text-emerald-300"
+                    href="https://source.coop/earthgenome/earthindeximagery"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    source imagery
+                  </a>
+                  .
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span>
+                  <strong className="text-white">Copernicus-Embed:</strong> 0.25° resolution is
+                  ~25km at mid-latitudes. Too coarse for most applications. See their{" "}
+                  <a
+                    className="text-emerald-400 hover:text-emerald-300"
+                    href="https://arxiv.org/abs/2503.11849"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    paper
+                  </a>{" "}
+                  for details.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span>
+                  <strong className="text-white">
+                    <a
+                      className="text-white hover:text-emerald-300"
+                      href="https://arxiv.org/abs/2304.14065"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Presto
+                    </a>
+                    :
+                  </strong>{" "}
+                  GeoTIFF but with implicit CRS assumptions that differ from the imagery it was
+                  derived from. See the{" "}
+                  <a
+                    className="text-emerald-400 hover:text-emerald-300"
+                    href="https://huggingface.co/datasets/izvonkov/Togo_Presto_Embeddings"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    embeddings on Hugging Face
+                  </a>
+                  .
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span>
+                  <strong className="text-white">Tessera:</strong> Hidden behind an{" "}
+                  <a
+                    className="text-emerald-400 hover:text-emerald-300"
+                    href="https://github.com/ucam-eo/geotessera"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    API
+                  </a>{" "}
+                  running on a university server. Returns raw numpy arrays, not geospatial data. No
+                  CRS, no bounds, no metadata. You get numbers and a prayer.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span>
+                  <strong className="text-white">
+                    <a
+                      className="text-white hover:text-emerald-300"
+                      href="https://arxiv.org/abs/2507.22291"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      AlphaEarth
+                    </a>
+                    :
+                  </strong>{" "}
+                  Originally locked inside Earth Engine. Moving 465 TB to{" "}
+                  <a
+                    className="text-emerald-400 hover:text-emerald-300"
+                    href="https://source.coop/tge-labs/aef"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Source Cooperative
+                  </a>{" "}
+                  cost tens of thousands of dollars in egress fees.{" "}
+                  <a
+                    className="text-emerald-400 hover:text-emerald-300"
+                    href="https://tgengine.org/building-frictionless-geospatial-ai-making-alphaearth-foundations-embeddings-accessible/"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Taylor Geospatial Engine
+                  </a>{" "}
+                  and Radiant Earth paid that bill so the rest of us don&apos;t have to.
+                </span>
+              </li>
+            </ul>
             <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
               <p className="text-sm font-medium text-rose-400">The problem:</p>
               <p className="mt-1 text-sm text-slate-400">
-                We built the hard part (petabyte-scale processing) and fumbled the handoff
-                (standardized access). Every team reinvents the wheel.
+                Every team solves distribution independently. The integration tax compounds across
+                products.
               </p>
             </div>
           </section>
 
-          {/* Credit */}
-          <section className="space-y-4">
-            <h2 className="text-xl font-semibold text-white">Credit where it&apos;s due</h2>
-            <p className="leading-relaxed text-slate-400">
-              Before the critique: producing global embeddings is <em>genuinely hard</em>. These
-              teams processed petabytes of imagery, fought cloud cover, handled projection
-              nightmares, and shipped something usable. Clay, Major TOM, Earth Index, Presto,
-              Tessera, Google Satellite Embeddings — each represents months of engineering.
-            </p>
-            <p className="leading-relaxed text-slate-400">
-              The critique isn&apos;t about the work. It&apos;s about the ecosystem that forces
-              every team to solve the same distribution problems independently.
-            </p>
-          </section>
-
           {/* Taxonomy */}
           <section className="space-y-6">
-            <h2 className="text-xl font-semibold text-white">A taxonomy that makes sense</h2>
+            <h2 className="text-xl font-semibold text-white">Three layers, one tradeoff</h2>
             <p className="leading-relaxed text-slate-400">
-              We formalized a three-layer framework: the data assets (what you download), the tools
-              that probe them (how you evaluate), and the downstream value (why you care).
+              The data layer is where most decisions get made. Patch embeddings are manageable and
+              cheap, but they throw away spatial detail. Pixel embeddings are faithful, but they
+              blow up storage and bandwidth. Once you see that tradeoff, the rest of the ecosystem
+              starts to make sense.
+            </p>
+            <p className="leading-relaxed text-slate-400">
+              The tools layer is where you figure out if embeddings are any good: benchmarks,
+              intrinsic dimension analysis, and the open challenges nobody has solved yet. The value
+              layer is what you actually do with them: mapping, retrieval, time-series analysis.
+              Most teams jump straight to value without building the tools to know if their approach
+              is working.
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {taxonomyLayers.map((layer, idx) => {
@@ -332,12 +508,14 @@ export default function EarthEmbeddingProductsPage() {
           {/* Product Table */}
           <section className="space-y-6">
             <h2 className="text-xl font-semibold text-white">
-              The seven products (as of December 2025)
+              What&apos;s actually out there right now
             </h2>
             <p className="leading-relaxed text-slate-400">
-              Here&apos;s the full landscape. Notice the fragmentation: patch vs pixel granularity,
-              snapshot vs annual coverage, and a licensing maze that makes combination legally
-              fraught.
+              Here&apos;s the full landscape. This is the part that looks clean on paper, but every
+              row hides a different file format, spatial grid, and distribution story. Patch vs
+              pixel, snapshot vs annual coverage, and licenses that don&apos;t always play nice
+              together. You can pick any one of these and make progress. The moment you try to
+              compare them, the hidden assumptions start to matter.
             </p>
             <div className="-mx-6 overflow-x-auto px-6">
               <table className="w-full text-sm">
@@ -375,15 +553,22 @@ export default function EarthEmbeddingProductsPage() {
                 </tbody>
               </table>
             </div>
+            <p className="text-sm leading-relaxed text-slate-500">
+              If you only care about a city-scale workflow, almost any of these will get you there.
+              The moment you care about global coverage or consistent evaluation, the missing
+              standards become the bottleneck.
+            </p>
           </section>
 
           {/* Storage Reality */}
           <section className="space-y-6">
-            <h2 className="text-xl font-semibold text-white">The storage reality check</h2>
+            <h2 className="text-xl font-semibold text-white">
+              The part everyone underestimates: storage
+            </h2>
             <p className="leading-relaxed text-slate-400">
-              Here&apos;s where it gets interesting. Embedding dimension × dtype × spatial
+              The storage math is where enthusiasm dies. Embedding dimension × dtype × spatial
               resolution compounds fast. A city-scale analysis is fine. Continent-scale? Pixel
-              embeddings explode.
+              embeddings explode. This is the part that never shows up in model cards.
             </p>
             <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
               <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
@@ -428,17 +613,24 @@ export default function EarthEmbeddingProductsPage() {
               Presto and Tessera at 10m resolution mean{" "}
               <strong className="text-slate-300">300 billion embeddings</strong> for Africa alone.
               That&apos;s 77 TB for Presto (uint16) and 38 TB for Tessera (int8). Patch products
-              like Clay and Copernicus-Embed stay under 4 GB — but sacrifice spatial resolution.
+              like Clay and Copernicus-Embed stay under 4 GB, but you pay for that with spatial
+              detail. This is why so many &quot;global&quot; embeddings end up being theoretical
+              rather than something you can actually download and use.
             </p>
           </section>
 
           {/* The Fix */}
           <section className="space-y-6">
-            <h2 className="text-xl font-semibold text-white">The fix: TorchGeo</h2>
+            <h2 className="text-xl font-semibold text-white">
+              The only fix that scales: make it boring
+            </h2>
             <p className="leading-relaxed text-slate-400">
-              We&apos;re treating embeddings as first-class geospatial datasets. TorchGeo now ships
-              unified loaders so you can swap products without rewriting your pipeline. Same API,
-              any product.
+              After five years of adding datasets to TorchGeo, the pattern is obvious: if embeddings
+              are not treated like boring, well-behaved geospatial datasets, nobody will use them.
+              TorchGeo now ships unified loaders so you can swap products without rewriting your
+              pipeline. Same API, any product. It doesn&apos;t solve storage, but it does stop the
+              endless rewrite tax. The goal is not magic. The goal is to make embeddings behave like
+              every other dataset you already know how to use.
             </p>
             <div className="space-y-4">
               <div className="space-y-2">
@@ -458,24 +650,22 @@ export default function EarthEmbeddingProductsPage() {
 
           {/* Hot takes */}
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold text-white">The controversial takes</h2>
-            <p className="leading-relaxed text-slate-400">
-              After cataloging all of this, here&apos;s what I actually believe:
-            </p>
+            <h2 className="text-xl font-semibold text-white">Hard truths</h2>
             <ul className="space-y-3 text-slate-400">
               <li className="flex gap-3">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">Stop over-indexing on Sentinel-1/2.</strong> The
-                  oceans, atmosphere, and hyperspectral exist. We need embeddings for those too.
+                  oceans, atmosphere, and hyperspectral exist. We can&apos;t keep claiming we model
+                  the Earth if the majority of Earth is out of scope.
                 </span>
               </li>
               <li className="flex gap-3">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">Cloud-native formats are table stakes.</strong>{" "}
-                  GeoParquet, COG, GeoZarr — pick one and commit. Bespoke formats are a tax on the
-                  entire field.
+                  GeoParquet, COG, GeoZarr. Pick one and commit. Bespoke formats are a tax on every
+                  downstream user and they compound across products.
                 </span>
               </li>
               <li className="flex gap-3">
@@ -490,23 +680,63 @@ export default function EarthEmbeddingProductsPage() {
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">Embeddings need provenance.</strong> Not just
-                  vectors — uncertainty, source imagery hashes, model versions. The metadata
-                  matters.
+                  vectors, uncertainty, source imagery hashes, model versions. The metadata matters
+                  because the underlying data is a moving target.
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                <span>
+                  <strong className="text-white">
+                    We still don&apos;t have good temporal embeddings.
+                  </strong>
+                  Most products are snapshots. If you care about change over time, you&apos;re still
+                  stitching together your own dataset.
                 </span>
               </li>
             </ul>
           </section>
 
+          {/* Call to action */}
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold text-white">What you can do</h2>
+            <p className="leading-relaxed text-slate-400">
+              If you&apos;re producing embeddings: ship GeoParquet or COG. Include CRS metadata.
+              Document your tile scheme. Make it boring.
+            </p>
+            <p className="leading-relaxed text-slate-400">
+              If you&apos;re consuming embeddings: try the{" "}
+              <a
+                className="text-emerald-400 hover:text-emerald-300"
+                href="https://torchgeo.readthedocs.io/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                TorchGeo loaders
+              </a>
+              . File issues when things break. The only way this gets better is if the pain is
+              visible.
+            </p>
+          </section>
+
           {/* Citation */}
           <section className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
             <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-              Cite the paper
+              Read the paper
             </p>
             <p className="mt-3 font-mono text-xs leading-relaxed text-slate-400">
               Fang, H., Stewart, A. J., Corley, I., Zhu, X. X., & Azizpour, H. (2026). Earth
               Embeddings as Products: Taxonomy, Ecosystem, and Standardized Access.
               arXiv:2601.13134.
             </p>
+            <a
+              className="mt-4 inline-block rounded-lg bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-400 ring-1 ring-emerald-500/30 transition hover:bg-emerald-500/20"
+              href="https://arxiv.org/abs/2601.13134"
+              target="_blank"
+              rel="noreferrer"
+            >
+              View on arXiv
+            </a>
           </section>
         </div>
 
