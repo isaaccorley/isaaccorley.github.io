@@ -349,9 +349,9 @@ export default function EarthEmbeddingProductsPage() {
             <p className="leading-relaxed text-slate-400">
               Embeddings are scattered across Source Cooperative, Hugging Face, Earth Engine,
               private servers, and one-off GitHub repos. Each has its own tile scheme, CRS
-              assumptions, file layout, and storage format. These teams did the hard part:
-              petabyte-scale processing, cloud cover filtering, reprojection, model inference, etc.
-              The distribution layer is where it falls apart.
+              assumptions, file layout, and storage format. The teams behind these products did the
+              hard part: petabyte-scale processing, cloud cover filtering, reprojection, model
+              inference, etc. The distribution layer is where it falls apart.
             </p>
             <p className="leading-relaxed text-slate-400">
               Here&apos;s what we hit integrating each product into TorchGeo:
