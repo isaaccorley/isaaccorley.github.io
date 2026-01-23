@@ -538,9 +538,9 @@ export default function EarthEmbeddingProductsPage() {
             <h2 className="text-xl font-semibold text-white">Three layers, one tradeoff</h2>
             <p className="leading-relaxed text-slate-400">
               The data layer is where most decisions get made. Patch embeddings are manageable and
-              cheap, but they throw away spatial detail. Pixel embeddings are faithful, but they
-              blow up storage and bandwidth. Once you see that tradeoff, the rest of the ecosystem
-              starts to make sense.
+              cheap, but they throw away spatial detail. Pixel embeddings are finer, but they blow
+              up storage and bandwidth. Once you see that tradeoff, the rest of the ecosystem starts
+              to make sense.
             </p>
             <p className="leading-relaxed text-slate-400">
               The tools layer is where you figure out if embeddings are any good: benchmarks,{" "}
