@@ -4,10 +4,33 @@ import { ArrowRight, Database, Target, Wrench } from "lucide-react";
 import { CodeBlock } from "@/components/code-block";
 import { Footer } from "@/components/footer";
 
+const title = "The Technical Debt of Earth Embedding Products";
+const description =
+  "A deep dive into seven Earth embedding products, why they don't work together, and what we're doing about it.";
+const url = "https://isaaccorley.github.io/earth-embedding-products";
+const publishedDate = "2026-01-22";
+
 export const metadata: Metadata = {
-  title: "The Technical Debt of Earth Embedding Products | Isaac Corley",
-  description:
-    "A deep dive into seven Earth embedding products, why they don't work together, and what we're doing about it.",
+  title: `${title} | Isaac Corley`,
+  description,
+  openGraph: {
+    title,
+    description,
+    url,
+    type: "article",
+    publishedTime: publishedDate,
+    authors: ["Isaac Corley"],
+    siteName: "Isaac Corley",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    creator: "@isaaccorley_",
+  },
+  alternates: {
+    canonical: url,
+  },
 };
 
 const taxonomyLayers = [
@@ -139,6 +162,15 @@ function formatBytes(bytes: number): string {
   return `${bytes.toFixed(0)} B`;
 }
 
+// AWS S3 Standard storage: ~$0.023/GB/month
+function formatS3Cost(bytes: number): string {
+  const gb = bytes / 1e9;
+  const costPerMonth = gb * 0.023;
+  if (costPerMonth >= 1000) return `$${(costPerMonth / 1000).toFixed(1)}k/mo`;
+  if (costPerMonth >= 1) return `$${costPerMonth.toFixed(0)}/mo`;
+  return `$${costPerMonth.toFixed(2)}/mo`;
+}
+
 const torchGeoSnippet = `from torchgeo.datasets import EarthIndexEmbeddings, Sentinel2
 from torchgeo.models import ViTSmall14_DINOv2_Weights, vit_small_patch14_dinov2
 from torch.nn import CosineSimilarity
@@ -196,6 +228,33 @@ export default function EarthEmbeddingProductsPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
+      {/* JSON-LD structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: title,
+            description,
+            datePublished: publishedDate,
+            author: {
+              "@type": "Person",
+              name: "Isaac Corley",
+              url: "https://isaaccorley.github.io",
+              jobTitle: "Senior Machine Learning Engineer",
+              worksFor: { "@type": "Organization", name: "Wherobots" },
+            },
+            publisher: {
+              "@type": "Person",
+              name: "Isaac Corley",
+              url: "https://isaaccorley.github.io",
+            },
+            mainEntityOfPage: url,
+          }),
+        }}
+      />
+
       {/* Nav */}
       <nav className="absolute top-0 left-0 right-0 z-10 flex items-center gap-4 px-6 py-4 text-xs text-slate-500">
         <Link href="/" className="hover:text-slate-300 transition-colors">
@@ -217,6 +276,7 @@ export default function EarthEmbeddingProductsPage() {
           <p className="text-xs font-medium uppercase tracking-[0.3em] text-emerald-400">
             January 2026
           </p>
+          <p className="mt-2 text-xs text-slate-500">Isaac Corley</p>
           <h1 className="mt-6 text-3xl font-bold tracking-tight text-white sm:text-4xl">
             The Technical Debt of Earth Embedding Products
           </h1>
@@ -234,8 +294,8 @@ export default function EarthEmbeddingProductsPage() {
           {/* Intro */}
           <section className="space-y-4">
             <p className="text-lg leading-relaxed text-slate-300">
-              Last month I spent three days debugging why AlphaEarth embeddings loaded upside-down.
-              The fix required patches to{" "}
+              Last month our team spent three days debugging why AlphaEarth embeddings loaded
+              upside-down and how to best handle it. The fix required patches to{" "}
               <a
                 className="text-emerald-400 hover:text-emerald-300"
                 href="https://github.com/OSGeo/gdal/issues/13416"
@@ -270,7 +330,7 @@ export default function EarthEmbeddingProductsPage() {
             <p className="leading-relaxed text-slate-400">
               This is the pattern. Every new Earth embedding product ships like a snowflake. If you
               want to compare them or stack them, you become the integrator for half a dozen
-              geospatial libraries. The{" "}
+              geospatial libraries. Our new{" "}
               <a
                 className="text-emerald-400 hover:text-emerald-300"
                 href="https://arxiv.org/abs/2601.13134"
@@ -280,7 +340,7 @@ export default function EarthEmbeddingProductsPage() {
                 paper
               </a>{" "}
               formalizes this with a taxonomy and TorchGeo integration. This post is about what
-              keeps breaking and why the ecosystem isn&apos;t usable yet.
+              keeps breaking and why the ecosystem still needs some work.
             </p>
           </section>
 
@@ -291,11 +351,11 @@ export default function EarthEmbeddingProductsPage() {
               Embeddings are scattered across Source Cooperative, Hugging Face, Earth Engine,
               private servers, and one-off GitHub repos. Each has its own tile scheme, CRS
               assumptions, file layout, and storage format. These teams did the hard part:
-              petabyte-scale processing, cloud cover filtering, projection nightmares. The
-              distribution layer is where it falls apart.
+              petabyte-scale processing, cloud cover filtering, reprojection, model inference, etc.
+              The distribution layer is where it falls apart.
             </p>
             <p className="leading-relaxed text-slate-400">
-              Here&apos;s what I hit integrating each product into TorchGeo:
+              Here&apos;s what we hit integrating each product into TorchGeo:
             </p>
             <ul className="space-y-2 text-slate-400">
               <li className="flex gap-3">
@@ -303,7 +363,7 @@ export default function EarthEmbeddingProductsPage() {
                 <span>
                   <strong className="text-white">
                     <a
-                      className="text-white hover:text-emerald-300"
+                      className="text-emerald-400 hover:text-emerald-300"
                       href="https://source.coop/clay/clay-model-v0-embeddings"
                       target="_blank"
                       rel="noreferrer"
@@ -313,16 +373,6 @@ export default function EarthEmbeddingProductsPage() {
                     :
                   </strong>{" "}
                   Non-standard tile naming; had to reverse-engineer the grid layout from file paths.
-                  See the{" "}
-                  <a
-                    className="text-emerald-400 hover:text-emerald-300"
-                    href="https://clay-foundation.github.io/model/"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Clay website
-                  </a>{" "}
-                  for model details.
                 </span>
               </li>
               <li className="flex gap-3">
@@ -330,7 +380,7 @@ export default function EarthEmbeddingProductsPage() {
                 <span>
                   <strong className="text-white">
                     <a
-                      className="text-white hover:text-emerald-300"
+                      className="text-emerald-400 hover:text-emerald-300"
                       href="https://huggingface.co/Major-TOM"
                       target="_blank"
                       rel="noreferrer"
@@ -347,7 +397,7 @@ export default function EarthEmbeddingProductsPage() {
                 <span>
                   <strong className="text-white">
                     <a
-                      className="text-white hover:text-emerald-300"
+                      className="text-emerald-400 hover:text-emerald-300"
                       href="https://source.coop/earthgenome/earthindexembeddings"
                       target="_blank"
                       rel="noreferrer"
@@ -371,17 +421,18 @@ export default function EarthEmbeddingProductsPage() {
               <li className="flex gap-3">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
-                  <strong className="text-white">Copernicus-Embed:</strong> 0.25° resolution is
-                  ~25km at mid-latitudes. Too coarse for most applications. See their{" "}
-                  <a
-                    className="text-emerald-400 hover:text-emerald-300"
-                    href="https://arxiv.org/abs/2503.11849"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    paper
-                  </a>{" "}
-                  for details.
+                  <strong className="text-white">
+                    <a
+                      className="text-emerald-400 hover:text-emerald-300"
+                      href="https://arxiv.org/abs/2503.11849"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Copernicus-Embed
+                    </a>
+                    :
+                  </strong>{" "}
+                  0.25° resolution is ~25km at mid-latitudes. Too coarse for most applications.
                 </span>
               </li>
               <li className="flex gap-3">
@@ -389,7 +440,7 @@ export default function EarthEmbeddingProductsPage() {
                 <span>
                   <strong className="text-white">
                     <a
-                      className="text-white hover:text-emerald-300"
+                      className="text-emerald-400 hover:text-emerald-300"
                       href="https://arxiv.org/abs/2304.14065"
                       target="_blank"
                       rel="noreferrer"
@@ -414,7 +465,18 @@ export default function EarthEmbeddingProductsPage() {
               <li className="flex gap-3">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
-                  <strong className="text-white">Tessera:</strong> Hidden behind an{" "}
+                  <strong className="text-white">
+                    <a
+                      className="text-emerald-400 hover:text-emerald-300"
+                      href="https://arxiv.org/abs/2506.20380"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Tessera
+                    </a>
+                    :
+                  </strong>{" "}
+                  Hidden behind an{" "}
                   <a
                     className="text-emerald-400 hover:text-emerald-300"
                     href="https://github.com/ucam-eo/geotessera"
@@ -432,7 +494,7 @@ export default function EarthEmbeddingProductsPage() {
                 <span>
                   <strong className="text-white">
                     <a
-                      className="text-white hover:text-emerald-300"
+                      className="text-emerald-400 hover:text-emerald-300"
                       href="https://arxiv.org/abs/2507.22291"
                       target="_blank"
                       rel="noreferrer"
@@ -482,11 +544,18 @@ export default function EarthEmbeddingProductsPage() {
               starts to make sense.
             </p>
             <p className="leading-relaxed text-slate-400">
-              The tools layer is where you figure out if embeddings are any good: benchmarks,
-              intrinsic dimension analysis, and the open challenges nobody has solved yet. The value
-              layer is what you actually do with them: mapping, retrieval, time-series analysis.
-              Most teams jump straight to value without building the tools to know if their approach
-              is working.
+              The tools layer is where you figure out if embeddings are any good: benchmarks,{" "}
+              <a
+                className="text-emerald-400 hover:text-emerald-300"
+                href="https://arxiv.org/abs/2511.02101"
+                target="_blank"
+                rel="noreferrer"
+              >
+                intrinsic dimension analysis
+              </a>
+              , and the open challenges nobody has solved yet. The value layer is what you actually
+              do with them: mapping, retrieval, time-series analysis. Most teams jump straight to
+              value without building the tools to know if their approach is working.
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {taxonomyLayers.map((layer, idx) => {
@@ -605,6 +674,9 @@ export default function EarthEmbeddingProductsPage() {
                       </div>
                       <div className="w-16 shrink-0 text-right font-mono text-xs text-slate-500">
                         {formatBytes(continentSize)}
+                      </div>
+                      <div className="w-20 shrink-0 text-right font-mono text-xs text-emerald-400/70">
+                        {formatS3Cost(continentSize)}
                       </div>
                     </div>
                   );
