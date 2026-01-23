@@ -538,9 +538,9 @@ export default function EarthEmbeddingProductsPage() {
             <h2 className="text-xl font-semibold text-white">Three layers, one tradeoff</h2>
             <p className="leading-relaxed text-slate-400">
               The data layer is where most decisions get made. Patch embeddings are manageable and
-              cheap, but they throw away spatial detail. Pixel embeddings are finer, but they blow
-              up storage and bandwidth. Once you see that tradeoff, the rest of the ecosystem starts
-              to make sense.
+              cheap, but they throw away spatial detail. Pixel embeddings are finer-grained, but
+              they blow up storage and bandwidth. Once you see that tradeoff, the rest of the
+              ecosystem starts to make sense.
             </p>
             <p className="leading-relaxed text-slate-400">
               The tools layer is where you figure out if embeddings are any good: benchmarks,{" "}
@@ -743,44 +743,6 @@ export default function EarthEmbeddingProductsPage() {
             </p>
           </section>
 
-          {/* The Fix */}
-          <section className="space-y-6">
-            <h2 className="text-xl font-semibold text-white">
-              The only fix that scales: make it boring
-            </h2>
-            <p className="leading-relaxed text-slate-400">
-              After five years of adding datasets to{" "}
-              <a
-                className="text-emerald-400 hover:text-emerald-300"
-                href="https://github.com/torchgeo/torchgeo"
-                target="_blank"
-                rel="noreferrer"
-              >
-                TorchGeo
-              </a>
-              , the pattern is obvious: if embeddings are not treated like boring, well-behaved
-              geospatial datasets, nobody will use them. TorchGeo now ships unified loaders so you
-              can swap products without rewriting your pipeline. Same API, any product. It
-              doesn&apos;t solve storage, but it does stop the endless rewrite tax. The goal is not
-              magic. The goal is to make embeddings behave like every other dataset you already know
-              how to use.
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Similarity search
-                </p>
-                <CodeBlock code={torchGeoSnippet} language="python" small />
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Spatial intersection
-                </p>
-                <CodeBlock code={torchGeoMappingSnippet} language="python" small />
-              </div>
-            </div>
-          </section>
-
           {/* Hard truths */}
           <section className="space-y-4">
             <h2 className="text-xl font-semibold text-white">Hard truths</h2>
@@ -820,14 +782,53 @@ export default function EarthEmbeddingProductsPage() {
               <li className="flex gap-3">
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
-                  <strong className="text-white">
-                    We still don&apos;t have good temporal embeddings.
-                  </strong>
-                  Most products are snapshots. If you care about change over time, you&apos;re still
-                  stitching together your own dataset.
+                  <strong className="text-white">Temporal embeddings are still undercooked.</strong>{" "}
+                  AlphaEarth, Tessera, and Presto do encode time, but most released embeddings are
+                  annual composites. Sub-annual dynamics (phenology, flooding, urban growth) get
+                  averaged out. The number of timesteps used to create these composites varies
+                  arbitrarily between products. Until we have embeddings at native temporal
+                  resolution, change detection stays manual.
                 </span>
               </li>
             </ul>
+          </section>
+
+          {/* The Fix */}
+          <section className="space-y-6">
+            <h2 className="text-xl font-semibold text-white">
+              The only fix that scales: make it boring
+            </h2>
+            <p className="leading-relaxed text-slate-400">
+              After five years of adding datasets to{" "}
+              <a
+                className="text-emerald-400 hover:text-emerald-300"
+                href="https://github.com/torchgeo/torchgeo"
+                target="_blank"
+                rel="noreferrer"
+              >
+                TorchGeo
+              </a>
+              , the pattern is obvious: if embeddings are not treated like boring, well-behaved
+              geospatial datasets, nobody will use them. TorchGeo now ships unified loaders so you
+              can swap products without rewriting your pipeline. Same API, any product. It
+              doesn&apos;t solve storage, but it does stop the endless rewrite tax. The goal is not
+              magic. The goal is to make embeddings behave like every other dataset you already know
+              how to use.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Similarity search
+                </p>
+                <CodeBlock code={torchGeoSnippet} language="python" small />
+              </div>
+              <div className="space-y-2">
+                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                  Spatial intersection
+                </p>
+                <CodeBlock code={torchGeoMappingSnippet} language="python" small />
+              </div>
+            </div>
           </section>
 
           {/* Call to action */}
