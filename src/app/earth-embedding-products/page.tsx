@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ArrowRight, Database, Target, Wrench } from "lucide-react";
 import { CodeBlock } from "@/components/code-block";
 import { Footer } from "@/components/footer";
@@ -195,6 +196,17 @@ export default function EarthEmbeddingProductsPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
+      {/* Nav */}
+      <nav className="absolute top-0 left-0 right-0 z-10 flex items-center gap-4 px-6 py-4 text-xs text-slate-500">
+        <Link href="/" className="hover:text-slate-300 transition-colors">
+          Isaac Corley
+        </Link>
+        <span>/</span>
+        <Link href="/blog" className="hover:text-slate-300 transition-colors">
+          Blog
+        </Link>
+      </nav>
+
       {/* Hero */}
       <header className="relative overflow-hidden border-b border-white/5">
         <div
@@ -287,7 +299,7 @@ export default function EarthEmbeddingProductsPage() {
             </p>
             <ul className="space-y-2 text-slate-400">
               <li className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">
                     <a
@@ -314,7 +326,7 @@ export default function EarthEmbeddingProductsPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">
                     <a
@@ -331,7 +343,7 @@ export default function EarthEmbeddingProductsPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">
                     <a
@@ -357,7 +369,7 @@ export default function EarthEmbeddingProductsPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">Copernicus-Embed:</strong> 0.25° resolution is
                   ~25km at mid-latitudes. Too coarse for most applications. See their{" "}
@@ -373,7 +385,7 @@ export default function EarthEmbeddingProductsPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">
                     <a
@@ -400,7 +412,7 @@ export default function EarthEmbeddingProductsPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">Tessera:</strong> Hidden behind an{" "}
                   <a
@@ -416,7 +428,7 @@ export default function EarthEmbeddingProductsPage() {
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>
                   <strong className="text-white">
                     <a
@@ -451,7 +463,7 @@ export default function EarthEmbeddingProductsPage() {
                 </span>
               </li>
             </ul>
-            <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4">
+            <div className="rounded-xl border border-rose-500/20 bg-emerald-500/5 p-4">
               <p className="text-sm font-medium text-rose-400">The problem:</p>
               <p className="mt-1 text-sm text-slate-400">
                 Every team solves distribution independently. The integration tax compounds across
