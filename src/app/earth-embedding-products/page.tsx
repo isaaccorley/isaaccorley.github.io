@@ -54,8 +54,9 @@ const taxonomyLayers = [
   },
 ];
 
-// Product data with CORRECTED file size metadata
+// Product data sorted by size (smallest to largest within each kind)
 const productRows = [
+  // Patch embeddings: Clay, Copernicus-Embed, Major TOM, Earth Index
   {
     name: "Clay",
     kind: "Patch",
@@ -66,6 +67,17 @@ const productRows = [
     bytesPerElement: 4,
     patchKm2: 26.21, // 5.12² km²
     license: "ODC-By-1.0",
+  },
+  {
+    name: "Copernicus-Embed",
+    kind: "Patch",
+    spatial: "0.25°",
+    temporal: "Annual",
+    dims: 768,
+    dtype: "float32",
+    bytesPerElement: 4,
+    patchKm2: 625, // ~25km × 25km at mid-latitudes
+    license: "CC-BY-4.0",
   },
   {
     name: "Major TOM",
@@ -89,25 +101,15 @@ const productRows = [
     patchKm2: 0.1024, // 0.32² km²
     license: "CC-BY-4.0",
   },
+  // Pixel embeddings: AlphaEarth, Tessera, Presto
   {
-    name: "Copernicus-Embed",
-    kind: "Patch",
-    spatial: "0.25°",
-    temporal: "Annual",
-    dims: 768,
-    dtype: "float32",
-    bytesPerElement: 4,
-    patchKm2: 625, // ~25km × 25km at mid-latitudes
-    license: "CC-BY-4.0",
-  },
-  {
-    name: "Presto",
+    name: "AlphaEarth",
     kind: "Pixel",
     spatial: "10 m",
     temporal: "Annual",
-    dims: 128,
-    dtype: "uint16",
-    bytesPerElement: 2,
+    dims: 64,
+    dtype: "int8",
+    bytesPerElement: 1,
     pixelResM: 10,
     license: "CC-BY-4.0",
   },
@@ -123,13 +125,13 @@ const productRows = [
     license: "CC-BY-4.0",
   },
   {
-    name: "AlphaEarth",
+    name: "Presto",
     kind: "Pixel",
     spatial: "10 m",
     temporal: "Annual",
-    dims: 64,
-    dtype: "int8",
-    bytesPerElement: 1,
+    dims: 128,
+    dtype: "uint16",
+    bytesPerElement: 2,
     pixelResM: 10,
     license: "CC-BY-4.0",
   },
