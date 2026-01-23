@@ -646,13 +646,54 @@ export default function EarthEmbeddingProductsPage() {
               The part everyone underestimates: storage
             </h2>
             <p className="leading-relaxed text-slate-400">
-              The storage math is where enthusiasm dies. Embedding dimension × dtype × spatial
-              resolution compounds fast. A city-scale analysis is fine. Continent-scale? Pixel
-              embeddings explode. This is the part that never shows up in model cards.
+              The storage math is where enthusiasm dies.{" "}
+              <code className="rounded bg-white/10 px-1.5 py-0.5 text-sm text-slate-300">
+                embedding_dim × dtype × spatial_resolution
+              </code>{" "}
+              compounds fast. A city-scale analysis is fine. Continent-scale? Pixel embeddings
+              explode. This is the part that never shows up in model cards.
             </p>
+            {/* Patch-only chart */}
             <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
               <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                Continent-scale storage (Africa, 30M km²)
+                Patch embeddings: continent-scale storage + cost (Africa, 30M km²)
+              </p>
+              <div className="mt-4 space-y-2">
+                {fileSizeData
+                  .filter((p) => p.kind === "Patch")
+                  .map((product) => {
+                    const continentSize =
+                      product.sizes.find((s) => s.aoi === "Continent")?.bytes ?? 0;
+                    const maxPatchBytes = Math.max(
+                      ...fileSizeData
+                        .filter((p) => p.kind === "Patch")
+                        .map((p) => p.sizes.find((s) => s.aoi === "Continent")?.bytes ?? 0),
+                    );
+                    const widthPercent = Math.max((continentSize / maxPatchBytes) * 100, 2);
+                    return (
+                      <div key={product.name} className="flex items-center gap-3">
+                        <div className="w-28 shrink-0 text-sm text-slate-400">{product.name}</div>
+                        <div className="relative h-5 flex-1 overflow-hidden rounded bg-white/5">
+                          <div
+                            className="h-full rounded bg-emerald-500"
+                            style={{ width: `${widthPercent}%` }}
+                          />
+                        </div>
+                        <div className="w-16 shrink-0 text-right font-mono text-xs text-slate-500">
+                          {formatBytes(continentSize)}
+                        </div>
+                        <div className="w-20 shrink-0 text-right font-mono text-xs text-emerald-400/70">
+                          {formatS3Cost(continentSize)}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+            {/* All products chart */}
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+              <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                All embeddings: continent-scale storage + cost (Africa, 30M km²)
               </p>
               <div className="mt-4 space-y-2">
                 {fileSizeData.map((product) => {
@@ -708,12 +749,21 @@ export default function EarthEmbeddingProductsPage() {
               The only fix that scales: make it boring
             </h2>
             <p className="leading-relaxed text-slate-400">
-              After five years of adding datasets to TorchGeo, the pattern is obvious: if embeddings
-              are not treated like boring, well-behaved geospatial datasets, nobody will use them.
-              TorchGeo now ships unified loaders so you can swap products without rewriting your
-              pipeline. Same API, any product. It doesn&apos;t solve storage, but it does stop the
-              endless rewrite tax. The goal is not magic. The goal is to make embeddings behave like
-              every other dataset you already know how to use.
+              After five years of adding datasets to{" "}
+              <a
+                className="text-emerald-400 hover:text-emerald-300"
+                href="https://github.com/torchgeo/torchgeo"
+                target="_blank"
+                rel="noreferrer"
+              >
+                TorchGeo
+              </a>
+              , the pattern is obvious: if embeddings are not treated like boring, well-behaved
+              geospatial datasets, nobody will use them. TorchGeo now ships unified loaders so you
+              can swap products without rewriting your pipeline. Same API, any product. It
+              doesn&apos;t solve storage, but it does stop the endless rewrite tax. The goal is not
+              magic. The goal is to make embeddings behave like every other dataset you already know
+              how to use.
             </p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
@@ -784,8 +834,9 @@ export default function EarthEmbeddingProductsPage() {
           <section className="space-y-4">
             <h2 className="text-xl font-semibold text-white">What you can do</h2>
             <p className="leading-relaxed text-slate-400">
-              If you&apos;re producing embeddings: ship GeoParquet or COG. Include CRS metadata.
-              Document your tile scheme. Make it boring.
+              If you&apos;re producing embeddings: use GeoParquet for patch embeddings, Zarr for
+              pixel embeddings. Include CRS metadata. Document your tile scheme. Create a tile
+              index. Make it boring.
             </p>
             <p className="leading-relaxed text-slate-400">
               If you&apos;re consuming embeddings: try the{" "}
