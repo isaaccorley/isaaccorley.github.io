@@ -258,7 +258,7 @@ export default function EarthEmbeddingProductsPage() {
       {/* Nav */}
       <nav className="absolute top-0 left-0 right-0 z-10 flex items-center gap-4 px-6 py-4 text-xs text-slate-500">
         <Link href="/" className="hover:text-slate-300 transition-colors">
-          Isaac Corley
+          Home
         </Link>
         <span>/</span>
         <Link href="/blog" className="hover:text-slate-300 transition-colors">
@@ -281,9 +281,8 @@ export default function EarthEmbeddingProductsPage() {
             The Technical Debt of Earth Embedding Products
           </h1>
           <p className="mt-4 text-lg leading-relaxed text-slate-400">
-            This critique has nothing to do with the value or performance of these foundation
-            models. They&apos;re all impressive. The problem is what happens after the model is
-            trained: distribution, access, and interoperability.
+            Geospatial Foundation Models are all impressive feats of research. The problem is what
+            happens after the model is trained: distribution, access, and interoperability.
           </p>
         </div>
       </header>
