@@ -716,23 +716,23 @@ export default function EarthEmbeddingProductsPage() {
               endless rewrite tax. The goal is not magic. The goal is to make embeddings behave like
               every other dataset you already know how to use.
             </p>
-            <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Similarity search in 20 lines
+                  Similarity search
                 </p>
-                <CodeBlock code={torchGeoSnippet} language="python" />
+                <CodeBlock code={torchGeoSnippet} language="python" small />
               </div>
               <div className="space-y-2">
                 <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Land-cover mapping
+                  Spatial intersection
                 </p>
-                <CodeBlock code={torchGeoMappingSnippet} language="python" />
+                <CodeBlock code={torchGeoMappingSnippet} language="python" small />
               </div>
             </div>
           </section>
 
-          {/* Hot takes */}
+          {/* Hard truths */}
           <section className="space-y-4">
             <h2 className="text-xl font-semibold text-white">Hard truths</h2>
             <ul className="space-y-3 text-slate-400">

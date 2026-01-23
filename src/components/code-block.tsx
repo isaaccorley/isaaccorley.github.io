@@ -5,14 +5,15 @@ import { Highlight, themes } from "prism-react-renderer";
 interface CodeBlockProps {
   code: string;
   language?: string;
+  small?: boolean;
 }
 
-export function CodeBlock({ code, language = "python" }: CodeBlockProps) {
+export function CodeBlock({ code, language = "python", small = false }: CodeBlockProps) {
   return (
     <Highlight theme={themes.nightOwl} code={code.trim()} language={language}>
       {({ style, tokens, getLineProps, getTokenProps }) => (
         <pre
-          className="rounded-2xl text-xs leading-relaxed p-4 overflow-x-auto"
+          className={`rounded-2xl leading-relaxed p-4 overflow-x-auto ${small ? "text-[10px]" : "text-xs"}`}
           style={{ ...style, background: "#011627" }}
         >
           <code>
