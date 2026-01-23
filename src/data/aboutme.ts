@@ -30,7 +30,7 @@ export const aboutMe: AboutMe = {
   githubUsername: "isaaccorley",
   linkedinUsername: "isaaccorley",
   twitterUsername: "isaaccorley_",
-  //blogUrl: "https://isaacc.dev",
+  blogUrl: "/blog",
   //cvUrl: "https://github.com/isaaccorley/isaaccorley.github.io/blob/main/public/Isaac_Corley_Resume.pdf",
   //institutionUrl: "https://www.stanford.edu",
   // altName: "",

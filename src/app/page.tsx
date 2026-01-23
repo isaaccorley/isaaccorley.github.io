@@ -117,7 +117,11 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] transition-colors duration-300">
+    <div className="relative min-h-screen bg-[var(--background)] transition-colors duration-300">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-[400px] bg-[radial-gradient(ellipse_at_top,_rgba(16,185,129,0.15),_transparent_70%)]"
+        aria-hidden="true"
+      />
       <div className="fixed top-4 right-4 sm:right-6 md:right-8 z-50">
         <ThemeToggle />
       </div>

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Github, Linkedin, Mail, Twitter, ArrowUpRight, GraduationCap } from "lucide-react";
 import { AboutMe } from "@/data/aboutme";
 
@@ -29,22 +30,36 @@ export function ProfileSection({ aboutMe }: ProfileSectionProps) {
       )}
       <div className="w-full md:w-full">
         <div className="flex gap-6 mb-6">
-          {aboutMe.blogUrl && (
-            <a
-              href={aboutMe.blogUrl}
-              className="group inline-flex items-center gap-2 text-xs accent-link focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Visit blog"
-            >
-              <ArrowUpRight
-                size={12}
-                className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300"
-                aria-hidden="true"
-              />
-              <span className="tracking-wider uppercase">Blog</span>
-            </a>
-          )}
+          {aboutMe.blogUrl &&
+            (aboutMe.blogUrl.startsWith("/") ? (
+              <Link
+                href={aboutMe.blogUrl}
+                className="group inline-flex items-center gap-2 text-xs accent-link focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded"
+                aria-label="Visit blog"
+              >
+                <ArrowUpRight
+                  size={12}
+                  className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300"
+                  aria-hidden="true"
+                />
+                <span className="tracking-wider uppercase">Blog</span>
+              </Link>
+            ) : (
+              <a
+                href={aboutMe.blogUrl}
+                className="group inline-flex items-center gap-2 text-xs accent-link focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:ring-offset-2 rounded"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Visit blog"
+              >
+                <ArrowUpRight
+                  size={12}
+                  className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300"
+                  aria-hidden="true"
+                />
+                <span className="tracking-wider uppercase">Blog</span>
+              </a>
+            ))}
           {aboutMe.cvUrl && (
             <a
               href={aboutMe.cvUrl}
