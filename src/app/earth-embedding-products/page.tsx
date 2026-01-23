@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Database, Target, Wrench } from "lucide-react";
-import { CodeBlock } from "@/components/code-block";
 import { Footer } from "@/components/footer";
 
 const title = "The Technical Debt of Earth Embedding Products";
@@ -164,57 +163,20 @@ function formatBytes(bytes: number): string {
   return `${bytes.toFixed(0)} B`;
 }
 
-// AWS S3 Standard storage: ~$0.023/GB/month
+// AWS S3 Standard storage: ~$0.023/GB/month, egress: ~$0.09/GB
 function formatS3Cost(bytes: number): string {
   const gb = bytes / 1e9;
-  const costPerMonth = gb * 0.023;
-  if (costPerMonth >= 1000) return `$${(costPerMonth / 1000).toFixed(1)}k/mo`;
-  if (costPerMonth >= 1) return `$${costPerMonth.toFixed(0)}/mo`;
-  return `$${costPerMonth.toFixed(2)}/mo`;
+  const storagePerMonth = gb * 0.023;
+  const egressOnce = gb * 0.09;
+
+  const formatCost = (cost: number): string => {
+    if (cost >= 1000) return `$${(cost / 1000).toFixed(1)}k`;
+    if (cost >= 1) return `$${cost.toFixed(0)}`;
+    return `$${cost.toFixed(2)}`;
+  };
+
+  return `${formatCost(storagePerMonth)}/mo + ${formatCost(egressOnce)} egress`;
 }
-
-const torchGeoSnippet = `from torchgeo.datasets import EarthIndexEmbeddings, Sentinel2
-from torchgeo.models import ViTSmall14_DINOv2_Weights, vit_small_patch14_dinov2
-from torch.nn import CosineSimilarity
-
-# Load pretrained foundation model
-model = vit_small_patch14_dinov2(
-    ViTSmall14_DINOv2_Weights.SENTINEL2_ALL_SOFTCON
-)
-cos = CosineSimilarity()
-
-# Load embedding product + raw imagery
-eie = EarthIndexEmbeddings(root)
-s2 = Sentinel2(paths)
-
-# Embed a query region
-sample = s2[xmin:xmax, ymin:ymax]
-query = model(sample)
-
-# Find most similar location in Earth Index
-best, best_dist = None, 2**10
-for sample in eie:
-    dist = cos(query, sample["embedding"])
-    if dist < best_dist:
-        best_dist = dist
-        best = (sample["x"], sample["y"])`;
-
-const torchGeoMappingSnippet = `from torch.utils.data import DataLoader
-from torchgeo.datasets import GoogleSatelliteEmbeddings, EuroCrops
-from torchgeo.samplers import GridGeoSampler
-
-gse = GoogleSatelliteEmbeddings(paths)
-ec = EuroCrops(paths, download=True)
-
-# Automatic spatiotemporal intersection
-dataset = gse & ec
-sampler = GridGeoSampler(dataset, size=256)
-loader = DataLoader(dataset, sampler=sampler)
-
-for batch in loader:
-    # Embeddings ready for k-NN or linear probe
-    embeddings = batch["embedding"]
-    labels = batch["label"]`;
 
 export default function EarthEmbeddingProductsPage() {
   const fileSizeData = productRows.map((product) => ({
@@ -684,7 +646,7 @@ export default function EarthEmbeddingProductsPage() {
                         <div className="w-16 shrink-0 text-right font-mono text-xs text-slate-500">
                           {formatBytes(continentSize)}
                         </div>
-                        <div className="w-20 shrink-0 text-right font-mono text-xs text-emerald-400/70">
+                        <div className="w-36 shrink-0 text-right font-mono text-xs text-emerald-400/70">
                           {formatS3Cost(continentSize)}
                         </div>
                       </div>
@@ -717,7 +679,7 @@ export default function EarthEmbeddingProductsPage() {
                       <div className="w-16 shrink-0 text-right font-mono text-xs text-slate-500">
                         {formatBytes(continentSize)}
                       </div>
-                      <div className="w-20 shrink-0 text-right font-mono text-xs text-emerald-400/70">
+                      <div className="w-36 shrink-0 text-right font-mono text-xs text-emerald-400/70">
                         {formatS3Cost(continentSize)}
                       </div>
                     </div>
@@ -793,44 +755,6 @@ export default function EarthEmbeddingProductsPage() {
                 </span>
               </li>
             </ul>
-          </section>
-
-          {/* The Fix */}
-          <section className="space-y-6">
-            <h2 className="text-xl font-semibold text-white">
-              The only fix that scales: make it boring
-            </h2>
-            <p className="leading-relaxed text-slate-400">
-              After five years of adding datasets to{" "}
-              <a
-                className="text-emerald-400 hover:text-emerald-300"
-                href="https://github.com/torchgeo/torchgeo"
-                target="_blank"
-                rel="noreferrer"
-              >
-                TorchGeo
-              </a>
-              , the pattern is obvious: if embeddings are not treated like boring, well-behaved
-              geospatial datasets, nobody will use them. TorchGeo now ships unified loaders so you
-              can swap products without rewriting your pipeline. Same API, any product. It
-              doesn&apos;t solve storage, but it does stop the endless rewrite tax. The goal is not
-              magic. The goal is to make embeddings behave like every other dataset you already know
-              how to use.
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Similarity search
-                </p>
-                <CodeBlock code={torchGeoSnippet} language="python" small />
-              </div>
-              <div className="space-y-2">
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                  Spatial intersection
-                </p>
-                <CodeBlock code={torchGeoMappingSnippet} language="python" small />
-              </div>
-            </div>
           </section>
 
           {/* Call to action */}
